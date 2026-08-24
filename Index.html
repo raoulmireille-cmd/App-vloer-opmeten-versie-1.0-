@@ -1,0 +1,377 @@
+
+<style>
+  * { box-sizing: border-box; }
+  .wrap { padding: 1.5rem 0; font-family: var(--font-sans); }
+  .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tab { padding: 8px 11px; font-size: 12px; font-weight: 400; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; }
+  .tab.active { color: var(--color-text-primary); font-weight: 500; border-bottom: 2px solid var(--color-text-primary); }
+  .tab:hover:not(.active) { color: var(--color-text-primary); }
+  .panel { display: none; } .panel.active { display: block; }
+  .card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 12px; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--color-text-secondary); }
+  input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; font-family: var(--font-sans); font-size: 14px; }
+  select { height: 36px; }
+  textarea { resize: vertical; min-height: 60px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .naw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .naw-full { grid-column: 1 / -1; }
+  .btn-add { display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0 14px; height: 36px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; }
+  .btn-add:hover { background: var(--color-background-secondary); }
+  .btn-copy { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 0 20px; height: 40px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; width: 100%; margin-top: 1.5rem; }
+  .btn-copy:hover { background: var(--color-background-secondary); }
+  .btn-copy.success { border-color: #1D9E75; color: #1D9E75; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .toggle-row:first-child { padding-top: 0; }
+  .toggle-label { font-size: 14px; color: var(--color-text-primary); }
+  .toggle-btns { display: flex; gap: 6px; }
+  .tbtn { padding: 4px 14px; font-size: 13px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+  .tbtn.ja.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+  .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
+  .tbtn.opt.active { background: var(--color-text-primary); border-color: var(--color-text-primary); color: var(--color-background-primary); }
+  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .status-ok { background: #d4f4e8; color: #1D9E75; }
+  .status-warn { background: #fff3cd; color: #b08000; }
+  .status-err { background: #fde8e8; color: #E24B4A; }
+  .kamer-form { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .form-row-plint { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
+  .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
+  .rij-lijst { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
+  .rij-header-vloer { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
+  .rij-header-plint { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
+  .rij-header-vloer span, .rij-header-plint span { font-size: 11px; color: var(--color-text-tertiary); text-align: right; }
+  .rij-header-vloer span:first-child, .rij-header-plint span:first-child { text-align: left; }
+  .vloer-rij { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+  .plint-rij { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+  .rij-naam { font-size: 14px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rij-waarde { font-size: 14px; font-weight: 500; color: var(--color-text-primary); text-align: right; }
+  .rij-maat { font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+  .btn-del { background: none; border: none; cursor: pointer; color: var(--color-text-tertiary); font-size: 16px; padding: 0; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .btn-del:hover { color: #E24B4A; }
+  .totaal-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+  .totaal-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .totaal-waarde { font-size: 32px; font-weight: 500; color: var(--color-text-primary); }
+  .leeg { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 14px; border: 0.5px dashed var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1.5rem; }
+  .snelknoppen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .snelknop { font-size: 12px; padding: 4px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+  .snelknop:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .afval-row { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .afval-row label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
+  .banner { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1rem; padding: 8px 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+  .foto-lijst { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .foto-rij { display: flex; align-items: center; justify-content: space-between; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 8px 12px; gap: 8px; }
+  .foto-rij-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .foto-naam { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .foto-omschrijving { font-size: 12px; color: var(--color-text-secondary); }
+  .foto-invoer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 10px; }
+  .vv-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 4px; }
+  .vv-extra { display: none; flex-direction: column; gap: 10px; padding: 10px 0 4px; border-top: 0.5px solid var(--color-border-tertiary); }
+  .vv-extra.zichtbaar { display: flex; }
+  .vv-opties { display: flex; gap: 6px; flex-wrap: wrap; }
+  .vloertype-knoppen { display: flex; flex-wrap: wrap; gap: 10px; }
+  .vtbtn { padding: 10px 18px; font-size: 14px; font-weight: 400; border-radius: var(--border-radius-md); border: 1.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .vtbtn:hover { border-color: var(--color-text-primary); color: var(--color-text-primary); }
+  .vtbtn.active { background: #1a56db; border-color: #1a56db; color: #ffffff; font-weight: 600; box-shadow: 0 2px 8px rgba(26,86,219,0.25); }
+  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-background-primary); border: 1.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.15s; }
+  .check-item:hover { border-color: var(--color-text-secondary); }
+  .check-item.active { border-color: #1a56db; background: #eff4ff; }
+  .check-item.active span { color: #1a56db; font-weight: 500; }
+  .check-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: #1a56db; }
+  .check-item span { font-size: 13px; color: var(--color-text-primary); }
+  .sortering-extra { display: none; margin-top: 8px; }
+  .sortering-extra.zichtbaar { display: block; }
+  .overige-veld { display: none; margin-top: 8px; }
+  .overige-veld.zichtbaar { display: block; }
+</style>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('naw')">Klantgegevens</button>
+    <button class="tab" onclick="switchTab('typevloer')">Type vloer</button>
+    <button class="tab" onclick="switchTab('controle')">Vloercontrole</button>
+    <button class="tab" onclick="switchTab('vloer')">Opmeting vloer</button>
+    <button class="tab" onclick="switchTab('plint')">Opmeting plinten</button>
+    <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
+  </div>
+
+  <!-- NAW -->
+  <div class="panel active" id="panel-naw">
+    <div class="card"><p class="section-title">Contactgegevens</p>
+      <div class="naw-grid">
+        <div class="field"><label>Voornaam</label><input type="text" id="naw-voornaam" placeholder="Jan" /></div>
+        <div class="field"><label>Achternaam</label><input type="text" id="naw-achternaam" placeholder="de Vries" /></div>
+        <div class="field"><label>Telefoonnummer</label><input type="tel" id="naw-tel" placeholder="+31 6 12345678" /></div>
+        <div class="field"><label>E-mailadres</label><input type="email" id="naw-email" placeholder="jan@voorbeeld.nl" /></div>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Adres</p>
+      <div class="naw-grid">
+        <div class="field naw-full"><label>Straat</label><input type="text" id="naw-straat" placeholder="Kerkstraat" /></div>
+        <div class="field"><label>Huisnummer</label><input type="text" id="naw-huisnr" placeholder="12 A" /></div>
+        <div class="field"><label>Postcode</label><input type="text" id="naw-postcode" placeholder="1234 AB" /></div>
+        <div class="field naw-full"><label>Plaats</label><input type="text" id="naw-plaats" placeholder="Amsterdam" /></div>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Notities</p>
+      <div class="field"><label>Opmerkingen</label><textarea id="naw-notities" placeholder="bijv. hond aanwezig, bellen voor 18:00..."></textarea></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn-add" onclick="switchTab('typevloer')">Naar type vloer →</button></div>
+  </div>
+
+  <!-- TYPE VLOER -->
+  <div class="panel" id="panel-typevloer">
+    <div id="banner-typevloer" style="display:none;" class="banner"></div>
+    <div class="card"><p class="section-title">Type vloer</p>
+      <div class="vloertype-knoppen">
+        <button class="vtbtn" onclick="setVloerType('Laminaat',this)">Laminaat</button>
+        <button class="vtbtn" onclick="setVloerType('Duoplank',this)">Duoplank</button>
+        <button class="vtbtn" onclick="setVloerType('Lamelparket',this)">Lamelparket</button>
+        <button class="vtbtn" onclick="setVloerType('Tapis',this)">Tapis</button>
+        <button class="vtbtn" onclick="setVloerType('Vloerdelen',this)">Vloerdelen</button>
+        <button class="vtbtn" onclick="setVloerType('Bourgogne',this)">Bourgogne</button>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Houtsoort & sortering</p>
+      <div class="grid2">
+        <div class="field"><label>Houtsoort</label><input type="text" id="tv-houtsoort" placeholder="bijv. Eiken, Walnoot, Grenen..." /></div>
+        <div class="field"><label>Sortering</label>
+          <select id="tv-sortering" onchange="checkSorteringOverig()">
+            <option value="">— Selecteer —</option>
+            <option>Rustiek</option><option>Natuur</option><option>Select</option><option>AB</option><option>ABC</option><option>BC</option><option>Overige</option>
+          </select>
+          <div class="sortering-extra" id="tv-sortering-extra"><input type="text" id="tv-sortering-overig" placeholder="Omschrijf sortering..." style="margin-top:6px;" /></div>
+        </div>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Afmeting</p>
+      <div class="grid3">
+        <div class="field"><label>Lengte (mm)</label><input type="number" id="tv-lengte" placeholder="bijv. 2200" min="0" step="1" /></div>
+        <div class="field"><label>Breedte (mm)</label><input type="number" id="tv-breedte" placeholder="bijv. 190" min="0" step="1" /></div>
+        <div class="field"><label>Dikte (mm)</label><input type="number" id="tv-dikte" placeholder="bijv. 14" min="0" step="0.5" /></div>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Bewerkingen</p>
+      <div class="checkbox-grid">
+        <label class="check-item" id="cb-velling-lang"><input type="checkbox" onchange="toggleCheckItem(this,'cb-velling-lang')" /><span>Velling lange zijde</span></label>
+        <label class="check-item" id="cb-velling-kort"><input type="checkbox" onchange="toggleCheckItem(this,'cb-velling-kort')" /><span>Velling korte zijde</span></label>
+        <label class="check-item" id="cb-gerookt"><input type="checkbox" onchange="toggleCheckItem(this,'cb-gerookt')" /><span>Gerookt</span></label>
+        <label class="check-item" id="cb-verouderd"><input type="checkbox" onchange="toggleCheckItem(this,'cb-verouderd')" /><span>Verouderd</span></label>
+        <label class="check-item" id="cb-bew-overig"><input type="checkbox" onchange="toggleCheckItem(this,'cb-bew-overig');toggleOverig('bew')" /><span>Overige</span></label>
+      </div>
+      <div class="overige-veld" id="overig-bew-veld"><input type="text" id="overig-bew-tekst" placeholder="Omschrijf bewerking..." /></div>
+    </div>
+    <div class="card"><p class="section-title">Afwerking</p>
+      <div class="checkbox-grid">
+        <label class="check-item" id="cb-lak"><input type="checkbox" onchange="toggleCheckItem(this,'cb-lak')" /><span>Lak</span></label>
+        <label class="check-item" id="cb-hardwax"><input type="checkbox" onchange="toggleCheckItem(this,'cb-hardwax')" /><span>Hardwax</span></label>
+        <label class="check-item" id="cb-woca"><input type="checkbox" onchange="toggleCheckItem(this,'cb-woca')" /><span>Woca</span></label>
+        <label class="check-item" id="cb-was"><input type="checkbox" onchange="toggleCheckItem(this,'cb-was')" /><span>Was</span></label>
+        <label class="check-item" id="cb-monocoat"><input type="checkbox" onchange="toggleCheckItem(this,'cb-monocoat')" /><span>Monocoat</span></label>
+        <label class="check-item" id="cb-afw-overig"><input type="checkbox" onchange="toggleCheckItem(this,'cb-afw-overig');toggleOverig('afw')" /><span>Overige</span></label>
+      </div>
+      <div class="overige-veld" id="overig-afw-veld"><input type="text" id="overig-afw-tekst" placeholder="Omschrijf afwerking..." /></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn-add" onclick="switchTab('controle')">Naar vloercontrole →</button></div>
+  </div>
+
+  <!-- VLOERCONTROLE -->
+  <div class="panel" id="panel-controle">
+    <div id="banner-controle" style="display:none;" class="banner"></div>
+    <div class="card"><p class="section-title">Type constructievloer</p>
+      <div class="field"><label>Constructievloer</label>
+        <select id="c-type"><option value="">— Selecteer type —</option><option>Zandcement</option><option>Anhydriet</option><option>Hout</option><option>Egaline</option></select>
+      </div>
+      <div class="vv-row"><span class="toggle-label">Vloerverwarming aanwezig</span>
+        <div class="toggle-btns"><button class="tbtn ja" onclick="setVloerverwarming('ja',this)">Ja</button><button class="tbtn nee" onclick="setVloerverwarming('nee',this)">Nee</button></div>
+      </div>
+      <div class="vv-extra" id="vv-extra">
+        <div><div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;">Type vloerverwarming</div>
+          <div class="vv-opties"><button class="tbtn opt" id="vv-trad" onclick="setVVType('traditioneel')">Traditioneel</button><button class="tbtn opt" id="vv-ingefreesd" onclick="setVVType('ingefreesd')">Ingefreesd</button></div>
+        </div>
+        <div class="field"><label>Warmtebron</label>
+          <select id="vv-bron" onchange="updateBadges()"><option value="">— Selecteer warmtebron —</option><option>CV</option><option>Warmtepomp</option><option>Stadsverwarming</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="card"><p class="section-title">Test ondervloer</p>
+      <div class="grid2">
+        <div class="field"><label>Luchtvochtigheid (%)</label><input type="number" id="c-lv" placeholder="bijv. 55" min="0" max="100" step="0.1" oninput="updateBadges()" /></div>
+        <div class="field"><label>Vochtpercentage vloer (%)</label><input type="number" id="c-vp" placeholder="bijv. 2.5" min="0" max="100" step="0.1" oninput="updateBadges()" /></div>
+        <div class="field"><label>Krastest</label><select id="c-kras" onchange="updateBadges()"><option value="">— Selecteer —</option><option value="goed">Goed</option><option value="matig">Matig</option><option value="afgekeurd">Afgekeurd</option></select></div>
+        <div class="field"><label>Vlakte van de vloer</label><select id="c-vlakte" onchange="updateBadges()"><option value="">— Selecteer —</option><option value="goed">Goed (≤ 3mm/2m)</option><option value="matig">Matig (3–5mm/2m)</option><option value="afgekeurd">Afgekeurd (> 5mm/2m)</option></select></div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="toggle-row"><span class="toggle-label">Visuele scheuren aanwezig</span><div class="toggle-btns"><button class="tbtn ja" onclick="setToggle('scheuren','ja',this)">Ja</button><button class="tbtn nee" onclick="setToggle('scheuren','nee',this)">Nee</button></div></div>
+        <div class="toggle-row"><span class="toggle-label">Opstartprotocol doorlopen</span><div class="toggle-btns"><button class="tbtn ja" onclick="setToggle('opstartprotocol','ja',this)">Ja</button><button class="tbtn nee" onclick="setToggle('opstartprotocol','nee',this)">Nee</button></div></div>
+      </div>
+    </div>
+    <div class="card" id="samenvatting-card" style="display:none;"><p class="section-title">Samenvatting controle</p><div id="samenvatting-inhoud"></div></div>
+    <div class="card"><p class="section-title">📷 Foto's</p>
+      <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 10px;">Voeg een bestandsnaam of omschrijving toe per foto.</p>
+      <div class="foto-invoer">
+        <div class="field"><label>Bestandsnaam / foto nr.</label><input type="text" id="f-naam" placeholder="bijv. foto_01" /></div>
+        <div class="field"><label>Omschrijving</label><input type="text" id="f-omschrijving" placeholder="bijv. scheur bij radiator" /></div>
+        <div class="field"><label style="visibility:hidden;">–</label><button class="btn-add" onclick="voegFotoToe()">+ Voeg toe</button></div>
+      </div>
+      <div class="foto-lijst" id="foto-lijst"></div>
+    </div>
+    <div class="field" style="margin-top:4px;"><label>Opmerkingen vloercontrole</label><textarea id="c-opm" placeholder="Eventuele opmerkingen..."></textarea></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn-add" onclick="switchTab('vloer')">Naar opmeting vloer →</button></div>
+  </div>
+
+  <!-- OPMETING VLOER -->
+  <div class="panel" id="panel-vloer">
+    <div id="banner-vloer" style="display:none;" class="banner"></div>
+    <div class="kamer-form">
+      <div class="form-row-4">
+        <div class="field"><label>Ruimte / kamer</label><input type="text" id="v-naam" placeholder="bijv. Woonkamer" /></div>
+        <div class="field"><label>Lengte (m)</label><input type="number" id="v-lengte" placeholder="0.00" step="0.01" min="0" /></div>
+        <div class="field"><label>Breedte (m)</label><input type="number" id="v-breedte" placeholder="0.00" step="0.01" min="0" /></div>
+        <div class="field"><label>Oppervlakte</label><input type="text" id="v-preview" placeholder="— m²" readonly style="color:var(--color-text-secondary);background:var(--color-background-primary);" /></div>
+        <div class="field"><label style="visibility:hidden;">–</label><button class="btn-add" onclick="voegVloerToe()">+ Voeg toe</button></div>
+      </div>
+      <div class="snelknoppen">
+        <span style="font-size:12px;color:var(--color-text-tertiary);align-self:center;">Snelkeuze:</span>
+        <button class="snelknop" onclick="vulVloer('Woonkamer')">Woonkamer</button>
+        <button class="snelknop" onclick="vulVloer('Slaapkamer')">Slaapkamer</button>
+        <button class="snelknop" onclick="vulVloer('Hal')">Hal</button>
+        <button class="snelknop" onclick="vulVloer('Keuken')">Keuken</button>
+        <button class="snelknop" onclick="vulVloer('Overloop')">Overloop</button>
+        <button class="snelknop" onclick="vulVloer('Studeerkamer')">Studeerkamer</button>
+      </div>
+    </div>
+    <div id="vloer-container"></div>
+    <div class="totaal-card">
+      <div><div class="totaal-label">Totale oppervlakte</div><div class="totaal-waarde" id="v-totaal">0,00 m²</div></div>
+      <div style="text-align:right;">
+        <div class="afval-row"><label>Afval %</label><input type="number" id="v-afval" value="10" min="0" max="50" step="1" style="width:60px;" oninput="renderVloer()" /></div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">Incl. afval: <span id="v-totaal-afval" style="font-weight:500;color:var(--color-text-primary);">0,00 m²</span></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn-add" onclick="switchTab('plint')">Naar opmeting plinten →</button></div>
+  </div>
+
+  <!-- OPMETING PLINTEN -->
+  <div class="panel" id="panel-plint">
+    <div id="banner-plint" style="display:none;" class="banner"></div>
+    <div class="card"><p class="section-title">Plint specificaties</p>
+      <div class="grid3">
+        <div class="field"><label>Type plint</label><input type="text" id="p-type" placeholder="bijv. MDF, massief..." /></div>
+        <div class="field"><label>Hoogte (mm)</label><input type="number" id="p-hoogte" placeholder="bijv. 70" min="0" step="1" /></div>
+        <div class="field"><label>Dikte (mm)</label><input type="number" id="p-dikte" placeholder="bijv. 12" min="0" step="1" /></div>
+      </div>
+      <div class="field" style="margin-top:12px;"><label>Kleur</label><input type="text" id="p-kleur" placeholder="bijv. wit, eiken natuur, RAL 9010..." /></div>
+    </div>
+    <div class="kamer-form">
+      <div class="form-row-plint">
+        <div class="field"><label>Ruimte / wand</label><input type="text" id="p-naam" placeholder="bijv. Woonkamer" /></div>
+        <div class="field"><label>Lengte (m)</label><input type="number" id="p-lengte" placeholder="0.00" step="0.01" min="0" /></div>
+        <div class="field"><label style="visibility:hidden;">–</label><button class="btn-add" onclick="voegPlintToe()">+ Voeg toe</button></div>
+      </div>
+      <div class="snelknoppen">
+        <span style="font-size:12px;color:var(--color-text-tertiary);align-self:center;">Snelkeuze:</span>
+        <button class="snelknop" onclick="vulPlint('Woonkamer')">Woonkamer</button>
+        <button class="snelknop" onclick="vulPlint('Slaapkamer')">Slaapkamer</button>
+        <button class="snelknop" onclick="vulPlint('Hal')">Hal</button>
+        <button class="snelknop" onclick="vulPlint('Keuken')">Keuken</button>
+        <button class="snelknop" onclick="vulPlint('Overloop')">Overloop</button>
+        <button class="snelknop" onclick="vulPlint('Studeerkamer')">Studeerkamer</button>
+      </div>
+    </div>
+    <div id="plint-container"></div>
+    <div class="totaal-card">
+      <div><div class="totaal-label">Totale plintlengte</div><div class="totaal-waarde" id="p-totaal">0,00 m</div></div>
+      <div style="text-align:right;">
+        <div class="afval-row"><label>Afval %</label><input type="number" id="p-afval" value="10" min="0" max="50" step="1" style="width:60px;" oninput="renderPlinten()" /></div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">Incl. afval: <span id="p-totaal-afval" style="font-weight:500;color:var(--color-text-primary);">0,00 m</span></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn-add" onclick="switchTab('afdek')">Naar afdeklatten →</button></div>
+  </div>
+
+  <!-- AFDEKLATTEN -->
+  <div class="panel" id="panel-afdek">
+    <div id="banner-afdek" style="display:none;" class="banner"></div>
+    <div class="card"><p class="section-title">Afdeklat specificaties</p>
+      <div class="grid3">
+        <div class="field"><label>Type afdeklat</label><input type="text" id="a-type" placeholder="bijv. T-profiel..." /></div>
+        <div class="field"><label>Hoogte (mm)</label><input type="number" id="a-hoogte" placeholder="bijv. 10" min="0" step="1" /></div>
+        <div class="field"><label>Dikte (mm)</label><input type="number" id="a-dikte" placeholder="bijv. 40" min="0" step="1" /></div>
+      </div>
+      <div class="field" style="margin-top:12px;"><label>Kleur</label><input type="text" id="a-kleur" placeholder="bijv. wit, eiken natuur, RAL 9010..." /></div>
+    </div>
+    <div class="kamer-form">
+      <div class="form-row-plint">
+        <div class="field"><label>Locatie / ruimte</label><input type="text" id="a-naam" placeholder="bijv. Overgang woonkamer" /></div>
+        <div class="field"><label>Lengte (m)</label><input type="number" id="a-lengte" placeholder="0.00" step="0.01" min="0" /></div>
+        <div class="field"><label style="visibility:hidden;">–</label><button class="btn-add" onclick="voegAfdekToe()">+ Voeg toe</button></div>
+      </div>
+      <div class="snelknoppen">
+        <span style="font-size:12px;color:var(--color-text-tertiary);align-self:center;">Snelkeuze:</span>
+        <button class="snelknop" onclick="vulAfdek('Woonkamer')">Woonkamer</button>
+        <button class="snelknop" onclick="vulAfdek('Slaapkamer')">Slaapkamer</button>
+        <button class="snelknop" onclick="vulAfdek('Hal')">Hal</button>
+        <button class="snelknop" onclick="vulAfdek('Keuken')">Keuken</button>
+        <button class="snelknop" onclick="vulAfdek('Overloop')">Overloop</button>
+        <button class="snelknop" onclick="vulAfdek('Studeerkamer')">Studeerkamer</button>
+      </div>
+    </div>
+    <div id="afdek-container"></div>
+    <div class="totaal-card">
+      <div><div class="totaal-label">Totale afdeklatlengte</div><div class="totaal-waarde" id="a-totaal">0,00 m</div></div>
+      <div style="text-align:right;">
+        <div class="afval-row"><label>Afval %</label><input type="number" id="a-afval" value="10" min="0" max="50" step="1" style="width:60px;" oninput="renderAfdek()" /></div>
+        <div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">Incl. afval: <span id="a-totaal-afval" style="font-weight:500;color:var(--color-text-primary);">0,00 m</span></div>
+      </div>
+    </div>
+    <button class="btn-copy" id="copy-btn" onclick="kopieerAlles()">📋 Kopieer overzicht voor OneNote</button>
+  </div>
+</div>
+
+<script>
+  let vloeren=[],plinten=[],afdeklatten=[],fotos=[];
+  const toggleState={scheuren:null,opstartprotocol:null};
+  let vvAanwezig=null,vvType=null,geselecteerdVloerType=null;
+  function fmt(n){return n.toFixed(2).replace('.',',');}
+  function getBanner(){const v=document.getElementById('naw-voornaam').value.trim(),a=document.getElementById('naw-achternaam').value.trim();const straat=document.getElementById('naw-straat').value.trim(),huisnr=document.getElementById('naw-huisnr').value.trim(),plaats=document.getElementById('naw-plaats').value.trim();if(!v&&!a&&!straat)return'';let t=(v+' '+a).trim();if(straat)t+=(t?' — ':'')+straat+(huisnr?' '+huisnr:'')+(plaats?', '+plaats:'');return'Klant: '+t;}
+  function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById('panel-'+name).classList.add('active');const idx={naw:0,typevloer:1,controle:2,vloer:3,plint:4,afdek:5}[name];document.querySelectorAll('.tab')[idx].classList.add('active');const b=getBanner();['typevloer','controle','vloer','plint','afdek'].forEach(id=>{const el=document.getElementById('banner-'+id);if(el){el.textContent=b;el.style.display=b?'block':'none';}});}
+  function setVloerType(type,btn){geselecteerdVloerType=type;document.querySelectorAll('.vtbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  function toggleCheckItem(cb,id){document.getElementById(id).classList.toggle('active',cb.checked);}
+  function toggleOverig(type){const cb=document.querySelector('#cb-'+type+'-overig input');document.getElementById('overig-'+type+'-veld').classList.toggle('zichtbaar',cb.checked);}
+  function checkSorteringOverig(){document.getElementById('tv-sortering-extra').classList.toggle('zichtbaar',document.getElementById('tv-sortering').value==='Overige');}
+  function getBewerkingen(){const items=[{id:'cb-velling-lang',l:'Velling lange zijde'},{id:'cb-velling-kort',l:'Velling korte zijde'},{id:'cb-gerookt',l:'Gerookt'},{id:'cb-verouderd',l:'Verouderd'}];const result=items.filter(i=>document.querySelector('#'+i.id+' input').checked).map(i=>i.l);const oCb=document.querySelector('#cb-bew-overig input');if(oCb.checked){const txt=document.getElementById('overig-bew-tekst').value.trim();result.push(txt?'Overige: '+txt:'Overige');}return result;}
+  function getAfwerking(){const items=[{id:'cb-lak',l:'Lak'},{id:'cb-hardwax',l:'Hardwax'},{id:'cb-woca',l:'Woca'},{id:'cb-was',l:'Was'},{id:'cb-monocoat',l:'Monocoat'}];const result=items.filter(i=>document.querySelector('#'+i.id+' input').checked).map(i=>i.l);const oCb=document.querySelector('#cb-afw-overig input');if(oCb.checked){const txt=document.getElementById('overig-afw-tekst').value.trim();result.push(txt?'Overige: '+txt:'Overige');}return result;}
+  function setToggle(key,val,btn){toggleState[key]=val;btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateBadges();}
+  function setVloerverwarming(val,btn){vvAanwezig=val;btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const extra=document.getElementById('vv-extra');if(val==='ja'){extra.classList.add('zichtbaar');}else{extra.classList.remove('zichtbaar');vvType=null;document.getElementById('vv-trad').classList.remove('active');document.getElementById('vv-ingefreesd').classList.remove('active');document.getElementById('vv-bron').value='';}updateBadges();}
+  function setVVType(type){vvType=type;document.getElementById('vv-trad').classList.toggle('active',type==='traditioneel');document.getElementById('vv-ingefreesd').classList.toggle('active',type==='ingefreesd');updateBadges();}
+  function badge(val){if(!val)return'<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>';if(val==='goed')return`<span class="status-badge status-ok">${val}</span>`;if(val==='matig')return`<span class="status-badge status-warn">${val}</span>`;if(val==='afgekeurd')return`<span class="status-badge status-err">${val}</span>`;return`<span class="status-badge status-ok">${val}</span>`;}
+  function updateBadges(){const lv=document.getElementById('c-lv').value,vp=document.getElementById('c-vp').value,kras=document.getElementById('c-kras').value,vlakte=document.getElementById('c-vlakte').value,bron=document.getElementById('vv-bron').value;const lvB=lv===''?'<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>':parseFloat(lv)<=65?`<span class="status-badge status-ok">${lv}%</span>`:parseFloat(lv)<=75?`<span class="status-badge status-warn">${lv}%</span>`:`<span class="status-badge status-err">${lv}%</span>`;const vpB=vp===''?'<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>':parseFloat(vp)<=2.0?`<span class="status-badge status-ok">${vp}%</span>`:parseFloat(vp)<=3.0?`<span class="status-badge status-warn">${vp}%</span>`:`<span class="status-badge status-err">${vp}%</span>`;const schB=toggleState.scheuren===null?'<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>':toggleState.scheuren==='nee'?'<span class="status-badge status-ok">Nee</span>':'<span class="status-badge status-err">Ja</span>';const opB=toggleState.opstartprotocol===null?'<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>':toggleState.opstartprotocol==='ja'?'<span class="status-badge status-ok">Ja</span>':'<span class="status-badge status-err">Nee</span>';let vvB='<span style="color:var(--color-text-tertiary);font-size:13px;">—</span>';if(vvAanwezig==='nee')vvB='<span class="status-badge status-ok">Nee</span>';else if(vvAanwezig==='ja'){let d=[vvType,bron].filter(Boolean).join(' — ');vvB=`<span class="status-badge status-warn">Ja${d?' ('+d+')':''}</span>`;}const hasData=lv||vp||kras||vlakte||toggleState.scheuren||toggleState.opstartprotocol||vvAanwezig;const card=document.getElementById('samenvatting-card');if(!hasData){card.style.display='none';return;}card.style.display='block';document.getElementById('samenvatting-inhoud').innerHTML=`<table style="width:100%;border-collapse:collapse;"><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);width:55%;">Luchtvochtigheid</td><td style="padding:8px 0;text-align:right;">${lvB}</td></tr><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Vochtpercentage vloer</td><td style="padding:8px 0;text-align:right;">${vpB}</td></tr><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Krastest</td><td style="padding:8px 0;text-align:right;">${badge(kras)}</td></tr><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Visuele scheuren</td><td style="padding:8px 0;text-align:right;">${schB}</td></tr><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Opstartprotocol doorlopen</td><td style="padding:8px 0;text-align:right;">${opB}</td></tr><tr style="border-bottom:0.5px solid var(--color-border-tertiary);"><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Vlakte van de vloer</td><td style="padding:8px 0;text-align:right;">${badge(vlakte)}</td></tr><tr><td style="padding:8px 0;font-size:13px;color:var(--color-text-secondary);">Vloerverwarming</td><td style="padding:8px 0;text-align:right;">${vvB}</td></tr></table>`;}
+  document.getElementById('f-omschrijving').addEventListener('keydown',e=>{if(e.key==='Enter')voegFotoToe();});
+  function voegFotoToe(){const naam=document.getElementById('f-naam').value.trim(),omschrijving=document.getElementById('f-omschrijving').value.trim();if(!naam&&!omschrijving){document.getElementById('f-naam').focus();return;}fotos.push({id:Date.now(),naam:naam||'(geen naam)',omschrijving});document.getElementById('f-naam').value='';document.getElementById('f-omschrijving').value='';renderFotos();document.getElementById('f-naam').focus();}
+  function verwijderFoto(id){fotos=fotos.filter(f=>f.id!==id);renderFotos();}
+  function renderFotos(){const lijst=document.getElementById('foto-lijst');if(!fotos.length){lijst.innerHTML='';return;}lijst.innerHTML=fotos.map(f=>`<div class="foto-rij"><span style="font-size:16px;">📷</span><div class="foto-rij-info"><div class="foto-naam">${f.naam}</div>${f.omschrijving?`<div class="foto-omschrijving">${f.omschrijving}</div>`:''}</div><button class="btn-del" onclick="verwijderFoto(${f.id})">✕</button></div>`).join('');}
+  document.getElementById('v-lengte').addEventListener('input',updateVloerPreview);
+  document.getElementById('v-breedte').addEventListener('input',updateVloerPreview);
+  document.getElementById('v-breedte').addEventListener('keydown',e=>{if(e.key==='Enter')voegVloerToe();});
+  function updateVloerPreview(){const l=parseFloat(document.getElementById('v-lengte').value),b=parseFloat(document.getElementById('v-breedte').value);document.getElementById('v-preview').value=(!isNaN(l)&&!isNaN(b)&&l>0&&b>0)?fmt(l*b)+' m²':'— m²';}
+  function vulVloer(naam){document.getElementById('v-naam').value=naam;document.getElementById('v-lengte').focus();}
+  function voegVloerToe(){const naam=document.getElementById('v-naam').value.trim()||'Ruimte '+(vloeren.length+1);const l=parseFloat(document.getElementById('v-lengte').value),b=parseFloat(document.getElementById('v-breedte').value);if(isNaN(l)||isNaN(b)||l<=0||b<=0){document.getElementById('v-lengte').focus();return;}vloeren.push({id:Date.now(),naam,lengte:l,breedte:b,opp:l*b});document.getElementById('v-naam').value='';document.getElementById('v-lengte').value='';document.getElementById('v-breedte').value='';document.getElementById('v-preview').value='— m²';renderVloer();document.getElementById('v-naam').focus();}
+  function verwijderVloer(id){vloeren=vloeren.filter(k=>k.id!==id);renderVloer();}
+  function renderVloer(){const container=document.getElementById('vloer-container');const totaal=vloeren.reduce((s,k)=>s+k.opp,0);const afval=Math.max(0,parseFloat(document.getElementById('v-afval').value)||0);document.getElementById('v-totaal').textContent=fmt(totaal)+' m²';document.getElementById('v-totaal-afval').textContent=fmt(totaal*(1+afval/100))+' m²';if(!vloeren.length){container.innerHTML='<div class="leeg">Nog geen ruimtes toegevoegd.</div>';return;}let html='<div class="rij-header-vloer"><span>Ruimte</span><span>Lengte</span><span>Breedte</span><span>Opp.</span><span></span></div><div class="rij-lijst">';vloeren.forEach(k=>{html+=`<div class="vloer-rij"><div class="rij-naam">${k.naam}</div><div class="rij-maat">${fmt(k.lengte)} m</div><div class="rij-maat">${fmt(k.breedte)} m</div><div class="rij-waarde">${fmt(k.opp)} m²</div><button class="btn-del" onclick="verwijderVloer(${k.id})">✕</button></div>`;});container.innerHTML=html+'</div>';}
+  document.getElementById('p-lengte').addEventListener('keydown',e=>{if(e.key==='Enter')voegPlintToe();});
+  function vulPlint(naam){document.getElementById('p-naam').value=naam;document.getElementById('p-lengte').focus();}
+  function voegPlintToe(){const naam=document.getElementById('p-naam').value.trim()||'Wand '+(plinten.length+1);const l=parseFloat(document.getElementById('p-lengte').value);if(isNaN(l)||l<=0){document.getElementById('p-lengte').focus();return;}plinten.push({id:Date.now(),naam,lengte:l});document.getElementById('p-naam').value='';document.getElementById('p-lengte').value='';renderPlinten();document.getElementById('p-naam').focus();}
+  function verwijderPlint(id){plinten=plinten.filter(p=>p.id!==id);renderPlinten();}
+  function renderPlinten(){const container=document.getElementById('plint-container');const totaal=plinten.reduce((s,p)=>s+p.lengte,0);const afval=Math.max(0,parseFloat(document.getElementById('p-afval').value)||0);document.getElementById('p-totaal').textContent=fmt(totaal)+' m';document.getElementById('p-totaal-afval').textContent=fmt(totaal*(1+afval/100))+' m';if(!plinten.length){container.innerHTML='<div class="leeg">Nog geen wanden toegevoegd.</div>';return;}let html='<div class="rij-header-plint"><span>Ruimte / wand</span><span>Lengte</span><span></span></div><div class="rij-lijst">';plinten.forEach(p=>{html+=`<div class="plint-rij"><div class="rij-naam">${p.naam}</div><div class="rij-waarde">${fmt(p.lengte)} m</div><button class="btn-del" onclick="verwijderPlint(${p.id})">✕</button></div>`;});container.innerHTML=html+'</div>';}
+  document.getElementById('a-lengte').addEventListener('keydown',e=>{if(e.key==='Enter')voegAfdekToe();});
+  function vulAfdek(naam){document.getElementById('a-naam').value=naam;document.getElementById('a-lengte').focus();}
+  function voegAfdekToe(){const naam=document.getElementById('a-naam').value.trim()||'Locatie '+(afdeklatten.length+1);const l=parseFloat(document.getElementById('a-lengte').value);if(isNaN(l)||l<=0){document.getElementById('a-lengte').focus();return;}afdeklatten.push({id:Date.now(),naam,lengte:l});document.getElementById('a-naam').value='';document.getElementById('a-lengte').value='';renderAfdek();document.getElementById('a-naam').focus();}
+  function verwijderAfdek(id){afdeklatten=afdeklatten.filter(a=>a.id!==id);renderAfdek();}
+  function renderAfdek(){const container=document.getElementById('afdek-container');const totaal=afdeklatten.reduce((s,a)=>s+a.lengte,0);const afval=Math.max(0,parseFloat(document.getElementById('a-afval').value)||0);document.getElementById('a-totaal').textContent=fmt(totaal)+' m';document.getElementById('a-totaal-afval').textContent=fmt(totaal*(1+afval/100))+' m';if(!afdeklatten.length){container.innerHTML='<div class="leeg">Nog geen locaties toegevoegd.</div>';return;}let html='<div class="rij-header-plint"><span>Locatie / ruimte</span><span>Lengte</span><span></span></div><div class="rij-lijst">';afdeklatten.forEach(a=>{html+=`<div class="plint-rij"><div class="rij-naam">${a.naam}</div><div class="rij-waarde">${fmt(a.lengte)} m</div><button class="btn-del" onclick="verwijderAfdek(${a.id})">✕</button></div>`;});container.innerHTML=html+'</div>';}
+  function kopieerAlles(){const datum=new Date().toLocaleDateString('nl-NL');const v=document.getElementById('naw-voornaam').value.trim(),a=document.getElementById('naw-achternaam').value.trim();const tel=document.getElementById('naw-tel').value.trim(),email=document.getElementById('naw-email').value.trim();const straat=document.getElementById('naw-straat').value.trim(),huisnr=document.getElementById('naw-huisnr').value.trim();const postcode=document.getElementById('naw-postcode').value.trim(),plaats=document.getElementById('naw-plaats').value.trim();const notities=document.getElementById('naw-notities').value.trim();const houtsoort=document.getElementById('tv-houtsoort').value.trim();const sortering=document.getElementById('tv-sortering').value;const sorteringOverig=document.getElementById('tv-sortering-overig').value.trim();const sorteringTekst=sortering==='Overige'?(sorteringOverig||'Overige'):sortering;const tvL=document.getElementById('tv-lengte').value,tvB=document.getElementById('tv-breedte').value,tvD=document.getElementById('tv-dikte').value;const bewerkingen=getBewerkingen(),afwerking=getAfwerking();const cType=document.getElementById('c-type').value,lv=document.getElementById('c-lv').value,vp=document.getElementById('c-vp').value;const kras=document.getElementById('c-kras').value,vlakte=document.getElementById('c-vlakte').value,bron=document.getElementById('vv-bron').value;const opm=document.getElementById('c-opm').value.trim();const pType=document.getElementById('p-type').value.trim(),pHoogte=document.getElementById('p-hoogte').value,pDikte=document.getElementById('p-dikte').value,pKleur=document.getElementById('p-kleur').value.trim();const aType=document.getElementById('a-type').value.trim(),aHoogte=document.getElementById('a-hoogte').value,aDikte=document.getElementById('a-dikte').value,aKleur=document.getElementById('a-kleur').value.trim();const vAfval=Math.max(0,parseFloat(document.getElementById('v-afval').value)||0);const vTotaal=vloeren.reduce((s,k)=>s+k.opp,0);const pTotaal=plinten.reduce((s,p)=>s+p.lengte,0);const pAfval=Math.max(0,parseFloat(document.getElementById('p-afval').value)||0);const aTotaal=afdeklatten.reduce((s,a)=>s+a.lengte,0);const aAfval=Math.max(0,parseFloat(document.getElementById('a-afval').value)||0);let t='========================================\n  PARKETVLOER OPMETING\n  Datum: '+datum+'\n========================================\n\n';t+='--- KLANTGEGEVENS ---\n';if(v||a)t+='Naam:        '+(v+' '+a).trim()+'\n';if(tel)t+='Telefoon:    '+tel+'\n';if(email)t+='E-mail:      '+email+'\n';if(straat)t+='Adres:       '+straat+' '+huisnr+'\n';if(postcode||plaats)t+='             '+postcode+' '+plaats+'\n';if(notities)t+='Notities:    '+notities+'\n';t+='\n--- TYPE VLOER ---\n';if(geselecteerdVloerType)t+='Type:                    '+geselecteerdVloerType+'\n';if(houtsoort)t+='Houtsoort:               '+houtsoort+'\n';if(sorteringTekst)t+='Sortering:               '+sorteringTekst+'\n';if(tvL||tvB||tvD)t+='Afmeting:                '+(tvL?tvL+' mm':'—')+' × '+(tvB?tvB+' mm':'—')+' × '+(tvD?tvD+' mm':'—')+'\n';if(bewerkingen.length)t+='Bewerkingen:             '+bewerkingen.join(', ')+'\n';if(afwerking.length)t+='Afwerking:               '+afwerking.join(', ')+'\n';t+='\n--- VLOERCONTROLE ---\n';if(cType)t+='Constructievloer:         '+cType+'\n';if(vvAanwezig){let vt=vvAanwezig==='nee'?'Nee':'Ja'+(vvType?' — '+vvType:'')+(bron?' — '+bron:'');t+='Vloerverwarming:          '+vt+'\n';}if(lv)t+='Luchtvochtigheid:         '+lv+'%\n';if(vp)t+='Vochtpercentage:          '+vp+'%\n';if(kras)t+='Krastest:                 '+kras+'\n';t+='Visuele scheuren:         '+(toggleState.scheuren||'—')+'\n';t+='Opstartprotocol:          '+(toggleState.opstartprotocol||'—')+'\n';if(vlakte)t+='Vlakte van de vloer:      '+vlakte+'\n';if(fotos.length){t+="\nFoto's:\n";fotos.forEach((f,i)=>{t+='  '+(i+1)+'. '+f.naam+(f.omschrijving?' — '+f.omschrijving:'')+'\n';});}if(opm)t+='\nOpmerkingen: '+opm+'\n';t+='\n--- OPMETING VLOER ---\n';if(!vloeren.length)t+='(geen ruimtes ingevoerd)\n';else{vloeren.forEach(k=>{t+='  '+k.naam.padEnd(20)+fmt(k.lengte)+' m  x  '+fmt(k.breedte)+' m  =  '+fmt(k.opp)+' m²\n';});t+='\nTotaal netto:          '+fmt(vTotaal)+' m²\nAfvalpercentage:       '+vAfval+'%\nTotaal incl. afval:    '+fmt(vTotaal*(1+vAfval/100))+' m²\n';}t+='\n--- OPMETING PLINTEN ---\n';if(pType)t+='Type plint:            '+pType+'\n';if(pHoogte||pDikte)t+='Maat:                  '+(pHoogte?pHoogte+' mm hoog':'—')+' × '+(pDikte?pDikte+' mm dik':'—')+'\n';if(pKleur)t+='Kleur:                 '+pKleur+'\n';if(pType||pHoogte||pDikte||pKleur)t+='\n';if(!plinten.length)t+='(geen wanden ingevoerd)\n';else{plinten.forEach(p=>{t+='  '+p.naam.padEnd(20)+fmt(p.lengte)+' m\n';});t+='\nTotaal netto:          '+fmt(pTotaal)+' m\nAfvalpercentage:       '+pAfval+'%\nTotaal incl. afval:    '+fmt(pTotaal*(1+pAfval/100))+' m\n';}t+='\n--- AFDEKLATTEN ---\n';if(aType)t+='Type afdeklat:         '+aType+'\n';if(aHoogte||aDikte)t+='Maat:                  '+(aHoogte?aHoogte+' mm hoog':'—')+' × '+(aDikte?aDikte+' mm dik':'—')+'\n';if(aKleur)t+='Kleur:                 '+aKleur+'\n';if(aType||aHoogte||aDikte||aKleur)t+='\n';if(!afdeklatten.length)t+='(geen locaties ingevoerd)\n';else{afdeklatten.forEach(a=>{t+='  '+a.naam.padEnd(20)+fmt(a.lengte)+' m\n';});t+='\nTotaal netto:          '+fmt(aTotaal)+' m\nAfvalpercentage:       '+aAfval+'%\nTotaal incl. afval:    '+fmt(aTotaal*(1+aAfval/100))+' m\n';}t+='\n========================================\n';navigator.clipboard.writeText(t).then(()=>{const btn=document.getElementById('copy-btn');btn.textContent='✓ Gekopieerd! Plak nu in OneNote';btn.classList.add('success');setTimeout(()=>{btn.textContent='📋 Kopieer overzicht voor OneNote';btn.classList.remove('success');},3000);}).catch(()=>{const btn=document.getElementById('copy-btn');btn.textContent='Kopiëren mislukt — probeer opnieuw';setTimeout(()=>{btn.textContent='📋 Kopieer overzicht voor OneNote';},3000);});}
+  renderVloer(); renderPlinten(); renderAfdek();
+</script>
