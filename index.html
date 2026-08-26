@@ -1,92 +1,114 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parketvloer Opmeting App</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f9fafb;
+      --color-border-secondary: #e5e7eb;
+      --color-border-tertiary: #f3f4f6;
+      --color-text-primary: #111827;
+      --color-text-secondary: #4b5563;
+      --color-text-tertiary: #9ca3af;
+      --border-radius-lg: 0.75rem;
+      --border-radius-md: 0.5rem;
+    }
 
-<style>
-  * { box-sizing: border-box; }
-  .wrap { padding: 1.5rem 0; font-family: var(--font-sans); }
-  .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .tab { padding: 8px 11px; font-size: 12px; font-weight: 400; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; }
-  .tab.active { color: var(--color-text-primary); font-weight: 500; border-bottom: 2px solid var(--color-text-primary); }
-  .tab:hover:not(.active) { color: var(--color-text-primary); }
-  .panel { display: none; } .panel.active { display: block; }
-  .card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 12px; }
-  .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--color-text-secondary); }
-  input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; font-family: var(--font-sans); font-size: 14px; }
-  select { height: 36px; }
-  textarea { resize: vertical; min-height: 60px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .naw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .naw-full { grid-column: 1 / -1; }
-  .btn-add { display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0 14px; height: 36px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; }
-  .btn-add:hover { background: var(--color-background-secondary); }
-  .btn-copy { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 0 20px; height: 40px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; width: 100%; margin-top: 1.5rem; }
-  .btn-copy:hover { background: var(--color-background-secondary); }
-  .btn-copy.success { border-color: #1D9E75; color: #1D9E75; }
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
-  .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .toggle-row:first-child { padding-top: 0; }
-  .toggle-label { font-size: 14px; color: var(--color-text-primary); }
-  .toggle-btns { display: flex; gap: 6px; }
-  .tbtn { padding: 4px 14px; font-size: 13px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
-  .tbtn.ja.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
-  .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
-  .tbtn.opt.active { background: var(--color-text-primary); border-color: var(--color-text-primary); color: var(--color-background-primary); }
-  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-  .status-ok { background: #d4f4e8; color: #1D9E75; }
-  .status-warn { background: #fff3cd; color: #b08000; }
-  .status-err { background: #fde8e8; color: #E24B4A; }
-  .kamer-form { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-  .form-row-plint { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
-  .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
-  .rij-lijst { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
-  .rij-header-vloer { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
-  .rij-header-plint { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
-  .rij-header-vloer span, .rij-header-plint span { font-size: 11px; color: var(--color-text-tertiary); text-align: right; }
-  .rij-header-vloer span:first-child, .rij-header-plint span:first-child { text-align: left; }
-  .vloer-rij { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
-  .plint-rij { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
-  .rij-naam { font-size: 14px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rij-waarde { font-size: 14px; font-weight: 500; color: var(--color-text-primary); text-align: right; }
-  .rij-maat { font-size: 13px; color: var(--color-text-secondary); text-align: right; }
-  .btn-del { background: none; border: none; cursor: pointer; color: var(--color-text-tertiary); font-size: 16px; padding: 0; line-height: 1; display: flex; align-items: center; justify-content: center; }
-  .btn-del:hover { color: #E24B4A; }
-  .totaal-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-  .totaal-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
-  .totaal-waarde { font-size: 32px; font-weight: 500; color: var(--color-text-primary); }
-  .leeg { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 14px; border: 0.5px dashed var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1.5rem; }
-  .snelknoppen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .snelknop { font-size: 12px; padding: 4px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; background: transparent; color: var(--color-text-secondary); cursor: pointer; }
-  .snelknop:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
-  .afval-row { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
-  .afval-row label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
-  .banner { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1rem; padding: 8px 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
-  .foto-lijst { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-  .foto-rij { display: flex; align-items: center; justify-content: space-between; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 8px 12px; gap: 8px; }
-  .foto-rij-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-  .foto-naam { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
-  .foto-omschrijving { font-size: 12px; color: var(--color-text-secondary); }
-  .foto-invoer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 10px; }
-  .vv-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 4px; }
-  .vv-extra { display: none; flex-direction: column; gap: 10px; padding: 10px 0 4px; border-top: 0.5px solid var(--color-border-tertiary); }
-  .vv-extra.zichtbaar { display: flex; }
-  .vv-opties { display: flex; gap: 6px; flex-wrap: wrap; }
-  .vloertype-knoppen { display: flex; flex-wrap: wrap; gap: 10px; }
-  .vtbtn { padding: 10px 18px; font-size: 14px; font-weight: 400; border-radius: var(--border-radius-md); border: 1.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
-  .vtbtn:hover { border-color: var(--color-text-primary); color: var(--color-text-primary); }
-  .vtbtn.active { background: #1a56db; border-color: #1a56db; color: #ffffff; font-weight: 600; box-shadow: 0 2px 8px rgba(26,86,219,0.25); }
-  .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .check-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-background-primary); border: 1.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.15s; }
-  .check-item:hover { border-color: var(--color-text-secondary); }
-  .check-item.active { border-color: #1a56db; background: #eff4ff; }
-  .check-item.active span { color: #1a56db; font-weight: 500; }
-  .check-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: #1a56db; }
-  .check-item span { font-size: 13px; color: var(--color-text-primary); }
-  .sortering-extra { display: none; margin-top: 8px; }
-  .sortering-extra.zichtbaar { display: block; }
-  .overige-veld { display: none; margin-top: 8px; }
-  .overige-veld.zichtbaar { display: block; }
-</style>
+    * { box-sizing: border-box; }
+    .wrap { padding: 1.5rem 0; font-family: var(--font-sans); max-width: 800px; margin: 0 auto; }
+    .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .tab { padding: 8px 11px; font-size: 12px; font-weight: 400; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; }
+    .tab.active { color: var(--color-text-primary); font-weight: 500; border-bottom: 2px solid var(--color-text-primary); }
+    .tab:hover:not(.active) { color: var(--color-text-primary); }
+    .panel { display: none; } .panel.active { display: block; }
+    .card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 12px; border: 0.5px solid var(--color-border-secondary); }
+    .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 12px; color: var(--color-text-secondary); }
+    input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; font-family: var(--font-sans); font-size: 14px; padding: 6px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+    select { height: 36px; }
+    textarea { resize: vertical; min-height: 60px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .naw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .naw-full { grid-column: 1 / -1; }
+    .btn-add { display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0 14px; height: 36px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; }
+    .btn-add:hover { background: var(--color-background-secondary); }
+    .btn-copy { display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 0 20px; height: 40px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); font-size: 14px; white-space: nowrap; width: 100%; margin-top: 1.5rem; }
+    .btn-copy:hover { background: var(--color-background-secondary); }
+    .btn-copy.success { border-color: #1D9E75; color: #1D9E75; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-row:first-child { padding-top: 0; }
+    .toggle-label { font-size: 14px; color: var(--color-text-primary); }
+    .toggle-btns { display: flex; gap: 6px; }
+    .tbtn { padding: 4px 14px; font-size: 13px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+    .tbtn.ja.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+    .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
+    .tbtn.opt.active { background: var(--color-text-primary); border-color: var(--color-text-primary); color: var(--color-background-primary); }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .status-ok { background: #d4f4e8; color: #1D9E75; }
+    .status-warn { background: #fff3cd; color: #b08000; }
+    .status-err { background: #fde8e8; color: #E24B4A; }
+    .kamer-form { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; border: 0.5px solid var(--color-border-secondary); }
+    .form-row-plint { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
+    .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
+    .rij-lijst { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
+    .rij-header-vloer { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
+    .rij-header-plint { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; padding: 0 14px; margin-bottom: 2px; }
+    .rij-header-vloer span, .rij-header-plint span { font-size: 11px; color: var(--color-text-tertiary); text-align: right; }
+    .rij-header-vloer span:first-child, .rij-header-plint span:first-child { text-align: left; }
+    .vloer-rij { display: grid; grid-template-columns: 1fr 64px 64px 72px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+    .plint-rij { display: grid; grid-template-columns: 1fr 80px 28px; gap: 8px; align-items: center; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+    .rij-naam { font-size: 14px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rij-waarde { font-size: 14px; font-weight: 500; color: var(--color-text-primary); text-align: right; }
+    .rij-maat { font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+    .btn-del { background: none; border: none; cursor: pointer; color: var(--color-text-tertiary); font-size: 16px; padding: 0; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .btn-del:hover { color: #E24B4A; }
+    .totaal-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border: 0.5px solid var(--color-border-secondary); }
+    .totaal-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
+    .totaal-waarde { font-size: 32px; font-weight: 500; color: var(--color-text-primary); }
+    .leeg { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 14px; border: 0.5px dashed var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1.5rem; }
+    .snelknoppen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .snelknop { font-size: 12px; padding: 4px 10px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+    .snelknop:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+    .afval-row { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+    .afval-row label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
+    .banner { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1rem; padding: 8px 14px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); }
+    .foto-lijst { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .foto-rij { display: flex; align-items: center; justify-content: space-between; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 8px 12px; gap: 8px; }
+    .foto-rij-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+    .foto-naam { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+    .foto-omschrijving { font-size: 12px; color: var(--color-text-secondary); }
+    .foto-invoer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 10px; }
+    .vv-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 4px; }
+    .vv-extra { display: none; flex-direction: column; gap: 10px; padding: 10px 0 4px; border-top: 0.5px solid var(--color-border-tertiary); }
+    .vv-extra.zichtbaar { display: flex; }
+    .vv-opties { display: flex; gap: 6px; flex-wrap: wrap; }
+    .vloertype-knoppen { display: flex; flex-wrap: wrap; gap: 10px; }
+    .vtbtn { padding: 10px 18px; font-size: 14px; font-weight: 400; border-radius: var(--border-radius-md); border: 1.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+    .vtbtn:hover { border-color: var(--color-text-primary); color: var(--color-text-primary); }
+    .vtbtn.active { background: #1a56db; border-color: #1a56db; color: #ffffff; font-weight: 600; box-shadow: 0 2px 8px rgba(26,86,219,0.25); }
+    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .check-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--color-background-primary); border: 1.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.15s; }
+    .check-item:hover { border-color: var(--color-text-secondary); }
+    .check-item.active { border-color: #1a56db; background: #eff4ff; }
+    .check-item.active span { color: #1a56db; font-weight: 500; }
+    .check-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: #1a56db; }
+    .check-item span { font-size: 13px; color: var(--color-text-primary); }
+    .sortering-extra { display: none; margin-top: 8px; }
+    .sortering-extra.zichtbaar { display: block; }
+    .overige-veld { display: none; margin-top: 8px; }
+    .overige-veld.zichtbaar { display: block; }
+  </style>
+</head>
+<body class="bg-white">
 
 <div class="wrap">
   <div class="tabs">
@@ -375,3 +397,6 @@
   function kopieerAlles(){const datum=new Date().toLocaleDateString('nl-NL');const v=document.getElementById('naw-voornaam').value.trim(),a=document.getElementById('naw-achternaam').value.trim();const tel=document.getElementById('naw-tel').value.trim(),email=document.getElementById('naw-email').value.trim();const straat=document.getElementById('naw-straat').value.trim(),huisnr=document.getElementById('naw-huisnr').value.trim();const postcode=document.getElementById('naw-postcode').value.trim(),plaats=document.getElementById('naw-plaats').value.trim();const notities=document.getElementById('naw-notities').value.trim();const houtsoort=document.getElementById('tv-houtsoort').value.trim();const sortering=document.getElementById('tv-sortering').value;const sorteringOverig=document.getElementById('tv-sortering-overig').value.trim();const sorteringTekst=sortering==='Overige'?(sorteringOverig||'Overige'):sortering;const tvL=document.getElementById('tv-lengte').value,tvB=document.getElementById('tv-breedte').value,tvD=document.getElementById('tv-dikte').value;const bewerkingen=getBewerkingen(),afwerking=getAfwerking();const cType=document.getElementById('c-type').value,lv=document.getElementById('c-lv').value,vp=document.getElementById('c-vp').value;const kras=document.getElementById('c-kras').value,vlakte=document.getElementById('c-vlakte').value,bron=document.getElementById('vv-bron').value;const opm=document.getElementById('c-opm').value.trim();const pType=document.getElementById('p-type').value.trim(),pHoogte=document.getElementById('p-hoogte').value,pDikte=document.getElementById('p-dikte').value,pKleur=document.getElementById('p-kleur').value.trim();const aType=document.getElementById('a-type').value.trim(),aHoogte=document.getElementById('a-hoogte').value,aDikte=document.getElementById('a-dikte').value,aKleur=document.getElementById('a-kleur').value.trim();const vAfval=Math.max(0,parseFloat(document.getElementById('v-afval').value)||0);const vTotaal=vloeren.reduce((s,k)=>s+k.opp,0);const pTotaal=plinten.reduce((s,p)=>s+p.lengte,0);const pAfval=Math.max(0,parseFloat(document.getElementById('p-afval').value)||0);const aTotaal=afdeklatten.reduce((s,a)=>s+a.lengte,0);const aAfval=Math.max(0,parseFloat(document.getElementById('a-afval').value)||0);let t='========================================\n  PARKETVLOER OPMETING\n  Datum: '+datum+'\n========================================\n\n';t+='--- KLANTGEGEVENS ---\n';if(v||a)t+='Naam:        '+(v+' '+a).trim()+'\n';if(tel)t+='Telefoon:    '+tel+'\n';if(email)t+='E-mail:      '+email+'\n';if(straat)t+='Adres:       '+straat+' '+huisnr+'\n';if(postcode||plaats)t+='             '+postcode+' '+plaats+'\n';if(notities)t+='Notities:    '+notities+'\n';t+='\n--- TYPE VLOER ---\n';if(geselecteerdVloerType)t+='Type:                    '+geselecteerdVloerType+'\n';if(houtsoort)t+='Houtsoort:               '+houtsoort+'\n';if(sorteringTekst)t+='Sortering:               '+sorteringTekst+'\n';if(tvL||tvB||tvD)t+='Afmeting:                '+(tvL?tvL+' mm':'—')+' × '+(tvB?tvB+' mm':'—')+' × '+(tvD?tvD+' mm':'—')+'\n';if(bewerkingen.length)t+='Bewerkingen:             '+bewerkingen.join(', ')+'\n';if(afwerking.length)t+='Afwerking:               '+afwerking.join(', ')+'\n';t+='\n--- VLOERCONTROLE ---\n';if(cType)t+='Constructievloer:         '+cType+'\n';if(vvAanwezig){let vt=vvAanwezig==='nee'?'Nee':'Ja'+(vvType?' — '+vvType:'')+(bron?' — '+bron:'');t+='Vloerverwarming:          '+vt+'\n';}if(lv)t+='Luchtvochtigheid:         '+lv+'%\n';if(vp)t+='Vochtpercentage:          '+vp+'%\n';if(kras)t+='Krastest:                 '+kras+'\n';t+='Visuele scheuren:         '+(toggleState.scheuren||'—')+'\n';t+='Opstartprotocol:          '+(toggleState.opstartprotocol||'—')+'\n';if(vlakte)t+='Vlakte van de vloer:      '+vlakte+'\n';if(fotos.length){t+="\nFoto's:\n";fotos.forEach((f,i)=>{t+='  '+(i+1)+'. '+f.naam+(f.omschrijving?' — '+f.omschrijving:'')+'\n';});}if(opm)t+='\nOpmerkingen: '+opm+'\n';t+='\n--- OPMETING VLOER ---\n';if(!vloeren.length)t+='(geen ruimtes ingevoerd)\n';else{vloeren.forEach(k=>{t+='  '+k.naam.padEnd(20)+fmt(k.lengte)+' m  x  '+fmt(k.breedte)+' m  =  '+fmt(k.opp)+' m²\n';});t+='\nTotaal netto:          '+fmt(vTotaal)+' m²\nAfvalpercentage:       '+vAfval+'%\nTotaal incl. afval:    '+fmt(vTotaal*(1+vAfval/100))+' m²\n';}t+='\n--- OPMETING PLINTEN ---\n';if(pType)t+='Type plint:            '+pType+'\n';if(pHoogte||pDikte)t+='Maat:                  '+(pHoogte?pHoogte+' mm hoog':'—')+' × '+(pDikte?pDikte+' mm dik':'—')+'\n';if(pKleur)t+='Kleur:                 '+pKleur+'\n';if(pType||pHoogte||pDikte||pKleur)t+='\n';if(!plinten.length)t+='(geen wanden ingevoerd)\n';else{plinten.forEach(p=>{t+='  '+p.naam.padEnd(20)+fmt(p.lengte)+' m\n';});t+='\nTotaal netto:          '+fmt(pTotaal)+' m\nAfvalpercentage:       '+pAfval+'%\nTotaal incl. afval:    '+fmt(pTotaal*(1+pAfval/100))+' m\n';}t+='\n--- AFDEKLATTEN ---\n';if(aType)t+='Type afdeklat:         '+aType+'\n';if(aHoogte||aDikte)t+='Maat:                  '+(aHoogte?aHoogte+' mm hoog':'—')+' × '+(aDikte?aDikte+' mm dik':'—')+'\n';if(aKleur)t+='Kleur:                 '+aKleur+'\n';if(aType||aHoogte||aDikte||aKleur)t+='\n';if(!afdeklatten.length)t+='(geen locaties ingevoerd)\n';else{afdeklatten.forEach(a=>{t+='  '+a.naam.padEnd(20)+fmt(a.lengte)+' m\n';});t+='\nTotaal netto:          '+fmt(aTotaal)+' m\nAfvalpercentage:       '+aAfval+'%\nTotaal incl. afval:    '+fmt(aTotaal*(1+aAfval/100))+' m\n';}t+='\n========================================\n';navigator.clipboard.writeText(t).then(()=>{const btn=document.getElementById('copy-btn');btn.textContent='✓ Gekopieerd! Plak nu in OneNote';btn.classList.add('success');setTimeout(()=>{btn.textContent='📋 Kopieer overzicht voor OneNote';btn.classList.remove('success');},3000);}).catch(()=>{const btn=document.getElementById('copy-btn');btn.textContent='Kopiëren mislukt — probeer opnieuw';setTimeout(()=>{btn.textContent='📋 Kopieer overzicht voor OneNote';},3000);});}
   renderVloer(); renderPlinten(); renderAfdek();
 </script>
+
+</body>
+</html>
