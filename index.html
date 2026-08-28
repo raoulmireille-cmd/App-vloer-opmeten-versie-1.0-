@@ -790,6 +790,7 @@ async function slaOp() {
     afdek_type: gv('a-type'), afdek_hoogte: gv('a-breedte'), afdek_kleur: gv('a-kleur'),
     afdek_opmeting: JSON.stringify(afdeklatten.map(a=>({naam:a.naam,lengte:a.lengte}))),
     afdek_totaal: fmt(aT)+' m (incl. '+aAfval+'% afval: '+fmt(aT*(1+aAfval/100))+' m)',
+    vloer_aftrek: JSON.stringify(aftrekken.map(k=>({naam:k.naam,lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_afval: String(vAfval),
     plinten_afval: String(pAfval),
     afdek_afval: String(aAfval),
@@ -934,6 +935,7 @@ async function laadKlant(id) {
     }
     sv('p-type', k.plinten_type); sv('p-hoogte', k.plinten_hoogte); sv('p-dikte', k.plinten_dikte); sv('p-kleur', k.plinten_kleur);
     sv('a-type', k.afdek_type); sv('a-breedte', k.afdek_hoogte); sv('a-kleur', k.afdek_kleur);
+    try { aftrekken = (JSON.parse(k.vloer_aftrek)||[]).map((r,i) => ({...r, id: Date.now()+i+300})); } catch { aftrekken = []; }
     if (k.vloer_afval) sv('v-afval', k.vloer_afval);
     if (k.plinten_afval) sv('p-afval', k.plinten_afval);
     if (k.afdek_afval) sv('a-afval', k.afdek_afval);
