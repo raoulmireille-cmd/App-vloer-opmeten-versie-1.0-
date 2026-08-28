@@ -720,8 +720,29 @@ function renderSamenvatting() {
   document.getElementById('sam-controle').innerHTML = r('Constructievloer', gv('c-type')) + r('Vloerverwarming', getVVTekst()) + r('Luchtvochtigheid', gv('c-lv') ? gv('c-lv')+'%' : '') + r('Vochtpercentage', gv('c-vp') ? gv('c-vp')+'%' : '') + r('Krastest', gv('c-kras')) + r('Vlakte', gv('c-vlakte')) + r('Visuele scheuren', tog.scheuren) + r('Opstartprotocol', tog.opstartprotocol) + r('Opmerkingen', gv('c-opm')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const vTotaal = vloeren.reduce((s,k) => s+k.opp, 0);
-  document.getElementById('sam-vloer-rijen').innerHTML = !vloeren.length ? '<span style="color:#bbb;font-size:14px;">Geen ruimtes ingevoerd</span>' : vloeren.map(k => '<div class="data-rij"><div class="naam">'+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div></div>').join('');
-  document.getElementById('sam-vloer-totaal').innerHTML = 'Netto: '+fmt(vTotaal)+' m2 &nbsp;|&nbsp; Incl. '+vAfval+'% afval: <span style="color:#1a56db">'+fmt(vTotaal*(1+vAfval/100))+' m2</span>';
+  if (!vloeren.length) {
+    document.getElementById('sam-vloer-rijen').innerHTML = '<span style="color:#bbb;font-size:14px;">Geen ruimtes ingevoerd</span>';
+  } else {
+    const groepen = {};
+    vloeren.forEach(k => { if (!groepen[k.naam]) groepen[k.naam] = []; groepen[k.naam].push(k); });
+    let html = '';
+    Object.entries(groepen).forEach(([naam, items]) => {
+      const subtotaal = items.reduce((s,k) => s+k.opp, 0);
+      html += '<div style="margin-bottom:8px;"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;padding:4px 12px;">'+naam+'</div>';
+      items.forEach(k => { html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+(k.onderdeel||naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div></div>'; });
+      if (items.length > 1) html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+naam+': '+fmt(subtotaal)+' m2</div>';
+      html += '</div>';
+    });
+    if (aftrekken.length) {
+      html += '<div style="margin-top:4px;"><div style="font-size:11px;font-weight:600;color:#E24B4A;text-transform:uppercase;padding:4px 12px;">Aftrek</div>';
+      aftrekken.forEach(k => { html += '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div></div>'; });
+      html += '</div>';
+    }
+    document.getElementById('sam-vloer-rijen').innerHTML = html;
+  }
+  const aftrekTotaal = aftrekken.reduce((s,k) => s+k.opp, 0);
+  const netto = Math.max(0, vTotaal - aftrekTotaal);
+  document.getElementById('sam-vloer-totaal').innerHTML = 'Bruto: '+fmt(vTotaal)+' m2' + (aftrekken.length ? ' &nbsp;|&nbsp; Aftrek: <span style="color:#E24B4A">-'+fmt(aftrekTotaal)+' m2</span> &nbsp;|&nbsp; Netto: '+fmt(netto)+' m2' : '') + ' &nbsp;|&nbsp; Incl. '+vAfval+'% afval: <span style="color:#1a56db">'+fmt(netto*(1+vAfval/100))+' m2</span>';
   const pAfval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
   const pTotaal = plinten.reduce((s,p) => s+p.lengte, 0);
   document.getElementById('sam-plint-spec').innerHTML = [gv('p-type') ? 'Type: '+gv('p-type') : '', gv('p-hoogte') ? gv('p-hoogte')+' mm hoog' : '', gv('p-dikte') ? gv('p-dikte')+' mm dik' : '', gv('p-kleur') ? 'Kleur: '+gv('p-kleur') : ''].filter(Boolean).join(' | ');
@@ -768,7 +789,11 @@ async function slaOp() {
     plinten_totaal: fmt(pT)+' m (incl. '+pAfval+'% afval: '+fmt(pT*(1+pAfval/100))+' m)',
     afdek_type: gv('a-type'), afdek_hoogte: gv('a-breedte'), afdek_kleur: gv('a-kleur'),
     afdek_opmeting: JSON.stringify(afdeklatten.map(a=>({naam:a.naam,lengte:a.lengte}))),
-    afdek_totaal: fmt(aT)+' m (incl. '+aAfval+'% afval: '+fmt(aT*(1+aAfval/100))+' m)'
+    afdek_totaal: fmt(aT)+' m (incl. '+aAfval+'% afval: '+fmt(aT*(1+aAfval/100))+' m)',
+    vloer_afval: String(vAfval),
+    plinten_afval: String(pAfval),
+    afdek_afval: String(aAfval),
+    profiel_afval: String(prAfval)
   };
   try {
     if (huidigId) {
@@ -909,6 +934,10 @@ async function laadKlant(id) {
     }
     sv('p-type', k.plinten_type); sv('p-hoogte', k.plinten_hoogte); sv('p-dikte', k.plinten_dikte); sv('p-kleur', k.plinten_kleur);
     sv('a-type', k.afdek_type); sv('a-breedte', k.afdek_hoogte); sv('a-kleur', k.afdek_kleur);
+    if (k.vloer_afval) sv('v-afval', k.vloer_afval);
+    if (k.plinten_afval) sv('p-afval', k.plinten_afval);
+    if (k.afdek_afval) sv('a-afval', k.afdek_afval);
+    if (k.profiel_afval) sv('pr-afval', k.profiel_afval);
     try { vloeren = (JSON.parse(k.vloer_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i})); } catch { vloeren = []; }
     try { plinten = (JSON.parse(k.plinten_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+100})); } catch { plinten = []; }
     try { afdeklatten = (JSON.parse(k.afdek_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+200})); } catch { afdeklatten = []; }
