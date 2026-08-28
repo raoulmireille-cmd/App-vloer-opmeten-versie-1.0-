@@ -782,7 +782,7 @@ async function slaOp() {
     constructievloer: gv('c-type'), vloerverwarming: getVVTekst(),
     luchtvochtigheid: gv('c-lv'), vochtpercentage: gv('c-vp'), krastest: gv('c-kras'),
     scheuren: tog.scheuren||'', opstartprotocol: tog.opstartprotocol||'', vlakte: gv('c-vlakte'),
-    vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
+    vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,onderdeel:k.onderdeel||'',lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_totaal: fmt(vT)+' m2 (incl. '+vAfval+'% afval: '+fmt(vT*(1+vAfval/100))+' m2)',
     plinten_type: gv('p-type'), plinten_hoogte: gv('p-hoogte'), plinten_dikte: gv('p-dikte'), plinten_kleur: gv('p-kleur'),
     plinten_opmeting: JSON.stringify(plinten.map(p=>({naam:p.naam,lengte:p.lengte}))),
@@ -794,7 +794,12 @@ async function slaOp() {
     vloer_afval: String(vAfval),
     plinten_afval: String(pAfval),
     afdek_afval: String(aAfval),
-    profiel_afval: String(prAfval)
+    profiel_afval: String(prAfval),
+    opmerkingen: gv('c-opm'),
+    fotos: JSON.stringify(fotos),
+    profielen_type: gv('pr-type'), profielen_hoogte: gv('pr-hoogte'), profielen_dikte: gv('pr-dikte'), profielen_kleur: gv('pr-kleur'),
+    profielen_opmeting: JSON.stringify(profielen.map(p=>({naam:p.naam,lengte:p.lengte}))),
+    profielen_totaal: fmt(prT)+' m (incl. '+prAfval+'% afval: '+fmt(prT*(1+prAfval/100))+' m)'
   };
   try {
     if (huidigId) {
@@ -936,6 +941,10 @@ async function laadKlant(id) {
     sv('p-type', k.plinten_type); sv('p-hoogte', k.plinten_hoogte); sv('p-dikte', k.plinten_dikte); sv('p-kleur', k.plinten_kleur);
     sv('a-type', k.afdek_type); sv('a-breedte', k.afdek_hoogte); sv('a-kleur', k.afdek_kleur);
     try { aftrekken = (JSON.parse(k.vloer_aftrek)||[]).map((r,i) => ({...r, id: Date.now()+i+300})); } catch { aftrekken = []; }
+    try { fotos = (JSON.parse(k.fotos)||[]).map((r,i) => ({...r, id: Date.now()+i+400})); } catch { fotos = []; } renderFotos();
+    try { profielen = (JSON.parse(k.profielen_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+500})); } catch { profielen = []; }
+    sv('pr-type', k.profielen_type); sv('pr-hoogte', k.profielen_hoogte); sv('pr-dikte', k.profielen_dikte); sv('pr-kleur', k.profielen_kleur);
+    sv('c-opm', k.opmerkingen);
     if (k.vloer_afval) sv('v-afval', k.vloer_afval);
     if (k.plinten_afval) sv('p-afval', k.plinten_afval);
     if (k.afdek_afval) sv('a-afval', k.afdek_afval);
