@@ -105,9 +105,9 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 <div class="app">
-<h1>🪵 Parket Specialist Gouda</h1>
+<h1>Parket Specialist Gouda</h1>
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('adressen')">📋 Adressen</button>
+  <button class="tab active" onclick="switchTab('adressen')">Adressen</button>
   <button class="tab" onclick="switchTab('naw')">Klantgegevens</button>
   <button class="tab" onclick="switchTab('typevloer')">Type vloer</button>
   <button class="tab" onclick="switchTab('controle')">Vloercontrole</button>
@@ -115,7 +115,7 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab" onclick="switchTab('plint')">Opmeting plinten</button>
   <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
   <button class="tab" onclick="switchTab('profielen')">Profielen</button>
-  <button class="tab" onclick="switchTab('samenvatting')">📊 Samenvatting</button>
+  <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
 </div>
 
 <!-- ADRESSEN -->
@@ -130,6 +130,9 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- KLANTGEGEVENS -->
 <div class="panel" id="panel-naw">
   <div id="banner-naw" style="display:none;" class="banner"></div>
+  <div class="card"><p class="section-title">Datum bezoek</p>
+    <div class="field"><label>Datum bezoek</label><input type="date" id="naw-datum" /></div>
+  </div>
   <div class="card"><p class="section-title">Contactgegevens</p>
     <div class="grid2">
       <div class="field"><label>Voornaam</label><input type="text" id="naw-voornaam" placeholder="Jan" /></div>
@@ -243,7 +246,7 @@ textarea { resize: vertical; min-height: 60px; }
       </div>
     </div>
   </div>
-  <div class="card"><p class="section-title">Test ondervloer</p>
+  <div class="card"><p class="section-title">Test constructievloer</p>
     <div class="grid2">
       <div class="field"><label>Luchtvochtigheid (%)</label><input type="number" id="c-lv" placeholder="bijv. 55" min="0" max="100" step="0.1" /></div>
       <div class="field"><label>Vochtpercentage (%)</label><input type="number" id="c-vp" placeholder="bijv. 2.5" min="0" max="100" step="0.1" /></div>
@@ -251,17 +254,25 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field"><label>Vlakte van de vloer</label><select id="c-vlakte"><option value="">— Selecteer —</option><option value="goed">Goed (max 3mm/2m)</option><option value="matig">Matig (3-5mm/2m)</option><option value="afgekeurd">Afgekeurd (meer dan 5mm/2m)</option></select></div>
     </div>
     <div style="margin-top:14px;">
+      <div class="toggle-row"><span class="toggle-label">Is de dekvloer schoon</span><div class="toggle-btns"><button class="tbtn ja" id="tb-schoon-ja" onclick="setToggle('schoon','ja',this)">Ja</button><button class="tbtn nee" id="tb-schoon-nee" onclick="setToggle('schoon','nee',this)">Nee</button></div></div>
       <div class="toggle-row"><span class="toggle-label">Visuele scheuren aanwezig</span><div class="toggle-btns"><button class="tbtn ja" id="tb-scheuren-ja" onclick="setToggle('scheuren','ja',this)">Ja</button><button class="tbtn nee" id="tb-scheuren-nee" onclick="setToggle('scheuren','nee',this)">Nee</button></div></div>
       <div class="toggle-row"><span class="toggle-label">Opstartprotocol doorlopen</span><div class="toggle-btns"><button class="tbtn ja" id="tb-opstart-ja" onclick="setToggle('opstartprotocol','ja',this)">Ja</button><button class="tbtn nee" id="tb-opstart-nee" onclick="setToggle('opstartprotocol','nee',this)">Nee</button></div></div>
     </div>
   </div>
-  <div class="card"><p class="section-title">Foto's</p>
-    <div class="foto-invoer">
-      <div class="field"><label>Bestandsnaam / foto nr.</label><input type="text" id="f-naam" placeholder="bijv. foto_01" /></div>
-      <div class="field"><label>Omschrijving</label><input type="text" id="f-omschrijving" placeholder="bijv. scheur bij radiator" /></div>
-      <div class="field"><label style="visibility:hidden;">-</label><button class="btn" onclick="voegFotoToe()">+ Voeg toe</button></div>
+
+  <div class="card"><p class="section-title">Type ondervloer</p>
+    <div class="field"><label>Type ondervloer</label>
+      <select id="c-ondervloer" onchange="checkOndervloerOverig()">
+        <option value="">— Selecteer type ondervloer —</option>
+        <option>Groene platen</option>
+        <option>Rubber</option>
+        <option>Bluefloor</option>
+        <option>Heatfoil</option>
+        <option>Spaanplaat</option>
+        <option>Overige</option>
+      </select>
+      <div class="ovveld" id="ondervloer-overig-veld"><input type="text" id="c-ondervloer-overig" placeholder="Omschrijf type ondervloer..." style="margin-top:6px;" /></div>
     </div>
-    <div class="foto-lijst" id="foto-lijst"></div>
   </div>
   <div class="field" style="margin-top:4px;"><label style="font-size:12px;color:#666;">Opmerkingen</label><textarea id="c-opm" placeholder="Eventuele opmerkingen..."></textarea></div>
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('vloer')">Naar opmeting vloer →</button></div>
@@ -271,9 +282,8 @@ textarea { resize: vertical; min-height: 60px; }
 <div class="panel" id="panel-vloer">
   <div id="banner-vloer" style="display:none;" class="banner"></div>
   <div class="rij-form">
-    <div style="display:grid;grid-template-columns:1fr 1fr 80px 80px 80px auto;gap:8px;align-items:end;">
+    <div style="display:grid;grid-template-columns:1fr 80px 80px 80px auto;gap:8px;align-items:end;">
       <div class="field"><label>Ruimte / kamer</label><input type="text" id="v-naam" placeholder="bijv. Woonkamer" /></div>
-      <div class="field"><label>Onderdeel (optioneel)</label><input type="text" id="v-onderdeel" placeholder="bijv. deel A, nis..." /></div>
       <div class="field"><label>Lengte (m)</label><input type="number" id="v-lengte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Breedte (m)</label><input type="number" id="v-breedte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Oppervlakte</label><input type="text" id="v-preview" placeholder="- m2" readonly /></div>
@@ -473,12 +483,12 @@ async function sbFetch(method, path, body) {
 }
 
 let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
-const tog = { scheuren: null, opstartprotocol: null };
+const tog = { scheuren: null, opstartprotocol: null, schoon: null };
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 
 function fmt(n) { return n.toFixed(2).replace('.', ','); }
 function gv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
-function sv(id, v) { const el = document.getElementById(id); if (el) el.value = v || ''; }
+function sv(id, v) { const el = document.getElementById(id); if (!el) return; if ('value' in el) el.value = v || ''; else el.textContent = v || ''; }
 
 function toast(msg, duur) {
   const el = document.getElementById('toast');
@@ -522,10 +532,10 @@ function resetFormulier() {
    'tv-houtsoort','tv-sortering-overig','tv-lengte','tv-breedte','tv-dikte','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-hoogte','pr-dikte','pr-kleur','f-naam','f-omschrijving'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
-  tog.scheuren = null; tog.opstartprotocol = null;
+  tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null;
   vvAanwezig = null; vvType = null;
   document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.cb-item').forEach(b => { b.classList.remove('active'); b.querySelector('input').checked = false; });
@@ -545,6 +555,9 @@ function toggleOv(type) { const cb = document.querySelector('#cb-' + type + '-ov
 function toggleAfwKleur(type, cb) {
   document.getElementById(type+'-kleur-veld').classList.toggle('zichtbaar', cb.checked);
   if (!cb.checked) document.getElementById(type+'-kleur').value = '';
+}
+function checkOndervloerOverig() {
+  document.getElementById('ondervloer-overig-veld').classList.toggle('zichtbaar', document.getElementById('c-ondervloer').value === 'Overige');
 }
 function checkSortOv() { document.getElementById('sortex').classList.toggle('zichtbaar', gv('tv-sortering') === 'Overige'); }
 function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
@@ -578,7 +591,9 @@ function voegFotoToe() {
 }
 function verwijderFoto(id) { fotos = fotos.filter(f => f.id !== id); renderFotos(); }
 function renderFotos() {
-  document.getElementById('foto-lijst').innerHTML = fotos.map(f =>
+  const el = document.getElementById('foto-lijst');
+  if (!el) return;
+  el.innerHTML = fotos.map(f =>
     '<div class="foto-rij"><div class="foto-info"><div class="foto-naam">'+f.naam+'</div>'+(f.omschrijving?'<div class="foto-omschrijving">'+f.omschrijving+'</div>':'')+'</div><button class="del-btn" onclick="verwijderFoto('+f.id+')">X</button></div>'
   ).join('');
 }
@@ -713,11 +728,11 @@ function renderSamenvatting() {
   const r = (label, value) => value ? '<div class="sam-row"><span class="sam-label">'+label+'</span><span class="sam-value">'+value+'</span></div>' : '';
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
   const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
-  document.getElementById('sam-naw').innerHTML = r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', gv('naw-datum')) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
   const afm = [gv('tv-lengte'), gv('tv-breedte'), gv('tv-dikte')].filter(Boolean).join(' x ');
   document.getElementById('sam-vloer-type').innerHTML = r('Type', vloerType) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
-  document.getElementById('sam-controle').innerHTML = r('Constructievloer', gv('c-type')) + r('Vloerverwarming', getVVTekst()) + r('Luchtvochtigheid', gv('c-lv') ? gv('c-lv')+'%' : '') + r('Vochtpercentage', gv('c-vp') ? gv('c-vp')+'%' : '') + r('Krastest', gv('c-kras')) + r('Vlakte', gv('c-vlakte')) + r('Visuele scheuren', tog.scheuren) + r('Opstartprotocol', tog.opstartprotocol) + r('Opmerkingen', gv('c-opm')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  document.getElementById('sam-controle').innerHTML = r('Constructievloer', gv('c-type')) + r('Type ondervloer', gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer')) + r('Vloerverwarming', getVVTekst()) + r('Luchtvochtigheid', gv('c-lv') ? gv('c-lv')+'%' : '') + r('Vochtpercentage', gv('c-vp') ? gv('c-vp')+'%' : '') + r('Krastest', gv('c-kras')) + r('Vlakte', gv('c-vlakte')) + r('Dekvloer schoon', tog.schoon) + r('Visuele scheuren', tog.scheuren) + r('Opstartprotocol', tog.opstartprotocol) + r('Opmerkingen', gv('c-opm')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const vTotaal = vloeren.reduce((s,k) => s+k.opp, 0);
   if (!vloeren.length) {
@@ -774,14 +789,14 @@ async function slaOp() {
   const aT = afdeklatten.reduce((s,a)=>s+a.lengte,0);
   const prT = profielen.reduce((s,p)=>s+p.lengte,0);
   const data = {
-    opdracht: gv('naw-opdracht'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
+    opdracht: gv('naw-opdracht'), datum_bezoek: gv('naw-datum'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
     straat: gv('naw-straat'), huisnummer: gv('naw-huisnr'), postcode: gv('naw-postcode'), plaats: gv('naw-plaats'), notities: gv('naw-notities'),
     type_vloer: vloerType||'', houtsoort: gv('tv-houtsoort'), sortering: sort,
     afmeting_lengte: gv('tv-lengte'), afmeting_breedte: gv('tv-breedte'), afmeting_dikte: gv('tv-dikte'),
     bewerkingen: getBewerkingen().join(', '), afwerking: getAfwerking().join(', '),
-    constructievloer: gv('c-type'), vloerverwarming: getVVTekst(),
+    constructievloer: gv('c-type'), vloerverwarming: getVVTekst(), type_ondervloer: gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer'),
     luchtvochtigheid: gv('c-lv'), vochtpercentage: gv('c-vp'), krastest: gv('c-kras'),
-    scheuren: tog.scheuren||'', opstartprotocol: tog.opstartprotocol||'', vlakte: gv('c-vlakte'),
+    scheuren: tog.scheuren||'', opstartprotocol: tog.opstartprotocol||'', schoon: tog.schoon||'', vlakte: gv('c-vlakte'),
     vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,onderdeel:k.onderdeel||'',lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_totaal: fmt(vT)+' m2 (incl. '+vAfval+'% afval: '+fmt(vT*(1+vAfval/100))+' m2)',
     plinten_type: gv('p-type'), plinten_hoogte: gv('p-hoogte'), plinten_dikte: gv('p-dikte'), plinten_kleur: gv('p-kleur'),
@@ -834,6 +849,7 @@ function kopieerOneNote() {
   let t = '========================================\n  PARKETVLOER OPMETING - '+datum+'\n========================================\n\n';
   t += '--- KLANTGEGEVENS ---\n';
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
+  if (gv('naw-datum')) t += 'Datum:    '+gv('naw-datum')+'\n';
   if (gv('naw-opdracht')) t += 'Opdracht: '+gv('naw-opdracht')+'\n';
   if (naam) t += 'Naam:     '+naam+'\n';
   if (gv('naw-tel')) t += 'Tel:      '+gv('naw-tel')+'\n';
@@ -849,10 +865,13 @@ function kopieerOneNote() {
   if (getAfwerking().length) t += 'Afwerking:   '+getAfwerking().join(', ')+'\n';
   t += '\n--- VLOERCONTROLE ---\n';
   if (gv('c-type')) t += 'Constructievloer:  '+gv('c-type')+'\n';
+  const ondervloerTekst = gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer');
+  if (ondervloerTekst) t += 'Type ondervloer:   '+ondervloerTekst+'\n';
   t += 'Vloerverwarming:   '+getVVTekst()+'\n';
   if (gv('c-lv')) t += 'Luchtvochtigheid:  '+gv('c-lv')+'%\n';
   if (gv('c-vp')) t += 'Vochtpercentage:   '+gv('c-vp')+'%\n';
   if (gv('c-kras')) t += 'Krastest:          '+gv('c-kras')+'\n';
+  if (tog.schoon) t += 'Dekvloer schoon:   '+tog.schoon+'\n';
   if (tog.scheuren) t += 'Visuele scheuren:  '+tog.scheuren+'\n';
   if (tog.opstartprotocol) t += 'Opstartprotocol:   '+tog.opstartprotocol+'\n';
   if (gv('c-vlakte')) t += 'Vlakte:            '+gv('c-vlakte')+'\n';
@@ -903,7 +922,7 @@ async function laadKlant(id) {
     const k = data[0]; if (!k) return;
     huidigId = k.id;
     resetFormulier();
-    sv('naw-opdracht', k.opdracht); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
+    sv('naw-opdracht', k.opdracht); sv('naw-datum', k.datum_bezoek); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
     sv('naw-email', k.email); sv('naw-straat', k.straat); sv('naw-huisnr', k.huisnummer);
     sv('naw-postcode', k.postcode); sv('naw-plaats', k.plaats); sv('naw-notities', k.notities);
     if (k.type_vloer) { const btn = Array.from(document.querySelectorAll('.vtbtn')).find(b => b.textContent === k.type_vloer); if (btn) { vloerType = k.type_vloer; btn.classList.add('active'); } }
@@ -919,12 +938,14 @@ async function laadKlant(id) {
     });
     const afwMap = {'Lak':'cb-lak','Hardwax':'cb-hardwax','Woca':'cb-woca','Was':'cb-was','Monocoat':'cb-monocoat'};
     (k.afwerking||'').split(', ').forEach(a => {
-      if (afwMap[a]) { document.getElementById(afwMap[a]).classList.add('active'); document.querySelector('#'+afwMap[a]+' input').checked = true; }
+      const afwLabel = Object.keys(afwMap).find(l => a === l || a.startsWith(l + ' ('));
+      if (afwLabel) { document.getElementById(afwMap[afwLabel]).classList.add('active'); document.querySelector('#'+afwMap[afwLabel]+' input').checked = true; }
       else if (a.startsWith('Overige')) { document.getElementById('cb-afw-overig').classList.add('active'); document.querySelector('#cb-afw-overig input').checked = true; document.getElementById('ov-afw').classList.add('zichtbaar'); sv('afw-overig-tekst', a.replace('Overige: ','')); }
     });
-    sv('c-type', k.constructievloer); sv('c-lv', k.luchtvochtigheid); sv('c-vp', k.vochtpercentage);
+    sv('c-type', k.constructievloer); sv('c-lv', k.luchtvochtigheid); if (k.type_ondervloer) { const stdOv = ['Groene platen','Rubber','Bluefloor','Heatfoil','Spaanplaat']; if (stdOv.includes(k.type_ondervloer)) { sv('c-ondervloer', k.type_ondervloer); } else { sv('c-ondervloer','Overige'); sv('c-ondervloer-overig', k.type_ondervloer); document.getElementById('ondervloer-overig-veld').classList.add('zichtbaar'); } } sv('c-vp', k.vochtpercentage);
     sv('c-kras', k.krastest); sv('c-vlakte', k.vlakte); sv('c-opm', k.opmerkingen);
     if (k.scheuren) { tog.scheuren = k.scheuren; document.getElementById('tb-scheuren-'+k.scheuren).classList.add('active'); }
+    if (k.schoon) { tog.schoon = k.schoon; document.getElementById('tb-schoon-'+k.schoon).classList.add('active'); }
     if (k.opstartprotocol) { tog.opstartprotocol = k.opstartprotocol; document.getElementById('tb-opstart-'+k.opstartprotocol).classList.add('active'); }
     if (k.vloerverwarming) {
       const isJa = k.vloerverwarming.startsWith('Ja');
