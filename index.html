@@ -271,8 +271,9 @@ textarea { resize: vertical; min-height: 60px; }
 <div class="panel" id="panel-vloer">
   <div id="banner-vloer" style="display:none;" class="banner"></div>
   <div class="rij-form">
-    <div class="form-row-4">
+    <div style="display:grid;grid-template-columns:1fr 1fr 80px 80px 80px auto;gap:8px;align-items:end;">
       <div class="field"><label>Ruimte / kamer</label><input type="text" id="v-naam" placeholder="bijv. Woonkamer" /></div>
+      <div class="field"><label>Onderdeel (optioneel)</label><input type="text" id="v-onderdeel" placeholder="bijv. deel A, nis..." /></div>
       <div class="field"><label>Lengte (m)</label><input type="number" id="v-lengte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Breedte (m)</label><input type="number" id="v-breedte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Oppervlakte</label><input type="text" id="v-preview" placeholder="- m2" readonly /></div>
@@ -289,8 +290,27 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
   </div>
   <div id="vloer-container"></div>
+
+  <!-- AFTREK -->
+  <div class="rij-form" style="border-color:#fde8e8;background:#fff8f8;">
+    <p style="font-size:11px;font-weight:600;color:#E24B4A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Aftrek (bijv. kookeiland, trap, pilaar)</p>
+    <div class="form-row-4">
+      <div class="field"><label>Omschrijving</label><input type="text" id="a2-naam" placeholder="bijv. Kookeiland" /></div>
+      <div class="field"><label>Lengte (m)</label><input type="number" id="a2-lengte" placeholder="0.00" step="0.01" min="0" oninput="upAP()" /></div>
+      <div class="field"><label>Breedte (m)</label><input type="number" id="a2-breedte" placeholder="0.00" step="0.01" min="0" oninput="upAP()" /></div>
+      <div class="field"><label>Oppervlakte</label><input type="text" id="a2-preview" placeholder="- m2" readonly /></div>
+      <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-danger" onclick="voegAftrekToe()">- Voeg toe</button></div>
+    </div>
+  </div>
+  <div id="aftrek-container"></div>
+
   <div class="totaal-card">
-    <div><div class="totaal-label">Totale oppervlakte</div><div class="totaal-waarde" id="v-totaal">0,00 m2</div></div>
+    <div>
+      <div class="totaal-label">Totale oppervlakte</div>
+      <div class="totaal-waarde" id="v-totaal">0,00 m2</div>
+      <div style="font-size:13px;color:#E24B4A;margin-top:2px;">Aftrek: <span id="v-aftrek">0,00 m2</span></div>
+      <div style="font-size:13px;color:#1a56db;margin-top:2px;font-weight:600;">Netto: <span id="v-netto">0,00 m2</span></div>
+    </div>
     <div style="text-align:right;">
       <div class="afval-row"><label>Afval %</label><input type="number" id="v-afval" value="10" min="0" max="50" style="width:60px;" oninput="renderVloer()" /></div>
       <div style="font-size:13px;color:#888;margin-top:4px;">Incl. afval: <span id="v-totaal-afval" style="font-weight:600;">0,00 m2</span></div>
@@ -452,7 +472,7 @@ async function sbFetch(method, path, body) {
   try { return JSON.parse(text); } catch(e) { return []; }
 }
 
-let vloeren = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
+let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
 const tog = { scheuren: null, opstartprotocol: null };
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 
@@ -502,7 +522,7 @@ function resetFormulier() {
    'tv-houtsoort','tv-sortering-overig','tv-lengte','tv-breedte','tv-dikte','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-hoogte','pr-dikte','pr-kleur','f-naam','f-omschrijving'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
   tog.scheuren = null; tog.opstartprotocol = null;
@@ -513,7 +533,7 @@ function resetFormulier() {
   document.getElementById('sortex').classList.remove('zichtbaar');
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
-  vloeren = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
+  vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
   sv('opslaan-status','');
   renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos();
@@ -567,23 +587,63 @@ function upVP() {
   const l = parseFloat(document.getElementById('v-lengte').value), b = parseFloat(document.getElementById('v-breedte').value);
   sv('v-preview', (!isNaN(l)&&!isNaN(b)&&l>0&&b>0) ? fmt(l*b)+' m2' : '');
 }
+function upAP() {
+  const l = parseFloat(document.getElementById('a2-lengte').value), b = parseFloat(document.getElementById('a2-breedte').value);
+  sv('a2-preview', (!isNaN(l)&&!isNaN(b)&&l>0&&b>0) ? fmt(l*b)+' m2' : '');
+}
+function voegAftrekToe() {
+  const naam = gv('a2-naam')||'Aftrek '+(aftrekken.length+1);
+  const l = parseFloat(document.getElementById('a2-lengte').value), b = parseFloat(document.getElementById('a2-breedte').value);
+  if (isNaN(l)||isNaN(b)||l<=0||b<=0) return;
+  aftrekken.push({ id: Date.now(), naam, lengte: l, breedte: b, opp: l*b });
+  sv('a2-naam',''); sv('a2-lengte',''); sv('a2-breedte',''); sv('a2-preview','');
+  renderVloer(); document.getElementById('a2-naam').focus();
+}
+function verwijderAftrek(id) { aftrekken = aftrekken.filter(k => k.id!==id); renderVloer(); }
 function voegVloerToe() {
   const naam = gv('v-naam')||'Ruimte '+(vloeren.length+1);
+  const onderdeel = gv('v-onderdeel');
   const l = parseFloat(document.getElementById('v-lengte').value), b = parseFloat(document.getElementById('v-breedte').value);
   if (isNaN(l)||isNaN(b)||l<=0||b<=0) return;
-  vloeren.push({ id: Date.now(), naam, lengte: l, breedte: b, opp: l*b });
-  sv('v-naam',''); sv('v-lengte',''); sv('v-breedte',''); sv('v-preview','');
-  renderVloer(); document.getElementById('v-naam').focus();
+  vloeren.push({ id: Date.now(), naam, onderdeel, lengte: l, breedte: b, opp: l*b });
+  sv('v-onderdeel',''); sv('v-lengte',''); sv('v-breedte',''); sv('v-preview','');
+  renderVloer(); document.getElementById('v-lengte').focus();
 }
 function verwijderVloer(id) { vloeren = vloeren.filter(k => k.id!==id); renderVloer(); }
 function renderVloer() {
   const c = document.getElementById('vloer-container');
+  const ac = document.getElementById('aftrek-container');
   const totaal = vloeren.reduce((s,k) => s+k.opp, 0);
+  const aftrekTotaal = aftrekken.reduce((s,k) => s+k.opp, 0);
+  const netto = Math.max(0, totaal - aftrekTotaal);
   const afval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   document.getElementById('v-totaal').textContent = fmt(totaal)+' m2';
-  document.getElementById('v-totaal-afval').textContent = fmt(totaal*(1+afval/100))+' m2';
-  c.innerHTML = !vloeren.length ? '<div class="leeg">Nog geen ruimtes toegevoegd.</div>' :
-    vloeren.map(k => '<div class="data-rij"><div class="naam">'+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderVloer('+k.id+')">X</button></div>').join('');
+  document.getElementById('v-aftrek').textContent = fmt(aftrekTotaal)+' m2';
+  document.getElementById('v-netto').textContent = fmt(netto)+' m2';
+  document.getElementById('v-totaal-afval').textContent = fmt(netto*(1+afval/100))+' m2';
+  if (!vloeren.length) { c.innerHTML = '<div class="leeg">Nog geen ruimtes toegevoegd.</div>'; }
+  else {
+    // Groepeer per ruimtenaam
+    const groepen = {};
+    vloeren.forEach(k => { if (!groepen[k.naam]) groepen[k.naam] = []; groepen[k.naam].push(k); });
+    let html = '';
+    Object.entries(groepen).forEach(([naam, items]) => {
+      const subtotaal = items.reduce((s,k) => s+k.opp, 0);
+      html += '<div style="margin-bottom:8px;">';
+      html += '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;padding:4px 12px;">'+ naam +'</div>';
+      items.forEach(k => {
+        const label = k.onderdeel ? k.onderdeel : naam;
+        html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+(k.onderdeel||naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderVloer('+k.id+')">X</button></div>';
+      });
+      if (items.length > 1) {
+        html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+naam+': '+fmt(subtotaal)+' m2</div>';
+      }
+      html += '</div>';
+    });
+    c.innerHTML = html;
+  }
+  ac.innerHTML = !aftrekken.length ? '' :
+    aftrekken.map(k => '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderAftrek('+k.id+')">X</button></div>').join('');
 }
 
 function voegPlintToe() {
