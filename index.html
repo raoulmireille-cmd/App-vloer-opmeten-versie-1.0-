@@ -577,7 +577,7 @@ function switchTab(name) {
   updateBanners();
 }
 
-function nieuweOpmeting() { huidigId = null; resetFormulier(); switchTab('naw'); }
+async function nieuweOpmeting() { await flushPendingAutosave(); huidigId = null; resetFormulier(); switchTab('naw'); }
 
 function resetFormulier() {
   clearTimeout(autosaveTimer);
@@ -956,6 +956,14 @@ function planAutosave() {
   autosaveTimer = setTimeout(autoOpslaan, 2500);
 }
 
+async function flushPendingAutosave() {
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+    await autoOpslaan();
+  }
+}
+
 function moetAutosaven(el) {
   return !!(el && el.closest && !el.closest('#panel-adressen'));
 }
@@ -1021,6 +1029,7 @@ function renderKlantenLijst(data, q) {
 }
 
 async function laadKlant(id) {
+  await flushPendingAutosave();
   toast('Klant laden...');
   try {
     const data = await sbFetch('GET', 'klanten?id=eq.'+id+'&select=*');
