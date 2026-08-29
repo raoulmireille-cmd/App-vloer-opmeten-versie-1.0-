@@ -43,6 +43,7 @@ textarea { resize: vertical; min-height: 60px; }
 .tbtn { padding: 4px 14px; font-size: 13px; border-radius: 20px; border: 1px solid #ddd; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
 .tbtn.ja.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
 .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
+.tbtn.nvt.active { background: #888; border-color: #888; color: #fff; }
 .tbtn.opt.active { background: #1a56db; border-color: #1a56db; color: #fff; }
 .vtbtn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .vtbtn { padding: 9px 16px; font-size: 14px; border-radius: 6px; border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
@@ -148,10 +149,15 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
   <button class="tab" onclick="switchTab('profielen')">Profielen</button>
   <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
+  <button class="tab" onclick="switchTab('checklist')">Checklist</button>
 </div>
 
 <!-- ADRESSEN -->
 <div class="panel active" id="panel-adressen">
+  <div class="card" id="dashboard-card" style="display:none;border-color:#fde8e8;background:#fff8f8;">
+    <p class="section-title" style="color:#E24B4A;">Openstaande stappen</p>
+    <div id="dashboard-lijst"></div>
+  </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
     <div style="font-size:14px;color:#888;" id="klanten-count"></div>
     <button class="btn btn-primary" onclick="nieuweOpmeting()">+ Nieuwe opmeting</button>
@@ -486,6 +492,122 @@ textarea { resize: vertical; min-height: 60px; }
     <p style="text-align:center;font-size:12px;color:#aaa;margin-top:4px;" id="opslaan-status"></p>
   </div>
 </div>
+
+<!-- CHECKLIST -->
+<div class="panel" id="panel-checklist">
+  <div id="banner-checklist" style="display:none;" class="banner"></div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:13px;color:#888;margin-bottom:4px;">Voortgang</div>
+    <div id="checklist-voortgang" style="font-size:20px;font-weight:600;color:#1a56db;">0 van 7 stappen voltooid</div>
+  </div>
+
+  <div class="card"><p class="section-title">Bestellingen</p>
+    <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Vloer</div>
+    <div class="toggle-row"><span class="toggle-label">Vloer besteld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-vloerBesteld-ja" onclick="setToggleReveal('vloerBesteld','ja',this,'vloerBesteld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-vloerBesteld-nee" onclick="setToggleReveal('vloerBesteld','nee',this,'vloerBesteld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-vloerBesteld-nvt" onclick="setToggleReveal('vloerBesteld','nvt',this,'vloerBesteld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="vloerBesteld-extra">
+      <div class="field" style="margin-top:8px;"><label>Leverancier</label><input type="text" id="ch-vloer-leverancier" placeholder="bijv. naam leverancier" /></div>
+      <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-vloer-datum" /></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Plinten</div>
+    <div class="toggle-row"><span class="toggle-label">Plinten besteld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-plintenBesteld-ja" onclick="setToggleReveal('plintenBesteld','ja',this,'plintenBesteld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-plintenBesteld-nee" onclick="setToggleReveal('plintenBesteld','nee',this,'plintenBesteld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-plintenBesteld-nvt" onclick="setToggleReveal('plintenBesteld','nvt',this,'plintenBesteld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="plintenBesteld-extra">
+      <div class="field" style="margin-top:8px;"><label>Leverancier</label><input type="text" id="ch-plinten-leverancier" placeholder="bijv. naam leverancier" /></div>
+      <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-plinten-datum" /></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Ondervloer</div>
+    <div class="toggle-row"><span class="toggle-label">Ondervloer besteld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-ondervloerBesteld-ja" onclick="setToggleReveal('ondervloerBesteld','ja',this,'ondervloerBesteld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-ondervloerBesteld-nee" onclick="setToggleReveal('ondervloerBesteld','nee',this,'ondervloerBesteld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-ondervloerBesteld-nvt" onclick="setToggleReveal('ondervloerBesteld','nvt',this,'ondervloerBesteld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="ondervloerBesteld-extra">
+      <div class="field" style="margin-top:8px;"><label>Leverancier</label><input type="text" id="ch-ondervloer-leverancier" placeholder="bijv. naam leverancier" /></div>
+      <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-ondervloer-datum" /></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Afdeklatten</div>
+    <div class="toggle-row"><span class="toggle-label">Afdeklatten besteld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-afdeklattenBesteld-ja" onclick="setToggleReveal('afdeklattenBesteld','ja',this,'afdeklattenBesteld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-afdeklattenBesteld-nee" onclick="setToggleReveal('afdeklattenBesteld','nee',this,'afdeklattenBesteld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-afdeklattenBesteld-nvt" onclick="setToggleReveal('afdeklattenBesteld','nvt',this,'afdeklattenBesteld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="afdeklattenBesteld-extra">
+      <div class="field" style="margin-top:8px;"><label>Leverancier</label><input type="text" id="ch-afdeklatten-leverancier" placeholder="bijv. naam leverancier" /></div>
+      <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-afdeklatten-datum" /></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Olie / lak</div>
+    <div class="toggle-row"><span class="toggle-label">Olie / lak besteld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-olieBesteld-ja" onclick="setToggleReveal('olieBesteld','ja',this,'olieBesteld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-olieBesteld-nee" onclick="setToggleReveal('olieBesteld','nee',this,'olieBesteld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-olieBesteld-nvt" onclick="setToggleReveal('olieBesteld','nvt',this,'olieBesteld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="olieBesteld-extra">
+      <div class="field" style="margin-top:8px;"><label>Leverancier</label><input type="text" id="ch-olie-leverancier" placeholder="bijv. naam leverancier" /></div>
+      <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-olie-datum" /></div>
+    </div>
+  </div>
+
+  <div class="card"><p class="section-title">Planning</p>
+    <div class="toggle-row"><span class="toggle-label">Vloerenlegger ingedeeld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-leggerIngedeeld-ja" onclick="setToggleReveal('leggerIngedeeld','ja',this,'leggerIngedeeld-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-leggerIngedeeld-nee" onclick="setToggleReveal('leggerIngedeeld','nee',this,'leggerIngedeeld-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-leggerIngedeeld-nvt" onclick="setToggleReveal('leggerIngedeeld','nvt',this,'leggerIngedeeld-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="leggerIngedeeld-extra">
+      <div class="field" style="margin-top:8px;"><label>Naam legger</label><input type="text" id="ch-legger-naam" placeholder="bijv. Kees" /></div>
+    </div>
+    <div class="toggle-row"><span class="toggle-label">Bezorgschema ingevuld</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-bezorgschema-ja" onclick="setToggleReveal('bezorgschema','ja',this,'bezorgschema-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-bezorgschema-nee" onclick="setToggleReveal('bezorgschema','nee',this,'bezorgschema-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-bezorgschema-nvt" onclick="setToggleReveal('bezorgschema','nvt',this,'bezorgschema-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="bezorgschema-extra">
+      <div class="field" style="margin-top:8px;"><label>Bezorgdatum</label><input type="date" id="ch-bezorgschema-datum" /></div>
+    </div>
+  </div>
+
+  <div class="card"><p class="section-title">Administratie</p>
+    <div class="toggle-row"><span class="toggle-label">Offerte gemaakt</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-offerteGemaakt-ja" onclick="setToggle('offerteGemaakt','ja',this)">Ja</button>
+        <button class="tbtn nee" id="tb-offerteGemaakt-nee" onclick="setToggle('offerteGemaakt','nee',this)">Nee</button>
+        <button class="tbtn nvt" id="tb-offerteGemaakt-nvt" onclick="setToggle('offerteGemaakt','nvt',this)">NVT</button>
+      </div>
+    </div>
+    <div class="toggle-row"><span class="toggle-label">Factuur gemaakt</span>
+      <div class="toggle-btns">
+        <button class="tbtn ja" id="tb-factuurGemaakt-ja" onclick="setToggle('factuurGemaakt','ja',this)">Ja</button>
+        <button class="tbtn nee" id="tb-factuurGemaakt-nee" onclick="setToggle('factuurGemaakt','nee',this)">Nee</button>
+        <button class="tbtn nvt" id="tb-factuurGemaakt-nvt" onclick="setToggle('factuurGemaakt','nvt',this)">NVT</button>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -532,7 +654,7 @@ async function sbFetch(method, path, body) {
 }
 
 let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
-const tog = { scheuren: null, opstartprotocol: null, schoon: null };
+const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null, factuurGemaakt: null };
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 let klantenData = [];
 
@@ -558,13 +680,48 @@ function getBanner() {
 
 function updateBanners() {
   const b = getBanner();
-  ['naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting'].forEach(id => {
+  ['naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist'].forEach(id => {
     const el = document.getElementById('banner-' + id);
     if (el) { el.textContent = b; el.style.display = b ? 'block' : 'none'; }
   });
 }
 
-const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting'];
+const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist'];
+const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt','factuurGemaakt'];
+const CHECKLIST_DB_COLS = {
+  vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
+  afdeklattenBesteld: 'checklist_afdeklatten_besteld', olieBesteld: 'checklist_olie_besteld', leggerIngedeeld: 'checklist_legger_ingedeeld',
+  bezorgschema: 'checklist_bezorgschema', offerteGemaakt: 'checklist_offerte', factuurGemaakt: 'checklist_factuur'
+};
+function telOpenstaandeStappen(klant) {
+  return Object.values(CHECKLIST_DB_COLS).filter(col => klant[col] !== 'ja' && klant[col] !== 'nvt').length;
+}
+function renderDashboard(data) {
+  const kaart = document.getElementById('dashboard-card');
+  const lijst = document.getElementById('dashboard-lijst');
+  if (!kaart || !lijst) return;
+  const openKlanten = data.filter(k => k.checklist_niet_doorgegaan !== 'ja').map(k => ({ k, open: telOpenstaandeStappen(k) })).filter(x => x.open > 0);
+  if (!openKlanten.length) { kaart.style.display = 'none'; lijst.innerHTML = ''; return; }
+  kaart.style.display = 'block';
+  lijst.innerHTML = openKlanten.map(({k, open}) => {
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
+    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">'+open+' open</div><button class="del-btn" title="Klant niet doorgegaan — uit deze lijst halen" onclick="event.stopPropagation();negeerKlant(\''+k.id+'\')">X</button></div>';
+  }).join('');
+}
+async function negeerKlant(id) {
+  const item = klantenData.find(x => String(x.id) === String(id));
+  const naam = item ? ((item.voornaam||'')+' '+(item.achternaam||'')).trim() : '';
+  const ok = await bevestig('Klant' + (naam ? ' "'+naam+'"' : '') + ' niet doorgegaan? De klant wordt dan niet meer getoond bij "Openstaande stappen" (de gegevens blijven gewoon bewaard).');
+  if (!ok) return;
+  try {
+    await sbFetch('PATCH', 'klanten?id=eq.'+id, { checklist_niet_doorgegaan: 'ja' });
+    if (item) item.checklist_niet_doorgegaan = 'ja';
+    renderDashboard(klantenData);
+    toast('Klant uit openstaande stappen gehaald');
+  } catch(e) {
+    toast('Fout: '+e.message, 4000);
+  }
+}
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -574,6 +731,7 @@ function switchTab(name) {
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'adressen') laadKlanten();
   if (name === 'samenvatting') renderSamenvatting();
+  if (name === 'checklist') renderChecklistProgress();
   updateBanners();
 }
 
@@ -585,7 +743,9 @@ function resetFormulier() {
   ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities',
    'tv-houtsoort','tv-sortering-overig','tv-lengte','tv-breedte','tv-dikte','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
-   'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving'].forEach(id => sv(id, ''));
+   'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving',
+   'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
+   'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
   sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
@@ -597,10 +757,12 @@ function resetFormulier() {
   document.getElementById('sortex').classList.remove('zichtbaar');
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
+  ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
+  CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
   sv('opslaan-status','');
-  renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos();
+  renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos(); renderChecklistProgress();
 }
 
 function setVloerType(type, btn) { vloerType = type; document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
@@ -651,7 +813,16 @@ function getAfwerking() {
   return r;
 }
 
-function setToggle(key, v, btn) { tog[key] = v; btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+function setToggle(key, v, btn) { tog[key] = v; btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderChecklistProgress(); }
+function setToggleReveal(key, v, btn, revealId) { setToggle(key, v, btn); const el = document.getElementById(revealId); if (el) el.classList.toggle('zichtbaar', v === 'ja'); }
+function renderChecklistProgress() {
+  const el = document.getElementById('checklist-voortgang');
+  if (!el) return;
+  const relevant = CHECKLIST_KEYS.filter(k => tog[k] !== 'nvt');
+  const nvtAantal = CHECKLIST_KEYS.length - relevant.length;
+  const voltooid = relevant.filter(k => tog[k] === 'ja').length;
+  el.textContent = voltooid + ' van ' + relevant.length + ' stappen voltooid' + (nvtAantal ? ' (' + nvtAantal + ' n.v.t.)' : '');
+}
 function setVV(v, btn) {
   vvAanwezig = v; btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
   if (v === 'ja') document.getElementById('vv-extra').classList.add('zichtbaar');
@@ -889,7 +1060,14 @@ function bouwOpslaanData() {
     opmerkingen: gv('c-opm'),
     fotos: JSON.stringify(fotos),
     profielen_opmeting: JSON.stringify(profielen.map(p=>({naam:p.naam,type:p.type||'',breedte:p.breedte||'',lengte:p.lengte}))),
-    profielen_totaal: fmt(prT)+' m (incl. '+prAfval+'% afval: '+fmt(prT*(1+prAfval/100))+' m)'
+    profielen_totaal: fmt(prT)+' m (incl. '+prAfval+'% afval: '+fmt(prT*(1+prAfval/100))+' m)',
+    checklist_vloer_besteld: tog.vloerBesteld||'', checklist_vloer_leverancier: gv('ch-vloer-leverancier'), checklist_vloer_datum: gv('ch-vloer-datum'),
+    checklist_plinten_besteld: tog.plintenBesteld||'', checklist_plinten_leverancier: gv('ch-plinten-leverancier'), checklist_plinten_datum: gv('ch-plinten-datum'),
+    checklist_ondervloer_besteld: tog.ondervloerBesteld||'', checklist_ondervloer_leverancier: gv('ch-ondervloer-leverancier'), checklist_ondervloer_datum: gv('ch-ondervloer-datum'),
+    checklist_afdeklatten_besteld: tog.afdeklattenBesteld||'', checklist_afdeklatten_leverancier: gv('ch-afdeklatten-leverancier'), checklist_afdeklatten_datum: gv('ch-afdeklatten-datum'),
+    checklist_olie_besteld: tog.olieBesteld||'', checklist_olie_leverancier: gv('ch-olie-leverancier'), checklist_olie_datum: gv('ch-olie-datum'),
+    checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'),
+    checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'', checklist_factuur: tog.factuurGemaakt||''
   };
 }
 
@@ -992,9 +1170,10 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,straat,huisnummer,postcode,plaats,created_at');
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,straat,huisnummer,postcode,plaats,created_at,checklist_niet_doorgegaan,'+Object.values(CHECKLIST_DB_COLS).join(','));
     klantenData = data;
     filterKlanten();
+    renderDashboard(data);
   } catch(e) {
     lijst.innerHTML = '<div class="leeg">Fout bij laden: '+e.message+'<br><small>Controleer je internetverbinding</small></div>';
     document.getElementById('klanten-count').textContent = '';
@@ -1086,7 +1265,30 @@ async function laadKlant(id) {
     try { vloeren = (JSON.parse(k.vloer_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i})); } catch { vloeren = []; }
     try { plinten = (JSON.parse(k.plinten_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+100})); } catch { plinten = []; }
     try { afdeklatten = (JSON.parse(k.afdek_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+200})); } catch { afdeklatten = []; }
-    renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
+    const restoreToggle = (key, val, revealId) => {
+      const v = (val === 'ja' || val === 'nvt') ? val : 'nee';
+      tog[key] = v;
+      const btn = document.getElementById('tb-'+key+'-'+v);
+      if (btn) btn.classList.add('active');
+      if (revealId) document.getElementById(revealId).classList.toggle('zichtbaar', v === 'ja');
+    };
+    restoreToggle('vloerBesteld', k.checklist_vloer_besteld, 'vloerBesteld-extra');
+    sv('ch-vloer-leverancier', k.checklist_vloer_leverancier); sv('ch-vloer-datum', k.checklist_vloer_datum);
+    restoreToggle('plintenBesteld', k.checklist_plinten_besteld, 'plintenBesteld-extra');
+    sv('ch-plinten-leverancier', k.checklist_plinten_leverancier); sv('ch-plinten-datum', k.checklist_plinten_datum);
+    restoreToggle('ondervloerBesteld', k.checklist_ondervloer_besteld, 'ondervloerBesteld-extra');
+    sv('ch-ondervloer-leverancier', k.checklist_ondervloer_leverancier); sv('ch-ondervloer-datum', k.checklist_ondervloer_datum);
+    restoreToggle('afdeklattenBesteld', k.checklist_afdeklatten_besteld, 'afdeklattenBesteld-extra');
+    sv('ch-afdeklatten-leverancier', k.checklist_afdeklatten_leverancier); sv('ch-afdeklatten-datum', k.checklist_afdeklatten_datum);
+    restoreToggle('olieBesteld', k.checklist_olie_besteld, 'olieBesteld-extra');
+    sv('ch-olie-leverancier', k.checklist_olie_leverancier); sv('ch-olie-datum', k.checklist_olie_datum);
+    restoreToggle('leggerIngedeeld', k.checklist_legger_ingedeeld, 'leggerIngedeeld-extra');
+    sv('ch-legger-naam', k.checklist_legger_naam);
+    restoreToggle('bezorgschema', k.checklist_bezorgschema, 'bezorgschema-extra');
+    sv('ch-bezorgschema-datum', k.checklist_bezorgschema_datum);
+    restoreToggle('offerteGemaakt', k.checklist_offerte);
+    restoreToggle('factuurGemaakt', k.checklist_factuur);
+    renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress();
     sv('opslaan-status', 'Geladen op '+new Date().toLocaleString('nl-NL'));
     toast('Klant geladen!');
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1132,7 +1334,7 @@ function bevestig(tekst) {
 }
 
 async function verwijderKlant(id) {
-  const k = klantenData.find(x => x.id === id);
+  const k = klantenData.find(x => String(x.id) === String(id));
   const naam = k ? ((k.voornaam||'')+' '+(k.achternaam||'')).trim() : '';
   const ok = await bevestig('Weet je zeker dat je' + (naam ? ' "'+naam+'"' : ' deze klant') + ' wilt verwijderen? Dit kan niet ongedaan worden gemaakt.');
   if (!ok) return;
