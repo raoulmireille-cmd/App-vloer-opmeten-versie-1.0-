@@ -594,16 +594,30 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="card"><p class="section-title">Administratie</p>
     <div class="toggle-row"><span class="toggle-label">Offerte gemaakt</span>
       <div class="toggle-btns">
-        <button class="tbtn ja" id="tb-offerteGemaakt-ja" onclick="setToggle('offerteGemaakt','ja',this)">Ja</button>
-        <button class="tbtn nee" id="tb-offerteGemaakt-nee" onclick="setToggle('offerteGemaakt','nee',this)">Nee</button>
-        <button class="tbtn nvt" id="tb-offerteGemaakt-nvt" onclick="setToggle('offerteGemaakt','nvt',this)">NVT</button>
+        <button class="tbtn ja" id="tb-offerteGemaakt-ja" onclick="setToggleReveal('offerteGemaakt','ja',this,'offerteGemaakt-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-offerteGemaakt-nee" onclick="setToggleReveal('offerteGemaakt','nee',this,'offerteGemaakt-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-offerteGemaakt-nvt" onclick="setToggleReveal('offerteGemaakt','nvt',this,'offerteGemaakt-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="offerteGemaakt-extra">
+      <div class="field" style="margin-top:8px;">
+        <label>Offerte PDF</label>
+        <div id="offerte-pdf-link" style="margin:4px 0;"></div>
+        <input type="file" accept="application/pdf" id="ch-offerte-pdf-input" onchange="uploadChecklistPdf('offerte', this)" style="font-size:13px;width:100%;" />
       </div>
     </div>
     <div class="toggle-row"><span class="toggle-label">Factuur gemaakt</span>
       <div class="toggle-btns">
-        <button class="tbtn ja" id="tb-factuurGemaakt-ja" onclick="setToggle('factuurGemaakt','ja',this)">Ja</button>
-        <button class="tbtn nee" id="tb-factuurGemaakt-nee" onclick="setToggle('factuurGemaakt','nee',this)">Nee</button>
-        <button class="tbtn nvt" id="tb-factuurGemaakt-nvt" onclick="setToggle('factuurGemaakt','nvt',this)">NVT</button>
+        <button class="tbtn ja" id="tb-factuurGemaakt-ja" onclick="setToggleReveal('factuurGemaakt','ja',this,'factuurGemaakt-extra')">Ja</button>
+        <button class="tbtn nee" id="tb-factuurGemaakt-nee" onclick="setToggleReveal('factuurGemaakt','nee',this,'factuurGemaakt-extra')">Nee</button>
+        <button class="tbtn nvt" id="tb-factuurGemaakt-nvt" onclick="setToggleReveal('factuurGemaakt','nvt',this,'factuurGemaakt-extra')">NVT</button>
+      </div>
+    </div>
+    <div class="ovveld" id="factuurGemaakt-extra">
+      <div class="field" style="margin-top:8px;">
+        <label>Factuur PDF</label>
+        <div id="factuur-pdf-link" style="margin:4px 0;"></div>
+        <input type="file" accept="application/pdf" id="ch-factuur-pdf-input" onchange="uploadChecklistPdf('factuur', this)" style="font-size:13px;width:100%;" />
       </div>
     </div>
   </div>
@@ -657,6 +671,7 @@ let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = []
 const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null, factuurGemaakt: null };
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 let klantenData = [];
+let offertePdfUrl = null, factuurPdfUrl = null;
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -757,7 +772,8 @@ function resetFormulier() {
   document.getElementById('sortex').classList.remove('zichtbaar');
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
-  ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
+  ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra','offerteGemaakt-extra','factuurGemaakt-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
+  offertePdfUrl = null; factuurPdfUrl = null; renderChecklistPdfLinks();
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
@@ -822,6 +838,41 @@ function renderChecklistProgress() {
   const nvtAantal = CHECKLIST_KEYS.length - relevant.length;
   const voltooid = relevant.filter(k => tog[k] === 'ja').length;
   el.textContent = voltooid + ' van ' + relevant.length + ' stappen voltooid' + (nvtAantal ? ' (' + nvtAantal + ' n.v.t.)' : '');
+}
+
+const PDF_BUCKET = 'documenten';
+
+function renderChecklistPdfLinks() {
+  const offerteEl = document.getElementById('offerte-pdf-link');
+  const factuurEl = document.getElementById('factuur-pdf-link');
+  if (offerteEl) offerteEl.innerHTML = offertePdfUrl ? '<a href="'+offertePdfUrl+'" target="_blank" rel="noopener" class="btn" style="height:32px;padding:0 12px;font-size:13px;">📄 Bekijk offerte-PDF</a>' : '<span style="font-size:13px;color:#aaa;">Nog geen PDF geüpload</span>';
+  if (factuurEl) factuurEl.innerHTML = factuurPdfUrl ? '<a href="'+factuurPdfUrl+'" target="_blank" rel="noopener" class="btn" style="height:32px;padding:0 12px;font-size:13px;">📄 Bekijk factuur-PDF</a>' : '<span style="font-size:13px;color:#aaa;">Nog geen PDF geüpload</span>';
+}
+
+async function uploadChecklistPdf(type, inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  if (!huidigId) { toast('Sla de klant eerst op voordat je een PDF uploadt', 3000); inputEl.value = ''; return; }
+  if (file.type !== 'application/pdf') { toast('Alleen PDF-bestanden zijn toegestaan', 3000); inputEl.value = ''; return; }
+  const pad = 'checklist/' + huidigId + '/' + type + '.pdf';
+  toast('PDF uploaden...', 8000);
+  try {
+    const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/pdf', 'x-upsert': 'true' },
+      body: file
+    });
+    if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
+    const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad + '?t=' + Date.now();
+    if (type === 'offerte') offertePdfUrl = url; else factuurPdfUrl = url;
+    renderChecklistPdfLinks();
+    toast('PDF geüpload!');
+    await autoOpslaan();
+  } catch(e) {
+    toast('Uploaden mislukt: ' + e.message, 4000);
+  } finally {
+    inputEl.value = '';
+  }
 }
 function setVV(v, btn) {
   vvAanwezig = v; btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
@@ -1067,7 +1118,8 @@ function bouwOpslaanData() {
     checklist_afdeklatten_besteld: tog.afdeklattenBesteld||'', checklist_afdeklatten_leverancier: gv('ch-afdeklatten-leverancier'), checklist_afdeklatten_datum: gv('ch-afdeklatten-datum'),
     checklist_olie_besteld: tog.olieBesteld||'', checklist_olie_leverancier: gv('ch-olie-leverancier'), checklist_olie_datum: gv('ch-olie-datum'),
     checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'),
-    checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'', checklist_factuur: tog.factuurGemaakt||''
+    checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'', checklist_factuur: tog.factuurGemaakt||'',
+    checklist_offerte_pdf: offertePdfUrl||'', checklist_factuur_pdf: factuurPdfUrl||''
   };
 }
 
@@ -1286,8 +1338,11 @@ async function laadKlant(id) {
     sv('ch-legger-naam', k.checklist_legger_naam);
     restoreToggle('bezorgschema', k.checklist_bezorgschema, 'bezorgschema-extra');
     sv('ch-bezorgschema-datum', k.checklist_bezorgschema_datum);
-    restoreToggle('offerteGemaakt', k.checklist_offerte);
-    restoreToggle('factuurGemaakt', k.checklist_factuur);
+    restoreToggle('offerteGemaakt', k.checklist_offerte, 'offerteGemaakt-extra');
+    restoreToggle('factuurGemaakt', k.checklist_factuur, 'factuurGemaakt-extra');
+    offertePdfUrl = k.checklist_offerte_pdf || null;
+    factuurPdfUrl = k.checklist_factuur_pdf || null;
+    renderChecklistPdfLinks();
     renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress();
     sv('opslaan-status', 'Geladen op '+new Date().toLocaleString('nl-NL'));
     toast('Klant geladen!');
