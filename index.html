@@ -664,6 +664,11 @@ textarea { resize: vertical; min-height: 60px; }
     <span><span class="agenda-dot" style="background:#E2A64B;"></span>Materiaal verwacht</span>
     <span><span class="agenda-dot" style="background:#1D9E75;"></span>Vloer leggen</span>
     <span><span class="agenda-dot" style="background:#9B59B6;"></span>Bezorging</span>
+    <span><span class="agenda-dot" style="background:#D63384;"></span>Eigen afspraak</span>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+    <button class="btn btn-primary" onclick="nieuweAfspraak()">+ Afspraak</button>
   </div>
 
   <div id="agenda-inhoud"></div>
@@ -689,6 +694,26 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="info-tekst" id="info-tekst"></div>
     <div class="confirm-btns">
       <button class="btn btn-primary" id="info-sluiten">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="afspraak-overlay">
+  <div class="confirm-box" style="max-width:380px;">
+    <p class="confirm-titel" id="afspraak-titel-kop">Afspraak toevoegen</p>
+    <div class="field" style="margin-bottom:10px;"><label>Titel</label><input type="text" id="afspraak-titel" placeholder="bijv. Terugbellen over offerte" /></div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="field"><label>Datum</label><input type="date" id="afspraak-datum" /></div>
+      <div class="field"><label>Tijd (optioneel)</label><input type="time" id="afspraak-tijd" /></div>
+    </div>
+    <div class="field" style="margin-bottom:10px;"><label>Klant (optioneel)</label>
+      <select id="afspraak-klant"><option value="">— Geen klant —</option></select>
+    </div>
+    <div class="field" style="margin-bottom:14px;"><label>Notitie (optioneel)</label><textarea id="afspraak-notitie" placeholder="Extra toelichting..."></textarea></div>
+    <div class="confirm-btns">
+      <button class="btn btn-danger" id="afspraak-verwijderen" style="display:none;margin-right:auto;" onclick="verwijderAfspraak()">Verwijderen</button>
+      <button class="btn" onclick="sluitAfspraakForm()">Annuleren</button>
+      <button class="btn btn-primary" onclick="opslaanAfspraak()">Opslaan</button>
     </div>
   </div>
 </div>
@@ -793,7 +818,7 @@ function switchTab(name) {
   if (name === 'adressen') laadKlanten();
   if (name === 'samenvatting') renderSamenvatting();
   if (name === 'checklist') renderChecklistProgress();
-  if (name === 'agenda') renderAgenda();
+  if (name === 'agenda') laadAfspraken();
   updateBanners();
 }
 
@@ -923,7 +948,7 @@ async function uploadChecklistPdf(type, inputEl) {
 }
 
 // ---------- AGENDA ----------
-const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6' };
+const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6', afspraak: '#D63384' };
 const AGENDA_BRONNEN = [
   { veld: 'datum_bezoek', label: 'Bezoek', type: 'bezoek' },
   { veld: 'checklist_vloer_datum', label: 'Vloer verwacht', type: 'besteld' },
@@ -942,6 +967,8 @@ const AGENDA_DAG_VOL = ['zondag','maandag','dinsdag','woensdag','donderdag','vri
 let agendaView = 'maand';
 let agendaDatum = new Date(); agendaDatum.setHours(0,0,0,0);
 let agendaGeselecteerdDag = null;
+let afsprakenData = [];
+let afspraakBewerkId = null;
 
 function agendaISO(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function agendaParse(s) { if (!s) return null; const p = s.split('-'); if (p.length !== 3) return null; const d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2])); return isNaN(d.getTime()) ? null : d; }
@@ -955,14 +982,30 @@ function bouwAgendaEvents() {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
     AGENDA_BRONNEN.forEach(b => {
       const datum = k[b.veld];
-      if (datum) events.push({ datum, label: b.label, type: b.type, klantId: k.id, klantNaam: naam });
+      if (datum) events.push({ bron: 'checklist', datum, label: b.label, type: b.type, klantId: k.id, klantNaam: naam });
     });
   });
-  events.sort((a,b) => a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0);
+  afsprakenData.forEach(a => {
+    const klant = a.klant_id ? klantenData.find(k => String(k.id) === String(a.klant_id)) : null;
+    const klantNaam = klant ? (((klant.voornaam||'')+' '+(klant.achternaam||'')).trim() || '(geen naam)') : '';
+    events.push({ bron: 'afspraak', id: a.id, datum: a.datum, tijd: a.tijd||'', label: a.titel, type: 'afspraak', klantId: a.klant_id||null, klantNaam });
+  });
+  events.sort((a,b) => {
+    if (a.datum !== b.datum) return a.datum < b.datum ? -1 : 1;
+    const ta = a.tijd || '99:99', tb = b.tijd || '99:99';
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
   return events;
 }
 function agendaEventsOpDag(events, iso) { return events.filter(e => e.datum === iso); }
 function agendaEventHtml(e) {
+  if (e.bron === 'afspraak') {
+    const onderschrift = [e.tijd, e.klantNaam].filter(Boolean).join(' · ');
+    return '<div class="agenda-event" onclick="openAfspraakForm('+e.id+')">'
+      + '<span class="bolletje" style="background:'+AGENDA_KLEUREN[e.type]+';"></span>'
+      + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div>'+(onderschrift ? '<div class="klant">'+escapeHtml(onderschrift)+'</div>' : '')+'</div>'
+      + '</div>';
+  }
   return '<div class="agenda-event" onclick="laadKlant(\''+e.klantId+'\')">'
     + '<span class="bolletje" style="background:'+AGENDA_KLEUREN[e.type]+';"></span>'
     + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(e.klantNaam)+'</div></div>'
@@ -1074,6 +1117,103 @@ function renderAgenda() {
   if (agendaView === 'dag') renderAgendaDag(events);
   else if (agendaView === 'week') renderAgendaWeek(events);
   else renderAgendaMaand(events);
+}
+
+async function laadAfspraken() {
+  try {
+    afsprakenData = await sbFetch('GET', 'afspraken?select=*');
+  } catch(e) {
+    afsprakenData = [];
+  }
+  renderAgenda();
+}
+
+function vulAfspraakKlantSelect(geselecteerdId) {
+  const sel = document.getElementById('afspraak-klant');
+  const opties = ['<option value="">— Geen klant —</option>'].concat(
+    klantenData.map(k => {
+      const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
+      return '<option value="'+k.id+'">'+escapeHtml(naam)+'</option>';
+    })
+  );
+  sel.innerHTML = opties.join('');
+  sel.value = geselecteerdId ? String(geselecteerdId) : '';
+}
+
+function nieuweAfspraak() {
+  afspraakBewerkId = null;
+  document.getElementById('afspraak-titel-kop').textContent = 'Afspraak toevoegen';
+  sv('afspraak-titel', '');
+  sv('afspraak-datum', agendaView === 'maand' ? (agendaGeselecteerdDag || agendaISO(new Date())) : agendaISO(agendaDatum));
+  sv('afspraak-tijd', '');
+  sv('afspraak-notitie', '');
+  vulAfspraakKlantSelect(null);
+  document.getElementById('afspraak-verwijderen').style.display = 'none';
+  document.getElementById('afspraak-overlay').classList.add('show');
+}
+
+function openAfspraakForm(id) {
+  const a = afsprakenData.find(x => String(x.id) === String(id));
+  if (!a) return;
+  afspraakBewerkId = a.id;
+  document.getElementById('afspraak-titel-kop').textContent = 'Afspraak bewerken';
+  sv('afspraak-titel', a.titel);
+  sv('afspraak-datum', a.datum);
+  sv('afspraak-tijd', a.tijd);
+  sv('afspraak-notitie', a.notitie);
+  vulAfspraakKlantSelect(a.klant_id);
+  document.getElementById('afspraak-verwijderen').style.display = 'inline-flex';
+  document.getElementById('afspraak-overlay').classList.add('show');
+}
+
+function sluitAfspraakForm() {
+  document.getElementById('afspraak-overlay').classList.remove('show');
+}
+document.getElementById('afspraak-overlay').onclick = (e) => { if (e.target.id === 'afspraak-overlay') sluitAfspraakForm(); };
+
+async function opslaanAfspraak() {
+  const titel = gv('afspraak-titel');
+  const datum = gv('afspraak-datum');
+  if (!titel) { toast('Vul een titel in', 3000); return; }
+  if (!datum) { toast('Vul een datum in', 3000); return; }
+  const klantWaarde = gv('afspraak-klant');
+  const data = {
+    titel, datum,
+    tijd: gv('afspraak-tijd') || null,
+    klant_id: klantWaarde || null,
+    notitie: gv('afspraak-notitie') || null,
+  };
+  try {
+    if (afspraakBewerkId) {
+      await sbFetch('PATCH', 'afspraken?id=eq.'+afspraakBewerkId, data);
+      const idx = afsprakenData.findIndex(x => String(x.id) === String(afspraakBewerkId));
+      if (idx >= 0) afsprakenData[idx] = { ...afsprakenData[idx], ...data };
+    } else {
+      const result = await sbFetch('POST', 'afspraken', data);
+      if (result[0]) afsprakenData.push(result[0]);
+    }
+    sluitAfspraakForm();
+    renderAgenda();
+    toast('Afspraak opgeslagen!');
+  } catch(e) {
+    toast('Fout: '+e.message, 4000);
+  }
+}
+
+async function verwijderAfspraak() {
+  if (!afspraakBewerkId) return;
+  const id = afspraakBewerkId;
+  sluitAfspraakForm();
+  const ok = await bevestig('Weet je zeker dat je deze afspraak wilt verwijderen?');
+  if (!ok) return;
+  try {
+    await sbFetch('DELETE', 'afspraken?id=eq.'+id);
+    afsprakenData = afsprakenData.filter(x => String(x.id) !== String(id));
+    renderAgenda();
+    toast('Afspraak verwijderd');
+  } catch(e) {
+    toast('Fout: '+e.message, 4000);
+  }
 }
 
 function setVV(v, btn) {
@@ -1226,11 +1366,17 @@ function getVVTekst() {
   return 'Ja' + (vvType ? ' - '+vvType : '') + (gv('vv-bron') ? ' - '+gv('vv-bron') : '');
 }
 
+function fmtDatum(iso) {
+  if (!iso) return '';
+  const p = iso.split('-');
+  if (p.length !== 3) return iso;
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
 function renderSamenvatting() {
   const r = (label, value) => value ? '<div class="sam-row"><span class="sam-label">'+label+'</span><span class="sam-value">'+value+'</span></div>' : '';
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
   const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
-  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', gv('naw-datum')) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum'))) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
   const afm = [gv('tv-lengte'), gv('tv-breedte'), gv('tv-dikte')].filter(Boolean).join(' x ');
   document.getElementById('sam-vloer-type').innerHTML = r('Type', vloerType) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
@@ -1602,6 +1748,7 @@ async function verwijderKlant(id) {
 
 renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
 laadKlanten();
+laadAfspraken();
 </script>
 </body>
 </html>
