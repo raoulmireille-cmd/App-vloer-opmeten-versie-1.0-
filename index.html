@@ -45,6 +45,22 @@ textarea { resize: vertical; min-height: 60px; }
 .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
 .tbtn.nvt.active { background: #888; border-color: #888; color: #fff; }
 .tbtn.opt.active { background: #1a56db; border-color: #1a56db; color: #fff; }
+.agenda-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.agenda-maand-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.agenda-dagnaam { font-size: 10px; color: #999; text-align: center; font-weight: 600; padding-bottom: 4px; }
+.agenda-cel { position: relative; aspect-ratio: 1; border-radius: 6px; border: 1px solid #eee; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; cursor: pointer; font-size: 12px; color: #333; }
+.agenda-cel.buiten-maand { color: #ccc; background: #fafafa; }
+.agenda-cel.vandaag { border-color: #1a56db; border-width: 2px; font-weight: 600; }
+.agenda-cel.geselecteerd { background: #e8f0fe; border-color: #1a56db; }
+.agenda-cel .dots { display: flex; gap: 2px; margin-top: 3px; flex-wrap: wrap; justify-content: center; }
+.agenda-cel .dots span { width: 5px; height: 5px; border-radius: 50%; }
+.agenda-event { display: flex; align-items: center; gap: 9px; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 9px 12px; margin-bottom: 5px; cursor: pointer; }
+.agenda-event .bolletje { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.agenda-event .info { flex: 1; min-width: 0; }
+.agenda-event .titel { font-size: 13px; font-weight: 500; }
+.agenda-event .klant { font-size: 12px; color: #888; }
+.agenda-weekdag .kop { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.agenda-weekdag .kop.vandaag { color: #1a56db; }
 .vtbtn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .vtbtn { padding: 9px 16px; font-size: 14px; border-radius: 6px; border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
 .vtbtn:hover { border-color: #1a56db; color: #1a1a1a; }
@@ -150,6 +166,7 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab" onclick="switchTab('profielen')">Profielen</button>
   <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
   <button class="tab" onclick="switchTab('checklist')">Checklist</button>
+  <button class="tab" onclick="switchTab('agenda')">Agenda</button>
 </div>
 
 <!-- ADRESSEN -->
@@ -578,6 +595,7 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
     <div class="ovveld" id="leggerIngedeeld-extra">
       <div class="field" style="margin-top:8px;"><label>Naam legger</label><input type="text" id="ch-legger-naam" placeholder="bijv. Kees" /></div>
+      <div class="field" style="margin-top:8px;"><label>Legdatum</label><input type="date" id="ch-legger-datum" /></div>
     </div>
     <div class="toggle-row"><span class="toggle-label">Bezorgschema ingevuld</span>
       <div class="toggle-btns">
@@ -621,6 +639,34 @@ textarea { resize: vertical; min-height: 60px; }
       </div>
     </div>
   </div>
+</div>
+
+<!-- AGENDA -->
+<div class="panel" id="panel-agenda">
+  <div class="card">
+    <div class="toggle-btns" style="margin-bottom:14px;">
+      <button class="tbtn opt" id="ag-view-dag" onclick="zetAgendaView('dag')">Dag</button>
+      <button class="tbtn opt" id="ag-view-week" onclick="zetAgendaView('week')">Week</button>
+      <button class="tbtn opt active" id="ag-view-maand" onclick="zetAgendaView('maand')">Maand</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <button class="btn" style="padding:0 12px;height:32px;" onclick="agendaVorige()">‹</button>
+      <div style="text-align:center;flex:1;">
+        <div id="agenda-periode-titel" style="font-size:15px;font-weight:600;"></div>
+        <button class="snelknop" style="margin-top:4px;" onclick="agendaVandaag()">Vandaag</button>
+      </div>
+      <button class="btn" style="padding:0 12px;height:32px;" onclick="agendaVolgende()">›</button>
+    </div>
+  </div>
+
+  <div class="card" style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#666;padding:10px 16px;">
+    <span><span class="agenda-dot" style="background:#5B8DEF;"></span>Bezoek</span>
+    <span><span class="agenda-dot" style="background:#E2A64B;"></span>Materiaal verwacht</span>
+    <span><span class="agenda-dot" style="background:#1D9E75;"></span>Vloer leggen</span>
+    <span><span class="agenda-dot" style="background:#9B59B6;"></span>Bezorging</span>
+  </div>
+
+  <div id="agenda-inhoud"></div>
 </div>
 </div>
 
@@ -701,7 +747,7 @@ function updateBanners() {
   });
 }
 
-const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist'];
+const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist','agenda'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt','factuurGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -747,6 +793,7 @@ function switchTab(name) {
   if (name === 'adressen') laadKlanten();
   if (name === 'samenvatting') renderSamenvatting();
   if (name === 'checklist') renderChecklistProgress();
+  if (name === 'agenda') renderAgenda();
   updateBanners();
 }
 
@@ -760,7 +807,7 @@ function resetFormulier() {
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
-   'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
+   'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
   sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
@@ -874,6 +921,161 @@ async function uploadChecklistPdf(type, inputEl) {
     inputEl.value = '';
   }
 }
+
+// ---------- AGENDA ----------
+const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6' };
+const AGENDA_BRONNEN = [
+  { veld: 'datum_bezoek', label: 'Bezoek', type: 'bezoek' },
+  { veld: 'checklist_vloer_datum', label: 'Vloer verwacht', type: 'besteld' },
+  { veld: 'checklist_plinten_datum', label: 'Plinten verwacht', type: 'besteld' },
+  { veld: 'checklist_ondervloer_datum', label: 'Ondervloer verwacht', type: 'besteld' },
+  { veld: 'checklist_afdeklatten_datum', label: 'Afdeklatten verwacht', type: 'besteld' },
+  { veld: 'checklist_olie_datum', label: 'Olie/lak verwacht', type: 'besteld' },
+  { veld: 'checklist_legger_datum', label: 'Vloer leggen', type: 'legger' },
+  { veld: 'checklist_bezorgschema_datum', label: 'Bezorging', type: 'bezorging' },
+];
+const AGENDA_DATUM_VELDEN = AGENDA_BRONNEN.map(b => b.veld);
+const AGENDA_MAAND_NAMEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const AGENDA_DAG_KORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const AGENDA_DAG_VOL = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+
+let agendaView = 'maand';
+let agendaDatum = new Date(); agendaDatum.setHours(0,0,0,0);
+let agendaGeselecteerdDag = null;
+
+function agendaISO(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function agendaParse(s) { if (!s) return null; const p = s.split('-'); if (p.length !== 3) return null; const d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2])); return isNaN(d.getTime()) ? null : d; }
+function agendaWeekStart(d) { const offset = (d.getDay()+6)%7; return new Date(d.getFullYear(), d.getMonth(), d.getDate()-offset); }
+function agendaDagNaam(d) { const n = AGENDA_DAG_VOL[d.getDay()]; return n.charAt(0).toUpperCase()+n.slice(1); }
+
+function bouwAgendaEvents() {
+  const events = [];
+  klantenData.forEach(k => {
+    if (k.checklist_niet_doorgegaan === 'ja') return;
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
+    AGENDA_BRONNEN.forEach(b => {
+      const datum = k[b.veld];
+      if (datum) events.push({ datum, label: b.label, type: b.type, klantId: k.id, klantNaam: naam });
+    });
+  });
+  events.sort((a,b) => a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0);
+  return events;
+}
+function agendaEventsOpDag(events, iso) { return events.filter(e => e.datum === iso); }
+function agendaEventHtml(e) {
+  return '<div class="agenda-event" onclick="laadKlant(\''+e.klantId+'\')">'
+    + '<span class="bolletje" style="background:'+AGENDA_KLEUREN[e.type]+';"></span>'
+    + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(e.klantNaam)+'</div></div>'
+    + '</div>';
+}
+
+function agendaPeriodeTitel() {
+  if (agendaView === 'dag') {
+    return agendaDagNaam(agendaDatum)+' '+agendaDatum.getDate()+' '+AGENDA_MAAND_NAMEN[agendaDatum.getMonth()]+' '+agendaDatum.getFullYear();
+  } else if (agendaView === 'week') {
+    const start = agendaWeekStart(agendaDatum);
+    const eind = new Date(start.getFullYear(), start.getMonth(), start.getDate()+6);
+    if (start.getMonth() === eind.getMonth()) return start.getDate()+' – '+eind.getDate()+' '+AGENDA_MAAND_NAMEN[start.getMonth()]+' '+start.getFullYear();
+    return start.getDate()+' '+AGENDA_MAAND_NAMEN[start.getMonth()]+' – '+eind.getDate()+' '+AGENDA_MAAND_NAMEN[eind.getMonth()]+' '+eind.getFullYear();
+  } else {
+    const m = AGENDA_MAAND_NAMEN[agendaDatum.getMonth()];
+    return m.charAt(0).toUpperCase()+m.slice(1)+' '+agendaDatum.getFullYear();
+  }
+}
+
+function zetAgendaView(v) {
+  agendaView = v;
+  agendaGeselecteerdDag = null;
+  document.querySelectorAll('#panel-agenda .toggle-btns .tbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ag-view-'+v).classList.add('active');
+  renderAgenda();
+}
+function agendaStap(richting) {
+  if (agendaView === 'dag') agendaDatum = new Date(agendaDatum.getFullYear(), agendaDatum.getMonth(), agendaDatum.getDate()+richting);
+  else if (agendaView === 'week') agendaDatum = new Date(agendaDatum.getFullYear(), agendaDatum.getMonth(), agendaDatum.getDate()+richting*7);
+  else agendaDatum = new Date(agendaDatum.getFullYear(), agendaDatum.getMonth()+richting, 1);
+  agendaGeselecteerdDag = null;
+  renderAgenda();
+}
+function agendaVorige() { agendaStap(-1); }
+function agendaVolgende() { agendaStap(1); }
+function agendaVandaag() {
+  agendaDatum = new Date(); agendaDatum.setHours(0,0,0,0);
+  agendaGeselecteerdDag = null;
+  renderAgenda();
+}
+function agendaKiesDag(iso) {
+  agendaGeselecteerdDag = (agendaGeselecteerdDag === iso) ? null : iso;
+  renderAgendaMaand(bouwAgendaEvents());
+}
+
+function renderAgendaMaand(events) {
+  document.getElementById('agenda-periode-titel').textContent = agendaPeriodeTitel();
+  const jaar = agendaDatum.getFullYear(), maand = agendaDatum.getMonth();
+  const eersteVanMaand = new Date(jaar, maand, 1);
+  const startOffset = (eersteVanMaand.getDay()+6)%7;
+  const daysInMonth = new Date(jaar, maand+1, 0).getDate();
+  const totalCells = Math.ceil((startOffset+daysInMonth)/7)*7;
+  const vandaag = agendaISO(new Date());
+  let html = '<div class="card"><div class="agenda-maand-grid">';
+  AGENDA_DAG_KORT.forEach(d => html += '<div class="agenda-dagnaam">'+d+'</div>');
+  for (let i=0;i<totalCells;i++) {
+    const d = new Date(jaar, maand, 1-startOffset+i);
+    const iso = agendaISO(d);
+    const klassen = ['agenda-cel'];
+    if (d.getMonth() !== maand) klassen.push('buiten-maand');
+    if (iso === vandaag) klassen.push('vandaag');
+    if (iso === agendaGeselecteerdDag) klassen.push('geselecteerd');
+    const dagEvents = agendaEventsOpDag(events, iso);
+    const dotsHtml = dagEvents.slice(0,4).map(e => '<span style="background:'+AGENDA_KLEUREN[e.type]+';"></span>').join('');
+    html += '<div class="'+klassen.join(' ')+'" onclick="agendaKiesDag(\''+iso+'\')"><span>'+d.getDate()+'</span>'+(dagEvents.length ? '<div class="dots">'+dotsHtml+'</div>' : '')+'</div>';
+  }
+  html += '</div></div><div id="agenda-detail">';
+  if (agendaGeselecteerdDag) {
+    const dagEvents = agendaEventsOpDag(events, agendaGeselecteerdDag);
+    const dObj = agendaParse(agendaGeselecteerdDag);
+    html += '<div class="card"><p class="section-title">'+agendaDagNaam(dObj)+' '+dObj.getDate()+' '+AGENDA_MAAND_NAMEN[dObj.getMonth()]+'</p>';
+    html += dagEvents.length ? dagEvents.map(agendaEventHtml).join('') : '<div style="font-size:13px;color:#aaa;">Geen afspraken</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  document.getElementById('agenda-inhoud').innerHTML = html;
+}
+
+function renderAgendaWeek(events) {
+  document.getElementById('agenda-periode-titel').textContent = agendaPeriodeTitel();
+  const start = agendaWeekStart(agendaDatum);
+  const vandaag = agendaISO(new Date());
+  let html = '';
+  for (let i=0;i<7;i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate()+i);
+    const iso = agendaISO(d);
+    const dagEvents = agendaEventsOpDag(events, iso);
+    const isVandaag = iso === vandaag;
+    html += '<div class="card agenda-weekdag"><div class="kop'+(isVandaag?' vandaag':'')+'">'+agendaDagNaam(d)+' '+d.getDate()+' '+AGENDA_MAAND_NAMEN[d.getMonth()]+(isVandaag?' · vandaag':'')+'</div>';
+    html += dagEvents.length ? dagEvents.map(agendaEventHtml).join('') : '<div style="font-size:13px;color:#aaa;">Geen afspraken</div>';
+    html += '</div>';
+  }
+  document.getElementById('agenda-inhoud').innerHTML = html;
+}
+
+function renderAgendaDag(events) {
+  document.getElementById('agenda-periode-titel').textContent = agendaPeriodeTitel();
+  const iso = agendaISO(agendaDatum);
+  const dagEvents = agendaEventsOpDag(events, iso);
+  let html = '<div class="card">';
+  html += dagEvents.length ? dagEvents.map(agendaEventHtml).join('') : '<div style="font-size:13px;color:#aaa;">Geen afspraken op deze dag</div>';
+  html += '</div>';
+  document.getElementById('agenda-inhoud').innerHTML = html;
+}
+
+function renderAgenda() {
+  const events = bouwAgendaEvents();
+  if (agendaView === 'dag') renderAgendaDag(events);
+  else if (agendaView === 'week') renderAgendaWeek(events);
+  else renderAgendaMaand(events);
+}
+
 function setVV(v, btn) {
   vvAanwezig = v; btn.closest('.toggle-btns').querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
   if (v === 'ja') document.getElementById('vv-extra').classList.add('zichtbaar');
@@ -1117,7 +1319,7 @@ function bouwOpslaanData() {
     checklist_ondervloer_besteld: tog.ondervloerBesteld||'', checklist_ondervloer_leverancier: gv('ch-ondervloer-leverancier'), checklist_ondervloer_datum: gv('ch-ondervloer-datum'),
     checklist_afdeklatten_besteld: tog.afdeklattenBesteld||'', checklist_afdeklatten_leverancier: gv('ch-afdeklatten-leverancier'), checklist_afdeklatten_datum: gv('ch-afdeklatten-datum'),
     checklist_olie_besteld: tog.olieBesteld||'', checklist_olie_leverancier: gv('ch-olie-leverancier'), checklist_olie_datum: gv('ch-olie-datum'),
-    checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'),
+    checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'), checklist_legger_datum: gv('ch-legger-datum'),
     checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'', checklist_factuur: tog.factuurGemaakt||'',
     checklist_offerte_pdf: offertePdfUrl||'', checklist_factuur_pdf: factuurPdfUrl||''
   };
@@ -1222,10 +1424,11 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,straat,huisnummer,postcode,plaats,created_at,checklist_niet_doorgegaan,'+Object.values(CHECKLIST_DB_COLS).join(','));
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,straat,huisnummer,postcode,plaats,created_at,checklist_niet_doorgegaan,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(','));
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
+    renderAgenda();
   } catch(e) {
     lijst.innerHTML = '<div class="leeg">Fout bij laden: '+e.message+'<br><small>Controleer je internetverbinding</small></div>';
     document.getElementById('klanten-count').textContent = '';
@@ -1335,7 +1538,7 @@ async function laadKlant(id) {
     restoreToggle('olieBesteld', k.checklist_olie_besteld, 'olieBesteld-extra');
     sv('ch-olie-leverancier', k.checklist_olie_leverancier); sv('ch-olie-datum', k.checklist_olie_datum);
     restoreToggle('leggerIngedeeld', k.checklist_legger_ingedeeld, 'leggerIngedeeld-extra');
-    sv('ch-legger-naam', k.checklist_legger_naam);
+    sv('ch-legger-naam', k.checklist_legger_naam); sv('ch-legger-datum', k.checklist_legger_datum);
     restoreToggle('bezorgschema', k.checklist_bezorgschema, 'bezorgschema-extra');
     sv('ch-bezorgschema-datum', k.checklist_bezorgschema_datum);
     restoreToggle('offerteGemaakt', k.checklist_offerte, 'offerteGemaakt-extra');
