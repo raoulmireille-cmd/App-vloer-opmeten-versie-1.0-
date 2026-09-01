@@ -75,6 +75,7 @@ textarea { resize: vertical; min-height: 60px; }
 .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
 .form-row-5 { display: grid; grid-template-columns: 130px 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
+.form-row-vl { display: grid; grid-template-columns: 130px 1fr 90px auto; gap: 8px; align-items: end; }
 .form-row-profiel { display: grid; grid-template-columns: 1fr 1fr 70px 90px auto; gap: 8px; align-items: end; }
 .snelknoppen { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .snelknop { font-size: 12px; padding: 4px 10px; border: 1px solid #ddd; border-radius: 20px; background: #fff; color: #666; cursor: pointer; font-family: inherit; }
@@ -136,6 +137,8 @@ textarea { resize: vertical; min-height: 60px; }
   .form-row-4 > *:nth-child(5) { grid-column: 1 / -1; }
   .form-row-5 { grid-template-columns: 1fr 1fr; }
   .form-row-5 > *:nth-child(6) { grid-column: 1 / -1; }
+  .form-row-vl { grid-template-columns: 1fr 1fr; }
+  .form-row-vl > *:nth-child(4) { grid-column: 1 / -1; }
   .form-row-profiel { grid-template-columns: 1fr 1fr; }
   .form-row-profiel > *:nth-child(5) { grid-column: 1 / -1; }
   .form-row-3 { grid-template-columns: 1fr 1fr; }
@@ -162,9 +165,9 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab active" onclick="switchTab('adressen')">Adressen</button>
   <button class="tab" onclick="switchTab('naw')">Klantgegevens</button>
   <button class="tab" onclick="switchTab('typevloer')">Type vloer</button>
-  <button class="tab" onclick="switchTab('controle')">Vloercontrole</button>
-  <button class="tab" onclick="switchTab('vloer')">Opmeting vloer</button>
-  <button class="tab" onclick="switchTab('plint')">Opmeting plinten</button>
+  <button class="tab" onclick="switchTab('controle')">Controle</button>
+  <button class="tab" onclick="switchTab('vloer')">Vloer</button>
+  <button class="tab" onclick="switchTab('plint')">Plinten</button>
   <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
   <button class="tab" onclick="switchTab('profielen')">Profielen</button>
   <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
@@ -283,7 +286,7 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="ovveld" id="woca-kleur-veld"><label style="font-size:12px;color:#666;margin-top:8px;display:block;">Kleur Woca</label><input type="text" id="woca-kleur" placeholder="bijv. naturel, wit..." /></div>
     <div class="ovveld" id="monocoat-kleur-veld"><label style="font-size:12px;color:#666;margin-top:8px;display:block;">Kleur Monocoat</label><input type="text" id="monocoat-kleur" placeholder="bijv. natural, white wash, black..." /></div>
   </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('controle')">Naar vloercontrole →</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('controle')">Naar controle →</button></div>
 </div>
 
 <!-- VLOERCONTROLE -->
@@ -334,7 +337,7 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
   </div>
   <div class="field" style="margin-top:4px;"><label style="font-size:12px;color:#666;">Opmerkingen</label><textarea id="c-opm" placeholder="Eventuele opmerkingen..."></textarea></div>
-  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('vloer')">Naar opmeting vloer →</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('vloer')">Naar vloer →</button></div>
 </div>
 
 <!-- OPMETING VLOER -->
@@ -343,7 +346,7 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="rij-form">
     <div class="form-row-5">
       <div class="field"><label>Verdieping</label>
-        <select id="v-verdieping" onchange="checkVerdiepingOv()">
+        <select id="v-verdieping" onchange="checkVerdiepingOv('v')">
           <option value="">— Geen —</option>
           <option>Begane grond</option>
           <option>1e verdieping</option>
@@ -397,7 +400,7 @@ textarea { resize: vertical; min-height: 60px; }
       <div style="font-size:13px;color:#888;margin-top:4px;">Incl. afval: <span id="v-totaal-afval" style="font-weight:600;">0,00 m2</span></div>
     </div>
   </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('plint')">Naar opmeting plinten →</button></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('plint')">Naar plinten →</button></div>
 </div>
 
 <!-- OPMETING PLINTEN -->
@@ -412,11 +415,23 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="field" style="margin-top:12px;"><label>Kleur</label><input type="text" id="p-kleur" placeholder="bijv. wit, eiken natuur..." /></div>
   </div>
   <div class="rij-form">
-    <div class="form-row-3">
+    <div class="form-row-vl">
+      <div class="field"><label>Verdieping</label>
+        <select id="p-verdieping" onchange="checkVerdiepingOv('p')">
+          <option value="">— Geen —</option>
+          <option>Begane grond</option>
+          <option>1e verdieping</option>
+          <option>2e verdieping</option>
+          <option>Zolder</option>
+          <option>Kelder</option>
+          <option>Overige</option>
+        </select>
+      </div>
       <div class="field"><label>Ruimte / wand</label><input type="text" id="p-naam" placeholder="bijv. Woonkamer" /></div>
       <div class="field"><label>Lengte (m)</label><input type="number" id="p-lengte" placeholder="0.00" step="0.01" min="0" /></div>
       <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegPlintToe()">+ Voeg toe</button></div>
     </div>
+    <div class="ovveld" id="p-verdieping-overig-veld"><input type="text" id="p-verdieping-overig" placeholder="Omschrijf verdieping..." style="margin-top:6px;" /></div>
     <div class="snelknoppen">
       <span style="font-size:11px;color:#aaa;align-self:center;">Snelkeuze:</span>
       <button class="snelknop" onclick="vulK('p-naam','Woonkamer')">Woonkamer</button>
@@ -449,11 +464,23 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="field" style="margin-top:12px;"><label>Kleur</label><input type="text" id="a-kleur" placeholder="bijv. wit, eiken natuur..." /></div>
   </div>
   <div class="rij-form">
-    <div class="form-row-3">
+    <div class="form-row-vl">
+      <div class="field"><label>Verdieping</label>
+        <select id="a-verdieping" onchange="checkVerdiepingOv('a')">
+          <option value="">— Geen —</option>
+          <option>Begane grond</option>
+          <option>1e verdieping</option>
+          <option>2e verdieping</option>
+          <option>Zolder</option>
+          <option>Kelder</option>
+          <option>Overige</option>
+        </select>
+      </div>
       <div class="field"><label>Locatie / ruimte</label><input type="text" id="a-naam" placeholder="bijv. Overgang woonkamer" /></div>
       <div class="field"><label>Lengte (m)</label><input type="number" id="a-lengte" placeholder="0.00" step="0.01" min="0" /></div>
       <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegAfdekToe()">+ Voeg toe</button></div>
     </div>
+    <div class="ovveld" id="a-verdieping-overig-veld"><input type="text" id="a-verdieping-overig" placeholder="Omschrijf verdieping..." style="margin-top:6px;" /></div>
     <div class="snelknoppen">
       <span style="font-size:11px;color:#aaa;align-self:center;">Snelkeuze:</span>
       <button class="snelknop" onclick="vulK('a-naam','Woonkamer')">Woonkamer</button>
@@ -850,7 +877,7 @@ function resetFormulier() {
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
    'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
   tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null;
@@ -881,7 +908,7 @@ function checkOndervloerOverig() {
   document.getElementById('ondervloer-overig-veld').classList.toggle('zichtbaar', document.getElementById('c-ondervloer').value === 'Overige');
 }
 function checkSortOv() { document.getElementById('sortex').classList.toggle('zichtbaar', gv('tv-sortering') === 'Overige'); }
-function checkVerdiepingOv() { document.getElementById('v-verdieping-overig-veld').classList.toggle('zichtbaar', gv('v-verdieping') === 'Overige'); }
+function checkVerdiepingOv(prefix) { document.getElementById(prefix+'-verdieping-overig-veld').classList.toggle('zichtbaar', gv(prefix+'-verdieping') === 'Overige'); }
 function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
 
 async function zoekAdres() {
@@ -1356,11 +1383,31 @@ function renderVloer() {
     aftrekken.map(k => '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderAftrek('+k.id+')">X</button></div>').join('');
 }
 
+function lengteVlakHtml(rijen, verwijderbaar, verwijderFn) {
+  return rijen.map(r => '<div class="data-rij"><div class="naam">'+escapeHtml(r.naam)+'</div><div class="opp">'+fmt(r.lengte)+' m</div>'+(verwijderbaar ? '<button class="del-btn" onclick="'+verwijderFn+'('+r.id+')">X</button>' : '')+'</div>').join('');
+}
+function lengteVerdiepingGroepenHtml(rijen, verwijderbaar, verwijderFn) {
+  if (!rijen.length) return '';
+  if (!rijen.some(r => r.verdieping)) return lengteVlakHtml(rijen, verwijderbaar, verwijderFn);
+  const groepen = {};
+  rijen.forEach(r => { const v = r.verdieping || 'Overig'; if (!groepen[v]) groepen[v] = []; groepen[v].push(r); });
+  let html = '';
+  Object.entries(groepen).forEach(([verdieping, items]) => {
+    const subtotaal = items.reduce((s,r) => s+r.lengte, 0);
+    html += '<div style="margin-bottom:14px;padding:10px;background:#f5f8ff;border-radius:8px;border:1px solid #dbe6fb;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#1a56db;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#1a56db;">Totaal: '+fmt(subtotaal)+' m</span></div>';
+    html += lengteVlakHtml(items, verwijderbaar, verwijderFn);
+    html += '</div>';
+  });
+  return html;
+}
+
 function voegPlintToe() {
   const naam = gv('p-naam')||'Wand '+(plinten.length+1);
+  const verdieping = gv('p-verdieping') === 'Overige' ? (gv('p-verdieping-overig')||'Overige') : gv('p-verdieping');
   const l = parseFloat(document.getElementById('p-lengte').value);
   if (isNaN(l)||l<=0) return;
-  plinten.push({ id: Date.now(), naam, lengte: l });
+  plinten.push({ id: Date.now(), naam, verdieping, lengte: l });
   sv('p-naam',''); sv('p-lengte','');
   renderPlinten(); document.getElementById('p-naam').focus();
 }
@@ -1371,15 +1418,15 @@ function renderPlinten() {
   const afval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
   document.getElementById('p-totaal').textContent = fmt(totaal)+' m';
   document.getElementById('p-totaal-afval').textContent = fmt(totaal*(1+afval/100))+' m';
-  c.innerHTML = !plinten.length ? '<div class="leeg">Nog geen wanden toegevoegd.</div>' :
-    plinten.map(p => '<div class="data-rij"><div class="naam">'+p.naam+'</div><div class="opp">'+fmt(p.lengte)+' m</div><button class="del-btn" onclick="verwijderPlint('+p.id+')">X</button></div>').join('');
+  c.innerHTML = !plinten.length ? '<div class="leeg">Nog geen wanden toegevoegd.</div>' : lengteVerdiepingGroepenHtml(plinten, true, 'verwijderPlint');
 }
 
 function voegAfdekToe() {
   const naam = gv('a-naam')||'Locatie '+(afdeklatten.length+1);
+  const verdieping = gv('a-verdieping') === 'Overige' ? (gv('a-verdieping-overig')||'Overige') : gv('a-verdieping');
   const l = parseFloat(document.getElementById('a-lengte').value);
   if (isNaN(l)||l<=0) return;
-  afdeklatten.push({ id: Date.now(), naam, lengte: l });
+  afdeklatten.push({ id: Date.now(), naam, verdieping, lengte: l });
   sv('a-naam',''); sv('a-lengte','');
   renderAfdek(); document.getElementById('a-naam').focus();
 }
@@ -1390,8 +1437,7 @@ function renderAfdek() {
   const afval = Math.max(0, parseFloat(document.getElementById('a-afval').value)||0);
   document.getElementById('a-totaal').textContent = fmt(totaal)+' m';
   document.getElementById('a-totaal-afval').textContent = fmt(totaal*(1+afval/100))+' m';
-  c.innerHTML = !afdeklatten.length ? '<div class="leeg">Nog geen locaties toegevoegd.</div>' :
-    afdeklatten.map(a => '<div class="data-rij"><div class="naam">'+a.naam+'</div><div class="opp">'+fmt(a.lengte)+' m</div><button class="del-btn" onclick="verwijderAfdek('+a.id+')">X</button></div>').join('');
+  c.innerHTML = !afdeklatten.length ? '<div class="leeg">Nog geen locaties toegevoegd.</div>' : lengteVerdiepingGroepenHtml(afdeklatten, true, 'verwijderAfdek');
 }
 
 function voegProfielToe() {
@@ -1455,12 +1501,12 @@ function renderSamenvatting() {
   const pAfval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
   const pTotaal = plinten.reduce((s,p) => s+p.lengte, 0);
   document.getElementById('sam-plint-spec').innerHTML = [gv('p-type') ? 'Type: '+gv('p-type') : '', gv('p-hoogte') ? gv('p-hoogte')+' mm hoog' : '', gv('p-dikte') ? gv('p-dikte')+' mm dik' : '', gv('p-kleur') ? 'Kleur: '+gv('p-kleur') : ''].filter(Boolean).join(' | ');
-  document.getElementById('sam-plint-rijen').innerHTML = !plinten.length ? '<span style="color:#bbb;font-size:14px;">Geen wanden ingevoerd</span>' : plinten.map(p => '<div class="data-rij"><div class="naam">'+p.naam+'</div><div class="opp">'+fmt(p.lengte)+' m</div></div>').join('');
+  document.getElementById('sam-plint-rijen').innerHTML = !plinten.length ? '<span style="color:#bbb;font-size:14px;">Geen wanden ingevoerd</span>' : lengteVerdiepingGroepenHtml(plinten, false);
   document.getElementById('sam-plint-totaal').innerHTML = 'Netto: '+fmt(pTotaal)+' m &nbsp;|&nbsp; Incl. '+pAfval+'% afval: <span style="color:#1a56db">'+fmt(pTotaal*(1+pAfval/100))+' m</span>';
   const aAfval = Math.max(0, parseFloat(document.getElementById('a-afval').value)||0);
   const aTotaal = afdeklatten.reduce((s,a) => s+a.lengte, 0);
   document.getElementById('sam-afdek-spec').innerHTML = [gv('a-type') ? 'Type: '+gv('a-type') : '', gv('a-breedte') ? gv('a-breedte')+' mm breed' : '', gv('a-kleur') ? 'Kleur: '+gv('a-kleur') : ''].filter(Boolean).join(' | ');
-  document.getElementById('sam-afdek-rijen').innerHTML = !afdeklatten.length ? '<span style="color:#bbb;font-size:14px;">Geen locaties ingevoerd</span>' : afdeklatten.map(a => '<div class="data-rij"><div class="naam">'+a.naam+'</div><div class="opp">'+fmt(a.lengte)+' m</div></div>').join('');
+  document.getElementById('sam-afdek-rijen').innerHTML = !afdeklatten.length ? '<span style="color:#bbb;font-size:14px;">Geen locaties ingevoerd</span>' : lengteVerdiepingGroepenHtml(afdeklatten, false);
   document.getElementById('sam-afdek-totaal').innerHTML = 'Netto: '+fmt(aTotaal)+' m &nbsp;|&nbsp; Incl. '+aAfval+'% afval: <span style="color:#1a56db">'+fmt(aTotaal*(1+aAfval/100))+' m</span>';
   const prAfval = Math.max(0, parseFloat(document.getElementById('pr-afval').value)||0);
   const prTotaal = profielen.reduce((s,p) => s+p.lengte, 0);
@@ -1492,10 +1538,10 @@ function bouwOpslaanData() {
     vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,verdieping:k.verdieping||'',lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_totaal: fmt(vT)+' m2 (incl. '+vAfval+'% afval: '+fmt(vT*(1+vAfval/100))+' m2)',
     plinten_type: gv('p-type'), plinten_hoogte: gv('p-hoogte'), plinten_dikte: gv('p-dikte'), plinten_kleur: gv('p-kleur'),
-    plinten_opmeting: JSON.stringify(plinten.map(p=>({naam:p.naam,lengte:p.lengte}))),
+    plinten_opmeting: JSON.stringify(plinten.map(p=>({naam:p.naam,verdieping:p.verdieping||'',lengte:p.lengte}))),
     plinten_totaal: fmt(pT)+' m (incl. '+pAfval+'% afval: '+fmt(pT*(1+pAfval/100))+' m)',
     afdek_type: gv('a-type'), afdek_hoogte: gv('a-breedte'), afdek_kleur: gv('a-kleur'),
-    afdek_opmeting: JSON.stringify(afdeklatten.map(a=>({naam:a.naam,lengte:a.lengte}))),
+    afdek_opmeting: JSON.stringify(afdeklatten.map(a=>({naam:a.naam,verdieping:a.verdieping||'',lengte:a.lengte}))),
     afdek_totaal: fmt(aT)+' m (incl. '+aAfval+'% afval: '+fmt(aT*(1+aAfval/100))+' m)',
     vloer_aftrek: JSON.stringify(aftrekken.map(k=>({naam:k.naam,lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_afval: String(vAfval),
