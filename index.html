@@ -6,7 +6,7 @@
 <title>Parket Specialist Gouda</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #d6d6d6; color: #1a1a1a; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EDE6DA; color: #1a1a1a; }
 .app { max-width: 860px; margin: 0 auto; padding: 16px; }
 h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #ccc; }
@@ -20,7 +20,7 @@ h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; color: #666; }
 input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
-input:focus, textarea:focus, select:focus { border-color: #1a56db; }
+input:focus, textarea:focus, select:focus { border-color: #B5651D; }
 input[readonly] { background: #f5f5f5; color: #888; }
 select { height: 36px; }
 textarea { resize: vertical; min-height: 60px; }
@@ -29,8 +29,8 @@ textarea { resize: vertical; min-height: 60px; }
 .full { grid-column: 1 / -1; }
 .btn { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0 16px; height: 36px; border-radius: 6px; font-size: 14px; font-family: inherit; font-weight: 500; border: 1px solid #ddd; background: #fff; color: #1a1a1a; white-space: nowrap; }
 .btn:hover { background: #f0f0f0; }
-.btn-primary { background: #1a56db; border-color: #1a56db; color: #fff; }
-.btn-primary:hover { background: #1446b8; }
+.btn-primary { background: #B5651D; border-color: #B5651D; color: #fff; }
+.btn-primary:hover { background: #94501A; }
 .btn-green { background: #1D9E75; border-color: #1D9E75; color: #fff; }
 .btn-green:hover { background: #178860; }
 .btn-danger { background: #E24B4A; border-color: #E24B4A; color: #fff; }
@@ -44,14 +44,14 @@ textarea { resize: vertical; min-height: 60px; }
 .tbtn.ja.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
 .tbtn.nee.active { background: #E24B4A; border-color: #E24B4A; color: #fff; }
 .tbtn.nvt.active { background: #888; border-color: #888; color: #fff; }
-.tbtn.opt.active { background: #1a56db; border-color: #1a56db; color: #fff; }
+.tbtn.opt.active { background: #B5651D; border-color: #B5651D; color: #fff; }
 .agenda-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
 .agenda-maand-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .agenda-dagnaam { font-size: 10px; color: #999; text-align: center; font-weight: 600; padding-bottom: 4px; }
 .agenda-cel { position: relative; aspect-ratio: 1; border-radius: 6px; border: 1px solid #eee; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; cursor: pointer; font-size: 12px; color: #333; }
 .agenda-cel.buiten-maand { color: #ccc; background: #fafafa; }
-.agenda-cel.vandaag { border-color: #1a56db; border-width: 2px; font-weight: 600; }
-.agenda-cel.geselecteerd { background: #e8f0fe; border-color: #1a56db; }
+.agenda-cel.vandaag { border-color: #B5651D; border-width: 2px; font-weight: 600; }
+.agenda-cel.geselecteerd { background: #FBF1E4; border-color: #B5651D; }
 .agenda-cel .dots { display: flex; gap: 2px; margin-top: 3px; flex-wrap: wrap; justify-content: center; }
 .agenda-cel .dots span { width: 5px; height: 5px; border-radius: 50%; }
 .agenda-event { display: flex; align-items: center; gap: 9px; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 9px 12px; margin-bottom: 5px; cursor: pointer; }
@@ -60,16 +60,16 @@ textarea { resize: vertical; min-height: 60px; }
 .agenda-event .titel { font-size: 13px; font-weight: 500; }
 .agenda-event .klant { font-size: 12px; color: #888; }
 .agenda-weekdag .kop { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-.agenda-weekdag .kop.vandaag { color: #1a56db; }
+.agenda-weekdag .kop.vandaag { color: #B5651D; }
 .vtbtn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .vtbtn { padding: 9px 16px; font-size: 14px; border-radius: 6px; border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
-.vtbtn:hover { border-color: #1a56db; color: #1a1a1a; }
-.vtbtn.active { background: #1a56db; border-color: #1a56db; color: #fff; font-weight: 600; }
+.vtbtn:hover { border-color: #B5651D; color: #1a1a1a; }
+.vtbtn.active { background: #B5651D; border-color: #B5651D; color: #fff; font-weight: 600; }
 .cb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cb-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: #fff; border: 1.5px solid #e5e5e5; border-radius: 6px; cursor: pointer; }
-.cb-item.active { border-color: #1a56db; background: #eff4ff; }
-.cb-item.active span { color: #1a56db; font-weight: 500; }
-.cb-item input[type=checkbox] { width: 15px; height: 15px; accent-color: #1a56db; cursor: pointer; flex-shrink: 0; }
+.cb-item.active { border-color: #B5651D; background: #FBF1E4; }
+.cb-item.active span { color: #B5651D; font-weight: 500; }
+.cb-item input[type=checkbox] { width: 15px; height: 15px; accent-color: #B5651D; cursor: pointer; flex-shrink: 0; }
 .cb-item span { font-size: 13px; }
 .rij-form { background: #f9f9f9; border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid #e5e5e5; }
 .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
@@ -105,7 +105,7 @@ textarea { resize: vertical; min-height: 60px; }
 .foto-naam { font-size: 13px; font-weight: 500; }
 .foto-omschrijving { font-size: 12px; color: #888; }
 .klant-kaart { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
-.klant-kaart:hover { border-color: #1a56db; }
+.klant-kaart:hover { border-color: #B5651D; }
 .klant-naam { font-size: 15px; font-weight: 600; }
 .klant-adres { font-size: 13px; color: #888; margin-top: 2px; }
 .klant-datum { font-size: 12px; color: #bbb; white-space: nowrap; }
@@ -117,8 +117,8 @@ textarea { resize: vertical; min-height: 60px; }
 .confirm-titel { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .confirm-tekst { font-size: 14px; color: #666; line-height: 1.45; margin-bottom: 18px; }
 .confirm-btns { display: flex; gap: 8px; justify-content: flex-end; }
-.info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #1a56db; color: #fff; font-size: 11px; font-style: italic; font-family: Georgia, serif; font-weight: 600; border: none; cursor: pointer; vertical-align: middle; padding: 0; line-height: 1; }
-.info-btn:hover { background: #1446b8; }
+.info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #B5651D; color: #fff; font-size: 11px; font-style: italic; font-family: Georgia, serif; font-weight: 600; border: none; cursor: pointer; vertical-align: middle; padding: 0; line-height: 1; }
+.info-btn:hover { background: #94501A; }
 .info-titel { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
 .info-tekst { font-size: 14px; color: #333; line-height: 1.5; }
 .info-tekst table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
@@ -313,7 +313,7 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field"><label>Luchtvochtigheid (%)</label><input type="number" id="c-lv" placeholder="bijv. 55" min="0" max="100" step="0.1" /></div>
       <div class="field"><label>Vochtpercentage (%) <button type="button" class="info-btn" onclick="toonInfoVocht()" aria-label="Meer informatie over vochtpercentage">i</button></label><input type="number" id="c-vp" placeholder="bijv. 2.5" min="0" max="100" step="0.1" /></div>
       <div class="field"><label>Krastest</label><select id="c-kras"><option value="">— Selecteer —</option><option value="goed">Goed</option><option value="matig">Matig</option><option value="afgekeurd">Afgekeurd</option></select></div>
-      <div class="field"><label>Vlakte van de vloer</label><select id="c-vlakte"><option value="">— Selecteer —</option><option value="goed">Goed (≤3mm/2m)</option><option value="matig">Matig (3-5mm/2m)</option><option value="afgekeurd">Afgekeurd (&gt;5mm/2m)</option></select></div>
+      <div class="field"><label>Vlakte van de vloer <button type="button" class="info-btn" onclick="toonInfoVlakte()" aria-label="Meer informatie over vlakte van de vloer">i</button></label><select id="c-vlakte"><option value="">— Selecteer —</option><option value="goed">Goed (≤3mm/2m)</option><option value="matig">Matig (3-5mm/2m)</option><option value="afgekeurd">Afgekeurd (&gt;5mm/2m)</option></select></div>
     </div>
     <div style="margin-top:14px;">
       <div class="toggle-row"><span class="toggle-label">Is de dekvloer schoon</span><div class="toggle-btns"><button class="tbtn ja" id="tb-schoon-ja" onclick="setToggle('schoon','ja',this)">Ja</button><button class="tbtn nee" id="tb-schoon-nee" onclick="setToggle('schoon','nee',this)">Nee</button></div></div>
@@ -393,7 +393,7 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="totaal-label">Totale oppervlakte</div>
       <div class="totaal-waarde" id="v-totaal">0,00 m2</div>
       <div style="font-size:13px;color:#E24B4A;margin-top:2px;">Aftrek: <span id="v-aftrek">0,00 m2</span></div>
-      <div style="font-size:13px;color:#1a56db;margin-top:2px;font-weight:600;">Netto: <span id="v-netto">0,00 m2</span></div>
+      <div style="font-size:13px;color:#B5651D;margin-top:2px;font-weight:600;">Netto: <span id="v-netto">0,00 m2</span></div>
     </div>
     <div style="text-align:right;">
       <div class="afval-row"><label>Afval %</label><input type="number" id="v-afval" value="10" min="0" max="50" style="width:60px;" oninput="renderVloer()" /></div>
@@ -557,7 +557,7 @@ textarea { resize: vertical; min-height: 60px; }
   <div id="banner-checklist" style="display:none;" class="banner"></div>
   <div class="card" style="text-align:center;">
     <div style="font-size:13px;color:#888;margin-bottom:4px;">Voortgang</div>
-    <div id="checklist-voortgang" style="font-size:20px;font-weight:600;color:#1a56db;">0 van 7 stappen voltooid</div>
+    <div id="checklist-voortgang" style="font-size:20px;font-weight:600;color:#B5651D;">0 van 7 stappen voltooid</div>
   </div>
 
   <div class="card"><p class="section-title">Bestellingen</p>
@@ -1346,7 +1346,7 @@ function vloerRuimteGroepenHtml(rijen, verwijderbaar) {
       html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+escapeHtml(naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div>'+delBtn+'</div>';
     });
     if (items.length > 1) {
-      html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+escapeHtml(naam)+': '+fmt(subtotaal)+' m2</div>';
+      html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#B5651D;">Subtotaal '+escapeHtml(naam)+': '+fmt(subtotaal)+' m2</div>';
     }
     html += '</div>';
   });
@@ -1361,7 +1361,7 @@ function vloerVerdiepingGroepenHtml(rijen, verwijderbaar) {
   Object.entries(verdiepGroepen).forEach(([verdieping, items]) => {
     const subtotaal = items.reduce((s,k) => s+k.opp, 0);
     html += '<div style="margin-bottom:14px;padding:10px;background:#f5f8ff;border-radius:8px;border:1px solid #dbe6fb;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#1a56db;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#1a56db;">Totaal: '+fmt(subtotaal)+' m2</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#B5651D;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#B5651D;">Totaal: '+fmt(subtotaal)+' m2</span></div>';
     html += vloerRuimteGroepenHtml(items, verwijderbaar);
     html += '</div>';
   });
@@ -1395,7 +1395,7 @@ function lengteVerdiepingGroepenHtml(rijen, verwijderbaar, verwijderFn) {
   Object.entries(groepen).forEach(([verdieping, items]) => {
     const subtotaal = items.reduce((s,r) => s+r.lengte, 0);
     html += '<div style="margin-bottom:14px;padding:10px;background:#f5f8ff;border-radius:8px;border:1px solid #dbe6fb;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#1a56db;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#1a56db;">Totaal: '+fmt(subtotaal)+' m</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#B5651D;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#B5651D;">Totaal: '+fmt(subtotaal)+' m</span></div>';
     html += lengteVlakHtml(items, verwijderbaar, verwijderFn);
     html += '</div>';
   });
@@ -1497,22 +1497,22 @@ function renderSamenvatting() {
   }
   const aftrekTotaal = aftrekken.reduce((s,k) => s+k.opp, 0);
   const netto = Math.max(0, vTotaal - aftrekTotaal);
-  document.getElementById('sam-vloer-totaal').innerHTML = 'Bruto: '+fmt(vTotaal)+' m2' + (aftrekken.length ? ' &nbsp;|&nbsp; Aftrek: <span style="color:#E24B4A">-'+fmt(aftrekTotaal)+' m2</span> &nbsp;|&nbsp; Netto: '+fmt(netto)+' m2' : '') + ' &nbsp;|&nbsp; Incl. '+vAfval+'% afval: <span style="color:#1a56db">'+fmt(netto*(1+vAfval/100))+' m2</span>';
+  document.getElementById('sam-vloer-totaal').innerHTML = 'Bruto: '+fmt(vTotaal)+' m2' + (aftrekken.length ? ' &nbsp;|&nbsp; Aftrek: <span style="color:#E24B4A">-'+fmt(aftrekTotaal)+' m2</span> &nbsp;|&nbsp; Netto: '+fmt(netto)+' m2' : '') + ' &nbsp;|&nbsp; Incl. '+vAfval+'% afval: <span style="color:#B5651D">'+fmt(netto*(1+vAfval/100))+' m2</span>';
   const pAfval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
   const pTotaal = plinten.reduce((s,p) => s+p.lengte, 0);
   document.getElementById('sam-plint-spec').innerHTML = [gv('p-type') ? 'Type: '+gv('p-type') : '', gv('p-hoogte') ? gv('p-hoogte')+' mm hoog' : '', gv('p-dikte') ? gv('p-dikte')+' mm dik' : '', gv('p-kleur') ? 'Kleur: '+gv('p-kleur') : ''].filter(Boolean).join(' | ');
   document.getElementById('sam-plint-rijen').innerHTML = !plinten.length ? '<span style="color:#bbb;font-size:14px;">Geen wanden ingevoerd</span>' : lengteVerdiepingGroepenHtml(plinten, false);
-  document.getElementById('sam-plint-totaal').innerHTML = 'Netto: '+fmt(pTotaal)+' m &nbsp;|&nbsp; Incl. '+pAfval+'% afval: <span style="color:#1a56db">'+fmt(pTotaal*(1+pAfval/100))+' m</span>';
+  document.getElementById('sam-plint-totaal').innerHTML = 'Netto: '+fmt(pTotaal)+' m &nbsp;|&nbsp; Incl. '+pAfval+'% afval: <span style="color:#B5651D">'+fmt(pTotaal*(1+pAfval/100))+' m</span>';
   const aAfval = Math.max(0, parseFloat(document.getElementById('a-afval').value)||0);
   const aTotaal = afdeklatten.reduce((s,a) => s+a.lengte, 0);
   document.getElementById('sam-afdek-spec').innerHTML = [gv('a-type') ? 'Type: '+gv('a-type') : '', gv('a-breedte') ? gv('a-breedte')+' mm breed' : '', gv('a-kleur') ? 'Kleur: '+gv('a-kleur') : ''].filter(Boolean).join(' | ');
   document.getElementById('sam-afdek-rijen').innerHTML = !afdeklatten.length ? '<span style="color:#bbb;font-size:14px;">Geen locaties ingevoerd</span>' : lengteVerdiepingGroepenHtml(afdeklatten, false);
-  document.getElementById('sam-afdek-totaal').innerHTML = 'Netto: '+fmt(aTotaal)+' m &nbsp;|&nbsp; Incl. '+aAfval+'% afval: <span style="color:#1a56db">'+fmt(aTotaal*(1+aAfval/100))+' m</span>';
+  document.getElementById('sam-afdek-totaal').innerHTML = 'Netto: '+fmt(aTotaal)+' m &nbsp;|&nbsp; Incl. '+aAfval+'% afval: <span style="color:#B5651D">'+fmt(aTotaal*(1+aAfval/100))+' m</span>';
   const prAfval = Math.max(0, parseFloat(document.getElementById('pr-afval').value)||0);
   const prTotaal = profielen.reduce((s,p) => s+p.lengte, 0);
   document.getElementById('sam-profiel-spec').innerHTML = '';
   document.getElementById('sam-profiel-rijen').innerHTML = !profielen.length ? '<span style="color:#bbb;font-size:14px;">Geen locaties ingevoerd</span>' : profielen.map(p => '<div class="data-rij"><div class="naam">'+p.naam+(p.type?' — '+p.type:'')+(p.breedte?' ('+p.breedte+' mm)':'')+'</div><div class="opp">'+fmt(p.lengte)+' m</div></div>').join('');
-  document.getElementById('sam-profiel-totaal').innerHTML = 'Netto: '+fmt(prTotaal)+' m &nbsp;|&nbsp; Incl. '+prAfval+'% afval: <span style="color:#1a56db">'+fmt(prTotaal*(1+prAfval/100))+' m</span>';
+  document.getElementById('sam-profiel-totaal').innerHTML = 'Netto: '+fmt(prTotaal)+' m &nbsp;|&nbsp; Incl. '+prAfval+'% afval: <span style="color:#B5651D">'+fmt(prTotaal*(1+prAfval/100))+' m</span>';
   updateBanners();
 }
 
@@ -1814,6 +1814,17 @@ function toonInfoVocht() {
     <div class="sam-row"><span class="sam-label">Met vloerverwarming</span><span class="sam-value">max. 0,3%</span></div>
     <p style="margin-top:12px;">Gemeten met de CM-methode.</p>
     <p class="info-noot">Voor hout en egaline bestaat geen vaste branchenorm; controleer altijd het technisch informatieblad van de gebruikte lijm of het egalisatieproduct. Dit zijn richtwaarden uit de parketbranche — de eis van de lijm-/afwerkingsfabrikant is altijd leidend.</p>
+  `);
+}
+
+function toonInfoVlakte() {
+  toonInfo('Vlakte van de vloer', `
+    <p style="margin-bottom:8px;">Gemeten met een rei (liniaal) van 2 meter, op de plek waar de afwijking het grootst is.</p>
+    <div class="sam-row"><span class="sam-label">Goed</span><span class="sam-value">≤ 3 mm / 2 m</span></div>
+    <div class="sam-row"><span class="sam-label">Matig</span><span class="sam-value">3 - 5 mm / 2 m</span></div>
+    <div class="sam-row"><span class="sam-label">Afgekeurd</span><span class="sam-value">&gt; 5 mm / 2 m</span></div>
+    <p style="margin-top:12px;">Bij "Matig" of "Afgekeurd" moet de ondervloer eerst geëgaliseerd worden voordat de vloer gelegd kan worden.</p>
+    <p class="info-noot">Dit zijn richtwaarden uit de parketbranche — de eis van de lijm-/afwerkingsfabrikant is altijd leidend.</p>
   `);
 }
 
