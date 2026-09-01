@@ -74,6 +74,7 @@ textarea { resize: vertical; min-height: 60px; }
 .rij-form { background: #f9f9f9; border-radius: 10px; padding: 14px; margin-bottom: 12px; border: 1px solid #e5e5e5; }
 .form-row-4 { display: grid; grid-template-columns: 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
+.form-row-5 { display: grid; grid-template-columns: 130px 1fr 80px 80px 80px auto; gap: 8px; align-items: end; }
 .form-row-profiel { display: grid; grid-template-columns: 1fr 1fr 70px 90px auto; gap: 8px; align-items: end; }
 .snelknoppen { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .snelknop { font-size: 12px; padding: 4px 10px; border: 1px solid #ddd; border-radius: 20px; background: #fff; color: #666; cursor: pointer; font-family: inherit; }
@@ -133,6 +134,8 @@ textarea { resize: vertical; min-height: 60px; }
   .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .form-row-4 { grid-template-columns: 1fr 1fr; }
   .form-row-4 > *:nth-child(5) { grid-column: 1 / -1; }
+  .form-row-5 { grid-template-columns: 1fr 1fr; }
+  .form-row-5 > *:nth-child(6) { grid-column: 1 / -1; }
   .form-row-profiel { grid-template-columns: 1fr 1fr; }
   .form-row-profiel > *:nth-child(5) { grid-column: 1 / -1; }
   .form-row-3 { grid-template-columns: 1fr 1fr; }
@@ -338,13 +341,25 @@ textarea { resize: vertical; min-height: 60px; }
 <div class="panel" id="panel-vloer">
   <div id="banner-vloer" style="display:none;" class="banner"></div>
   <div class="rij-form">
-    <div class="form-row-4">
+    <div class="form-row-5">
+      <div class="field"><label>Verdieping</label>
+        <select id="v-verdieping" onchange="checkVerdiepingOv()">
+          <option value="">— Geen —</option>
+          <option>Begane grond</option>
+          <option>1e verdieping</option>
+          <option>2e verdieping</option>
+          <option>Zolder</option>
+          <option>Kelder</option>
+          <option>Overige</option>
+        </select>
+      </div>
       <div class="field"><label>Ruimte / kamer</label><input type="text" id="v-naam" placeholder="bijv. Woonkamer" /></div>
       <div class="field"><label>Lengte (m)</label><input type="number" id="v-lengte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Breedte (m)</label><input type="number" id="v-breedte" placeholder="0.00" step="0.01" min="0" oninput="upVP()" /></div>
       <div class="field"><label>Oppervlakte</label><input type="text" id="v-preview" placeholder="- m2" readonly /></div>
       <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegVloerToe()">+ Voeg toe</button></div>
     </div>
+    <div class="ovveld" id="v-verdieping-overig-veld"><input type="text" id="v-verdieping-overig" placeholder="Omschrijf verdieping..." style="margin-top:6px;" /></div>
     <div class="snelknoppen">
       <span style="font-size:11px;color:#aaa;align-self:center;">Snelkeuze:</span>
       <button class="snelknop" onclick="vulK('v-naam','Woonkamer')">Woonkamer</button>
@@ -835,7 +850,7 @@ function resetFormulier() {
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
    'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-onderdeel',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
   tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null;
@@ -866,6 +881,7 @@ function checkOndervloerOverig() {
   document.getElementById('ondervloer-overig-veld').classList.toggle('zichtbaar', document.getElementById('c-ondervloer').value === 'Overige');
 }
 function checkSortOv() { document.getElementById('sortex').classList.toggle('zichtbaar', gv('tv-sortering') === 'Overige'); }
+function checkVerdiepingOv() { document.getElementById('v-verdieping-overig-veld').classList.toggle('zichtbaar', gv('v-verdieping') === 'Overige'); }
 function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
 
 async function zoekAdres() {
@@ -1282,14 +1298,48 @@ function voegAftrekToe() {
 function verwijderAftrek(id) { aftrekken = aftrekken.filter(k => k.id!==id); renderVloer(); }
 function voegVloerToe() {
   const naam = gv('v-naam')||'Ruimte '+(vloeren.length+1);
-  const onderdeel = gv('v-onderdeel');
+  const verdieping = gv('v-verdieping') === 'Overige' ? (gv('v-verdieping-overig')||'Overige') : gv('v-verdieping');
   const l = parseFloat(document.getElementById('v-lengte').value), b = parseFloat(document.getElementById('v-breedte').value);
   if (isNaN(l)||isNaN(b)||l<=0||b<=0) return;
-  vloeren.push({ id: Date.now(), naam, onderdeel, lengte: l, breedte: b, opp: l*b });
-  sv('v-onderdeel',''); sv('v-lengte',''); sv('v-breedte',''); sv('v-preview','');
+  vloeren.push({ id: Date.now(), naam, verdieping, lengte: l, breedte: b, opp: l*b });
+  sv('v-lengte',''); sv('v-breedte',''); sv('v-preview','');
   renderVloer(); document.getElementById('v-lengte').focus();
 }
 function verwijderVloer(id) { vloeren = vloeren.filter(k => k.id!==id); renderVloer(); }
+function vloerRuimteGroepenHtml(rijen, verwijderbaar) {
+  const groepen = {};
+  rijen.forEach(k => { if (!groepen[k.naam]) groepen[k.naam] = []; groepen[k.naam].push(k); });
+  let html = '';
+  Object.entries(groepen).forEach(([naam, items]) => {
+    const subtotaal = items.reduce((s,k) => s+k.opp, 0);
+    html += '<div style="margin-bottom:8px;">';
+    html += '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;padding:4px 12px;">'+escapeHtml(naam)+'</div>';
+    items.forEach(k => {
+      const delBtn = verwijderbaar ? '<button class="del-btn" onclick="verwijderVloer('+k.id+')">X</button>' : '';
+      html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+escapeHtml(naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div>'+delBtn+'</div>';
+    });
+    if (items.length > 1) {
+      html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+escapeHtml(naam)+': '+fmt(subtotaal)+' m2</div>';
+    }
+    html += '</div>';
+  });
+  return html;
+}
+function vloerVerdiepingGroepenHtml(rijen, verwijderbaar) {
+  if (!rijen.length) return '';
+  if (!rijen.some(k => k.verdieping)) return vloerRuimteGroepenHtml(rijen, verwijderbaar);
+  const verdiepGroepen = {};
+  rijen.forEach(k => { const v = k.verdieping || 'Overig'; if (!verdiepGroepen[v]) verdiepGroepen[v] = []; verdiepGroepen[v].push(k); });
+  let html = '';
+  Object.entries(verdiepGroepen).forEach(([verdieping, items]) => {
+    const subtotaal = items.reduce((s,k) => s+k.opp, 0);
+    html += '<div style="margin-bottom:14px;padding:10px;background:#f5f8ff;border-radius:8px;border:1px solid #dbe6fb;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:700;color:#1a56db;">'+escapeHtml(verdieping)+'</span><span style="font-size:13px;font-weight:600;color:#1a56db;">Totaal: '+fmt(subtotaal)+' m2</span></div>';
+    html += vloerRuimteGroepenHtml(items, verwijderbaar);
+    html += '</div>';
+  });
+  return html;
+}
 function renderVloer() {
   const c = document.getElementById('vloer-container');
   const ac = document.getElementById('aftrek-container');
@@ -1301,27 +1351,7 @@ function renderVloer() {
   document.getElementById('v-aftrek').textContent = fmt(aftrekTotaal)+' m2';
   document.getElementById('v-netto').textContent = fmt(netto)+' m2';
   document.getElementById('v-totaal-afval').textContent = fmt(netto*(1+afval/100))+' m2';
-  if (!vloeren.length) { c.innerHTML = '<div class="leeg">Nog geen ruimtes toegevoegd.</div>'; }
-  else {
-    // Groepeer per ruimtenaam
-    const groepen = {};
-    vloeren.forEach(k => { if (!groepen[k.naam]) groepen[k.naam] = []; groepen[k.naam].push(k); });
-    let html = '';
-    Object.entries(groepen).forEach(([naam, items]) => {
-      const subtotaal = items.reduce((s,k) => s+k.opp, 0);
-      html += '<div style="margin-bottom:8px;">';
-      html += '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;padding:4px 12px;">'+ naam +'</div>';
-      items.forEach(k => {
-        const label = k.onderdeel ? k.onderdeel : naam;
-        html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+(k.onderdeel||naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderVloer('+k.id+')">X</button></div>';
-      });
-      if (items.length > 1) {
-        html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+naam+': '+fmt(subtotaal)+' m2</div>';
-      }
-      html += '</div>';
-    });
-    c.innerHTML = html;
-  }
+  c.innerHTML = vloeren.length ? vloerVerdiepingGroepenHtml(vloeren, true) : '<div class="leeg">Nog geen ruimtes toegevoegd.</div>';
   ac.innerHTML = !aftrekken.length ? '' :
     aftrekken.map(k => '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderAftrek('+k.id+')">X</button></div>').join('');
 }
@@ -1411,16 +1441,7 @@ function renderSamenvatting() {
   if (!vloeren.length) {
     document.getElementById('sam-vloer-rijen').innerHTML = '<span style="color:#bbb;font-size:14px;">Geen ruimtes ingevoerd</span>';
   } else {
-    const groepen = {};
-    vloeren.forEach(k => { if (!groepen[k.naam]) groepen[k.naam] = []; groepen[k.naam].push(k); });
-    let html = '';
-    Object.entries(groepen).forEach(([naam, items]) => {
-      const subtotaal = items.reduce((s,k) => s+k.opp, 0);
-      html += '<div style="margin-bottom:8px;"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;padding:4px 12px;">'+naam+'</div>';
-      items.forEach(k => { html += '<div class="data-rij"><div class="naam" style="color:#555;font-weight:400;">'+(k.onderdeel||naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp">'+fmt(k.opp)+' m2</div></div>'; });
-      if (items.length > 1) html += '<div style="display:flex;justify-content:flex-end;padding:4px 12px;font-size:13px;font-weight:600;color:#1a56db;">Subtotaal '+naam+': '+fmt(subtotaal)+' m2</div>';
-      html += '</div>';
-    });
+    let html = vloerVerdiepingGroepenHtml(vloeren, false);
     if (aftrekken.length) {
       html += '<div style="margin-top:4px;"><div style="font-size:11px;font-weight:600;color:#E24B4A;text-transform:uppercase;padding:4px 12px;">Aftrek</div>';
       aftrekken.forEach(k => { html += '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div></div>'; });
@@ -1468,7 +1489,7 @@ function bouwOpslaanData() {
     constructievloer: gv('c-type'), vloerverwarming: getVVTekst(), type_ondervloer: gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer'),
     luchtvochtigheid: gv('c-lv'), vochtpercentage: gv('c-vp'), krastest: gv('c-kras'),
     scheuren: tog.scheuren||'', opstartprotocol: tog.opstartprotocol||'', schoon: tog.schoon||'', vlakte: gv('c-vlakte'),
-    vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,onderdeel:k.onderdeel||'',lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
+    vloer_opmeting: JSON.stringify(vloeren.map(k=>({naam:k.naam,verdieping:k.verdieping||'',lengte:k.lengte,breedte:k.breedte,opp:k.opp}))),
     vloer_totaal: fmt(vT)+' m2 (incl. '+vAfval+'% afval: '+fmt(vT*(1+vAfval/100))+' m2)',
     plinten_type: gv('p-type'), plinten_hoogte: gv('p-hoogte'), plinten_dikte: gv('p-dikte'), plinten_kleur: gv('p-kleur'),
     plinten_opmeting: JSON.stringify(plinten.map(p=>({naam:p.naam,lengte:p.lengte}))),
