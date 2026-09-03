@@ -102,6 +102,12 @@ textarea { resize: vertical; min-height: 60px; }
 .afval-row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
 .afval-row label { font-size: 13px; color: #888; white-space: nowrap; }
 .leeg { text-align: center; padding: 24px; color: #bbb; font-size: 14px; border: 1px dashed #ddd; border-radius: 6px; margin-bottom: 12px; }
+.foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.foto-kaart { position: relative; border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; background: #f9f9f9; }
+.foto-kaart img { width: 100%; height: 130px; object-fit: cover; display: block; cursor: pointer; }
+.foto-kaart .foto-tekst { font-size: 11px; color: #666; padding: 6px 8px; word-break: break-word; }
+.foto-kaart .foto-del-btn { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.55); color: #fff; border-radius: 50%; width: 24px; height: 24px; font-size: 13px; line-height: 1; }
+.foto-kaart .foto-del-btn:hover { background: rgba(226,75,74,0.9); color: #fff; }
 .banner { font-size: 13px; color: #666; padding: 8px 14px; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 6px; margin-bottom: 12px; }
 .vv-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid #f0f0f0; margin-top: 4px; }
 .vv-extra { display: none; flex-direction: column; gap: 10px; padding: 10px 0 4px; border-top: 1px solid #f0f0f0; }
@@ -180,6 +186,7 @@ textarea { resize: vertical; min-height: 60px; }
   <button class="tab" onclick="switchTab('plint')">Plinten</button>
   <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
   <button class="tab" onclick="switchTab('profielen')">Profielen</button>
+  <button class="tab" onclick="switchTab('fotos')">Foto's</button>
   <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
   <button class="tab" onclick="switchTab('checklist')">Checklist</button>
   <button class="tab" onclick="switchTab('agenda')">Agenda</button>
@@ -243,7 +250,7 @@ textarea { resize: vertical; min-height: 60px; }
   </div>
   <div class="card"><p class="section-title">Type opdracht</p>
     <div class="field"><label>Type opdracht</label>
-      <select id="naw-opdracht">
+      <select id="naw-opdracht" onchange="checkOpdrachtAfval()">
         <option value="">— Selecteer type opdracht —</option>
         <option>Nieuwe vloer</option>
         <option>Renovatie</option>
@@ -564,6 +571,19 @@ textarea { resize: vertical; min-height: 60px; }
       <div style="font-size:13px;color:#888;margin-top:4px;">Incl. afval: <span id="pr-totaal-afval" style="font-weight:600;">0,00 m</span></div>
     </div>
   </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('fotos')">Naar foto's →</button></div>
+</div>
+
+<!-- FOTO'S -->
+<div class="panel" id="panel-fotos">
+  <div id="banner-fotos" style="display:none;" class="banner"></div>
+  <div class="card">
+    <p class="section-title">Foto toevoegen</p>
+    <div class="field" style="margin-bottom:10px;"><label>Omschrijving (optioneel)</label><input type="text" id="foto-omschrijving" placeholder="bijv. Scheur bij het raam in de woonkamer" /></div>
+    <input type="file" accept="image/*" capture="environment" id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
+    <p style="font-size:12px;color:#888;margin-top:8px;">Kies of maak een foto — deze wordt direct opgeslagen bij deze klant. Sla de klant eerst één keer op (bijvoorbeeld door naam en adres in te vullen) voordat je hier foto's toevoegt.</p>
+  </div>
+  <div id="foto-lijst" class="foto-grid"></div>
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('samenvatting')">Naar samenvatting →</button></div>
 </div>
 
@@ -912,13 +932,13 @@ function getBanner() {
 
 function updateBanners() {
   const b = getBanner();
-  ['naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist'].forEach(id => {
+  ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist'].forEach(id => {
     const el = document.getElementById('banner-' + id);
     if (el) { el.textContent = b; el.style.display = b ? 'block' : 'none'; }
   });
 }
 
-const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','samenvatting','checklist','agenda'];
+const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','agenda'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt','factuurGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -1015,7 +1035,7 @@ function resetFormulier() {
   ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities',
    'tv-houtsoort','tv-sortering-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
-   'a-type','a-breedte','a-kleur','pr-type','pr-breedte','f-naam','f-omschrijving',
+   'a-type','a-breedte','a-kleur','pr-type','pr-breedte','foto-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
    'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
   sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
@@ -1050,6 +1070,12 @@ function checkOndervloerOverig() {
   document.getElementById('ondervloer-overig-veld').classList.toggle('zichtbaar', document.getElementById('c-ondervloer').value === 'Overige');
 }
 function checkSortOv() { document.getElementById('sortex').classList.toggle('zichtbaar', gv('tv-sortering') === 'Overige'); }
+function checkOpdrachtAfval() {
+  if (gv('naw-opdracht') === 'Renovatie') {
+    sv('v-afval', '0');
+    renderVloer();
+  }
+}
 function checkVerdiepingOv(prefix) { document.getElementById(prefix+'-verdieping-overig-veld').classList.toggle('zichtbaar', gv(prefix+'-verdieping') === 'Overige'); }
 function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
 
@@ -1433,18 +1459,45 @@ function setVV(v, btn) {
 }
 function setVVType(type) { vvType = type; document.getElementById('vv-trad').classList.toggle('active', type==='traditioneel'); document.getElementById('vv-ingefreesd').classList.toggle('active', type==='ingefreesd'); }
 
-function voegFotoToe() {
-  const naam = gv('f-naam'), omschrijving = gv('f-omschrijving');
-  if (!naam && !omschrijving) return;
-  fotos.push({ id: Date.now(), naam: naam||'(geen naam)', omschrijving });
-  sv('f-naam',''); sv('f-omschrijving',''); renderFotos();
+async function uploadFoto(inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  if (!huidigId) { toast('Sla de klant eerst op voordat je een foto toevoegt', 3000); inputEl.value = ''; return; }
+  if (!file.type.startsWith('image/')) { toast('Alleen afbeeldingen zijn toegestaan', 3000); inputEl.value = ''; return; }
+  const omschrijving = gv('foto-omschrijving');
+  const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_');
+  const pad = 'fotos/' + huidigId + '/' + Date.now() + '-' + veiligeNaam;
+  toast('Foto uploaden...', 8000);
+  try {
+    const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+      body: file
+    });
+    if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
+    const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
+    fotos.push({ id: Date.now(), naam: omschrijving||'', url, pad });
+    sv('foto-omschrijving', '');
+    renderFotos();
+    toast('Foto toegevoegd!');
+    await autoOpslaan();
+  } catch(e) {
+    toast('Uploaden mislukt: ' + e.message, 4000);
+  } finally {
+    inputEl.value = '';
+  }
 }
 function verwijderFoto(id) { fotos = fotos.filter(f => f.id !== id); renderFotos(); }
 function renderFotos() {
   const el = document.getElementById('foto-lijst');
   if (!el) return;
+  if (!fotos.length) { el.innerHTML = '<div class="leeg">Nog geen foto\'s toegevoegd.</div>'; return; }
   el.innerHTML = fotos.map(f =>
-    '<div class="foto-rij"><div class="foto-info"><div class="foto-naam">'+f.naam+'</div>'+(f.omschrijving?'<div class="foto-omschrijving">'+f.omschrijving+'</div>':'')+'</div><button class="del-btn" onclick="verwijderFoto('+f.id+')">X</button></div>'
+    '<div class="foto-kaart">'
+    + '<img src="'+f.url+'" alt="'+escapeHtml(f.naam||'Foto')+'" onclick="window.open(\''+f.url+'\',\'_blank\')" />'
+    + '<button class="del-btn foto-del-btn" title="Verwijder foto" onclick="verwijderFoto('+f.id+')">X</button>'
+    + (f.naam ? '<div class="foto-tekst">'+escapeHtml(f.naam)+'</div>' : '')
+    + '</div>'
   ).join('');
 }
 
