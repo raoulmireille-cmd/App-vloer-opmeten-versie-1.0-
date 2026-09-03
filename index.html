@@ -1459,20 +1459,51 @@ function setVV(v, btn) {
 }
 function setVVType(type) { vvType = type; document.getElementById('vv-trad').classList.toggle('active', type==='traditioneel'); document.getElementById('vv-ingefreesd').classList.toggle('active', type==='ingefreesd'); }
 
+function verkleinFoto(file, maxAfmeting, kwaliteit) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > maxAfmeting || height > maxAfmeting) {
+        if (width > height) { height = Math.round(height * (maxAfmeting / width)); width = maxAfmeting; }
+        else { width = Math.round(width * (maxAfmeting / height)); height = maxAfmeting; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (!blob) { reject(new Error('Verkleinen mislukt')); return; }
+        resolve(blob);
+      }, 'image/jpeg', kwaliteit);
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Foto kon niet worden geladen')); };
+    img.src = objectUrl;
+  });
+}
 async function uploadFoto(inputEl) {
   const file = inputEl.files[0];
   if (!file) return;
   if (!huidigId) { toast('Sla de klant eerst op voordat je een foto toevoegt', 3000); inputEl.value = ''; return; }
   if (!file.type.startsWith('image/')) { toast('Alleen afbeeldingen zijn toegestaan', 3000); inputEl.value = ''; return; }
   const omschrijving = gv('foto-omschrijving');
-  const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_');
+  const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_').replace(/\.\w+$/, '') + '.jpg';
   const pad = 'fotos/' + huidigId + '/' + Date.now() + '-' + veiligeNaam;
-  toast('Foto uploaden...', 8000);
+  toast('Foto verwerken...', 8000);
   try {
+    let uploadBestand = file;
+    try {
+      uploadBestand = await verkleinFoto(file, 1600, 0.8);
+    } catch (verkleinFout) {
+      uploadBestand = file; // als verkleinen om wat voor reden dan ook mislukt, upload gewoon het origineel
+    }
+    toast('Foto uploaden...', 8000);
     const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
-      body: file
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      body: uploadBestand
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
     const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
