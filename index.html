@@ -580,7 +580,7 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="card">
     <p class="section-title">Foto toevoegen</p>
     <div class="field" style="margin-bottom:10px;"><label>Omschrijving (optioneel)</label><input type="text" id="foto-omschrijving" placeholder="bijv. Scheur bij het raam in de woonkamer" /></div>
-    <input type="file" accept="image/*" capture="environment" id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
+    <input type="file" accept="image/*" id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
     <p style="font-size:12px;color:#888;margin-top:8px;">Kies of maak een foto — deze wordt direct opgeslagen bij deze klant. Sla de klant eerst één keer op (bijvoorbeeld door naam en adres in te vullen) voordat je hier foto's toevoegt.</p>
   </div>
   <div id="foto-lijst" class="foto-grid"></div>
