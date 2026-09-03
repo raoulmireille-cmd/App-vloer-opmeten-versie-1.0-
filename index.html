@@ -823,23 +823,41 @@ const VELD_GROEPEN = {
   telefoon:'Telefoonnummer', email:'E-mailadres',
   straat:'Adres', huisnummer:'Adres', postcode:'Adres', plaats:'Adres',
   notities:'Notities',
-  type_vloer:'Type vloer', houtsoort:'Type vloer', sortering:'Type vloer', afmeting_lengte:'Type vloer', afmeting_breedte:'Type vloer', afmeting_dikte:'Type vloer',
-  bijzonderheden_vloer:'Type vloer', bewerkingen:'Type vloer', afwerking:'Type vloer',
-  constructievloer:'Controle', vloerverwarming:'Controle', type_ondervloer:'Controle', luchtvochtigheid:'Controle', vochtpercentage:'Controle', krastest:'Controle',
-  scheuren:'Controle', opstartprotocol:'Controle', schoon:'Controle', vlakte:'Controle', opmerkingen:'Controle', fotos:'Controle',
-  vloer_opmeting:'Vloer', vloer_totaal:'Vloer', vloer_aftrek:'Vloer', vloer_afval:'Vloer',
-  plinten_type:'Plinten', plinten_hoogte:'Plinten', plinten_dikte:'Plinten', plinten_kleur:'Plinten', plinten_opmeting:'Plinten', plinten_totaal:'Plinten', plinten_afval:'Plinten',
-  afdek_type:'Afdeklatten', afdek_hoogte:'Afdeklatten', afdek_kleur:'Afdeklatten', afdek_opmeting:'Afdeklatten', afdek_totaal:'Afdeklatten', afdek_afval:'Afdeklatten',
-  profielen_opmeting:'Profielen', profielen_totaal:'Profielen', profiel_afval:'Profielen',
-  checklist_vloer_besteld:'Checklist', checklist_vloer_leverancier:'Checklist', checklist_vloer_datum:'Checklist',
-  checklist_plinten_besteld:'Checklist', checklist_plinten_leverancier:'Checklist', checklist_plinten_datum:'Checklist',
-  checklist_ondervloer_besteld:'Checklist', checklist_ondervloer_leverancier:'Checklist', checklist_ondervloer_datum:'Checklist',
-  checklist_afdeklatten_besteld:'Checklist', checklist_afdeklatten_leverancier:'Checklist', checklist_afdeklatten_datum:'Checklist',
-  checklist_olie_besteld:'Checklist', checklist_olie_leverancier:'Checklist', checklist_olie_datum:'Checklist',
-  checklist_legger_ingedeeld:'Checklist', checklist_legger_naam:'Checklist', checklist_legger_datum:'Checklist',
-  checklist_bezorgschema:'Checklist', checklist_bezorgschema_datum:'Checklist', checklist_offerte:'Checklist', checklist_factuur:'Checklist',
-  checklist_offerte_pdf:'Checklist', checklist_factuur_pdf:'Checklist'
+  type_vloer:'Type vloer', houtsoort:'Houtsoort', sortering:'Sortering',
+  afmeting_lengte:'Afmeting', afmeting_breedte:'Afmeting', afmeting_dikte:'Afmeting',
+  bijzonderheden_vloer:'Bijzonderheden vloer', bewerkingen:'Bewerkingen', afwerking:'Afwerking',
+  constructievloer:'Constructievloer', vloerverwarming:'Vloerverwarming', type_ondervloer:'Ondervloer',
+  luchtvochtigheid:'Luchtvochtigheid', vochtpercentage:'Vochtpercentage', krastest:'Krastest', vlakte:'Vlakte van de vloer',
+  schoon:'Schoon opgeleverd', scheuren:'Scheuren', opstartprotocol:'Opstartprotocol',
+  opmerkingen:'Opmerkingen controle', fotos:'Foto\'s',
+  vloer_opmeting:'Opmeting vloer', vloer_totaal:'Opmeting vloer', vloer_aftrek:'Aftrek vloer', vloer_afval:'Afvalpercentage vloer',
+  plinten_type:'Specificatie plinten', plinten_hoogte:'Specificatie plinten', plinten_dikte:'Specificatie plinten', plinten_kleur:'Specificatie plinten',
+  plinten_opmeting:'Opmeting plinten', plinten_totaal:'Opmeting plinten', plinten_afval:'Afvalpercentage plinten',
+  afdek_type:'Specificatie afdeklatten', afdek_hoogte:'Specificatie afdeklatten', afdek_kleur:'Specificatie afdeklatten',
+  afdek_opmeting:'Opmeting afdeklatten', afdek_totaal:'Opmeting afdeklatten', afdek_afval:'Afvalpercentage afdeklatten',
+  profielen_opmeting:'Opmeting profielen', profielen_totaal:'Opmeting profielen', profiel_afval:'Afvalpercentage profielen',
+  checklist_vloer_besteld:'Vloer besteld', checklist_vloer_leverancier:'Vloer besteld', checklist_vloer_datum:'Vloer besteld',
+  checklist_plinten_besteld:'Plinten besteld', checklist_plinten_leverancier:'Plinten besteld', checklist_plinten_datum:'Plinten besteld',
+  checklist_ondervloer_besteld:'Ondervloer besteld', checklist_ondervloer_leverancier:'Ondervloer besteld', checklist_ondervloer_datum:'Ondervloer besteld',
+  checklist_afdeklatten_besteld:'Afdeklatten besteld', checklist_afdeklatten_leverancier:'Afdeklatten besteld', checklist_afdeklatten_datum:'Afdeklatten besteld',
+  checklist_olie_besteld:'Olie/lak besteld', checklist_olie_leverancier:'Olie/lak besteld', checklist_olie_datum:'Olie/lak besteld',
+  checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld',
+  checklist_bezorgschema:'Bezorgschema', checklist_bezorgschema_datum:'Bezorgschema',
+  checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte',
+  checklist_factuur:'Factuur', checklist_factuur_pdf:'Factuur'
 };
+const VELD_GROEPEN_VOLGORDE = [
+  'Bezoekdatum','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
+  'Type vloer','Houtsoort','Sortering','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
+  'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtpercentage','Krastest','Vlakte van de vloer',
+  'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
+  'Opmeting vloer','Aftrek vloer','Afvalpercentage vloer',
+  'Specificatie plinten','Opmeting plinten','Afvalpercentage plinten',
+  'Specificatie afdeklatten','Opmeting afdeklatten','Afvalpercentage afdeklatten',
+  'Opmeting profielen','Afvalpercentage profielen',
+  'Vloer besteld','Plinten besteld','Ondervloer besteld','Afdeklatten besteld','Olie/lak besteld',
+  'Vloerenlegger ingedeeld','Bezorgschema','Offerte','Factuur'
+];
 function bepaalMutatieOmschrijving(nieuw, vorig) {
   if (!vorig) return 'Nieuwe klant toegevoegd';
   const gewijzigd = new Set();
@@ -849,8 +867,7 @@ function bepaalMutatieOmschrijving(nieuw, vorig) {
     if (a !== b) gewijzigd.add(VELD_GROEPEN[veld]);
   });
   if (!gewijzigd.size) return 'Klantgegevens gewijzigd';
-  const volgorde = ['Bezoekdatum','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities','Type vloer','Controle','Vloer','Plinten','Afdeklatten','Profielen','Checklist'];
-  const lijst = volgorde.filter(g => gewijzigd.has(g));
+  const lijst = VELD_GROEPEN_VOLGORDE.filter(g => gewijzigd.has(g));
   const zichtbaar = lijst.slice(0, 3);
   const suffix = lijst.length > 3 ? ' en meer' : '';
   return zichtbaar.join(', ') + suffix + ' gewijzigd';
@@ -1856,9 +1873,9 @@ async function laadKlant(id) {
   try {
     const data = await sbFetch('GET', 'klanten?id=eq.'+id+'&select=*');
     const k = data[0]; if (!k) return;
-    vorigeKlantStand = k;
     huidigId = k.id;
     resetFormulier();
+    vorigeKlantStand = k;
     sv('naw-opdracht', k.opdracht); sv('naw-datum', k.datum_bezoek); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
     sv('naw-email', k.email); sv('naw-straat', k.straat); sv('naw-huisnr', k.huisnummer);
     sv('naw-postcode', k.postcode); sv('naw-plaats', k.plaats); sv('naw-notities', k.notities);
