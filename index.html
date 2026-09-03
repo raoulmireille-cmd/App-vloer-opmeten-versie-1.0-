@@ -878,6 +878,20 @@ const VELD_GROEPEN_VOLGORDE = [
   'Vloer besteld','Plinten besteld','Ondervloer besteld','Afdeklatten besteld','Olie/lak besteld',
   'Vloerenlegger ingedeeld','Bezorgschema','Offerte','Factuur'
 ];
+function fotoMutatieLabel(nieuw, vorig) {
+  let aantalNieuw = 0, aantalVorig = 0;
+  try { aantalNieuw = JSON.parse(nieuw.fotos || '[]').length; } catch { aantalNieuw = 0; }
+  try { aantalVorig = JSON.parse(vorig.fotos || '[]').length; } catch { aantalVorig = 0; }
+  if (aantalNieuw > aantalVorig) {
+    const n = aantalNieuw - aantalVorig;
+    return n === 1 ? 'Foto toegevoegd' : n + ' foto\'s toegevoegd';
+  }
+  if (aantalNieuw < aantalVorig) {
+    const n = aantalVorig - aantalNieuw;
+    return n === 1 ? 'Foto verwijderd' : n + ' foto\'s verwijderd';
+  }
+  return 'Foto\'s gewijzigd';
+}
 function bepaalMutatieOmschrijving(nieuw, vorig) {
   if (!vorig) return 'Nieuwe klant toegevoegd';
   const gewijzigd = new Set();
@@ -888,6 +902,7 @@ function bepaalMutatieOmschrijving(nieuw, vorig) {
   });
   if (!gewijzigd.size) return 'Klantgegevens gewijzigd';
   const lijst = VELD_GROEPEN_VOLGORDE.filter(g => gewijzigd.has(g));
+  if (lijst.length === 1 && lijst[0] === 'Foto\'s') return fotoMutatieLabel(nieuw, vorig);
   const zichtbaar = lijst.slice(0, 3);
   const suffix = lijst.length > 3 ? ' en meer' : '';
   return zichtbaar.join(', ') + suffix + ' gewijzigd';
