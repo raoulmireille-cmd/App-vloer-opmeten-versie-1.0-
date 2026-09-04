@@ -20,17 +20,17 @@ h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .dash-grid > .card { flex: 1 1 260px; margin-bottom: 12px; }
 @media (max-width: 700px) { .dash-grid > .card { flex: 1 1 100%; } }
 .cloud-status { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; vertical-align: middle; margin-left: 8px; cursor: default; }
-.cloud-status.leeg { width: 8px; height: 8px; background: #ccc; font-size: 0; }
+.cloud-status.idle { width: 8px; height: 8px; padding: 0; margin: 0 0 0 8px; border: none; background: #ccc; font-size: 0; }
 .cloud-status.bezig { background: #B5651D; }
 .cloud-status.ok { background: #1D9E75; }
 .cloud-status.fout { background: #E24B4A; }
 .section-title { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; color: #666; }
-input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
+input[type=text], input[type=number], input[type=tel], input[type=email], input[type=date], input[type=time], textarea, select { width: 100%; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
 input:focus, textarea:focus, select:focus { border-color: #B5651D; }
 input[readonly] { background: #f5f5f5; color: #888; }
-select { height: 36px; }
+select { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 26px; }
 textarea { resize: vertical; min-height: 60px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
@@ -71,6 +71,18 @@ textarea { resize: vertical; min-height: 60px; }
 .agenda-event .klant { font-size: 12px; color: #888; }
 .agenda-weekdag .kop { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 .agenda-weekdag .kop.vandaag { color: #B5651D; }
+.dagrooster-alleendag { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.dagrooster-wrap { position: relative; display: flex; }
+.dagrooster-uren { position: relative; width: 44px; flex-shrink: 0; }
+.dagrooster-uren .uur-label { position: absolute; right: 8px; transform: translateY(-50%); font-size: 11px; color: #999; white-space: nowrap; }
+.dagrooster-grid { position: relative; flex: 1; border-left: 1px solid #eee; }
+.dagrooster-lijn { position: absolute; left: 0; right: 0; border-top: 1px solid #f0f0f0; }
+.dagrooster-nu { position: absolute; left: 0; right: 0; border-top: 2px solid #E24B4A; z-index: 3; }
+.dagrooster-nu::before { content: ''; position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; }
+.dagrooster-events { position: absolute; top: 0; left: 4px; right: 4px; bottom: 0; }
+.dagrooster-event { position: absolute; border-radius: 6px; padding: 4px 7px; overflow: hidden; cursor: pointer; box-sizing: border-box; border-left: 3px solid; }
+.dagrooster-event .diklabel { font-size: 11px; font-weight: 600; line-height: 1.25; }
+.dagrooster-event .subtitel { font-size: 11px; opacity: 0.85; line-height: 1.25; }
 .vtbtn-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .vtbtn { padding: 9px 16px; font-size: 14px; border-radius: 6px; border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
 .vtbtn:hover { border-color: #B5651D; color: #1a1a1a; }
@@ -176,7 +188,7 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 <div class="app">
-<h1>Parket Specialist Gouda<span class="cloud-status leeg" id="cloud-status" title="Nog niet opgeslagen">•</span></h1>
+<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span></h1>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('adressen')">Adressen</button>
   <button class="tab" onclick="switchTab('naw')">Klantgegevens</button>
@@ -220,7 +232,17 @@ textarea { resize: vertical; min-height: 60px; }
 <div class="panel" id="panel-naw">
   <div id="banner-naw" style="display:none;" class="banner"></div>
   <div class="card"><p class="section-title">Datum bezoek</p>
-    <div class="field"><label>Datum bezoek</label><input type="date" id="naw-datum" /></div>
+    <div class="grid2">
+      <div class="field"><label>Datum bezoek</label><input type="date" id="naw-datum" /></div>
+      <div class="field"><label>Begintijd (optioneel)</label><input type="time" id="naw-tijd" /></div>
+      <div class="field"><label>Eindtijd (optioneel)</label><input type="time" id="naw-eindtijd" /></div>
+      <div class="field"><label>Naam bezoeker</label>
+        <select id="naw-bezoeker">
+          <option value="">— Selecteer —</option>
+          <option>Raoul</option><option>Mireille</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div class="card"><p class="section-title">Contactgegevens</p>
     <div class="grid2">
@@ -763,7 +785,8 @@ textarea { resize: vertical; min-height: 60px; }
   </div>
 
   <div class="card" style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:#666;padding:10px 16px;">
-    <span><span class="agenda-dot" style="background:#5B8DEF;"></span>Bezoek</span>
+    <span><span class="agenda-dot" style="background:#5B8DEF;"></span>Bezoek Raoul</span>
+    <span><span class="agenda-dot" style="background:#E24B4A;"></span>Bezoek Mireille</span>
     <span><span class="agenda-dot" style="background:#E2A64B;"></span>Materiaal verwacht</span>
     <span><span class="agenda-dot" style="background:#1D9E75;"></span>Vloer leggen</span>
     <span><span class="agenda-dot" style="background:#9B59B6;"></span>Bezorging</span>
@@ -848,7 +871,7 @@ const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld:
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 let vorigeKlantStand = null;
 const VELD_GROEPEN = {
-  datum_bezoek:'Bezoekdatum', opdracht:'Type opdracht',
+  datum_bezoek:'Bezoekdatum', tijd_bezoek:'Bezoekdatum', eindtijd_bezoek:'Bezoekdatum', bezoeker:'Naam bezoeker', opdracht:'Type opdracht',
   voornaam:'Naam', achternaam:'Naam',
   telefoon:'Telefoonnummer', email:'E-mailadres',
   straat:'Adres', huisnummer:'Adres', postcode:'Adres', plaats:'Adres',
@@ -877,7 +900,7 @@ const VELD_GROEPEN = {
   checklist_factuur:'Factuur', checklist_factuur_pdf:'Factuur'
 };
 const VELD_GROEPEN_VOLGORDE = [
-  'Bezoekdatum','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
+  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
   'Type vloer','Houtsoort','Sortering','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtpercentage','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
@@ -1057,13 +1080,13 @@ async function nieuweOpmeting() { await flushPendingAutosave(); huidigId = null;
 function resetFormulier() {
   clearTimeout(autosaveTimer);
   autosaveFoutGetoond = false;
-  ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities',
+  ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities','naw-tijd','naw-eindtijd',
    'tv-houtsoort','tv-sortering-overig','tv-patroon-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','foto-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
    'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('naw-bezoeker',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
   tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null;
@@ -1080,7 +1103,7 @@ function resetFormulier() {
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
-  setCloudStatus('leeg', 'Nog niet opgeslagen');
+  setCloudStatus('idle', 'Nog niet opgeslagen');
   vorigeKlantStand = null;
   renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos(); renderChecklistProgress();
 }
@@ -1194,8 +1217,13 @@ async function uploadChecklistPdf(type, inputEl) {
 
 // ---------- AGENDA ----------
 const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6', afspraak: '#D63384' };
+const AGENDA_BEZOEKER_KLEUREN = { Raoul: '#5B8DEF', Mireille: '#E24B4A' };
+function agendaKleur(e) {
+  if (e.type === 'bezoek' && e.bezoeker && AGENDA_BEZOEKER_KLEUREN[e.bezoeker]) return AGENDA_BEZOEKER_KLEUREN[e.bezoeker];
+  return AGENDA_KLEUREN[e.type];
+}
 const AGENDA_BRONNEN = [
-  { veld: 'datum_bezoek', label: 'Bezoek', type: 'bezoek' },
+  { veld: 'datum_bezoek', tijdveld: 'tijd_bezoek', label: 'Bezoek', type: 'bezoek' },
   { veld: 'checklist_vloer_datum', label: 'Vloer verwacht', type: 'besteld' },
   { veld: 'checklist_plinten_datum', label: 'Plinten verwacht', type: 'besteld' },
   { veld: 'checklist_ondervloer_datum', label: 'Ondervloer verwacht', type: 'besteld' },
@@ -1227,7 +1255,7 @@ function bouwAgendaEvents() {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
     AGENDA_BRONNEN.forEach(b => {
       const datum = k[b.veld];
-      if (datum) events.push({ bron: 'checklist', datum, label: b.label, type: b.type, klantId: k.id, klantNaam: naam });
+      if (datum) events.push({ bron: 'checklist', datum, tijd: (b.tijdveld && k[b.tijdveld]) || '', eindtijd: b.type === 'bezoek' ? (k.eindtijd_bezoek||'') : '', label: b.label, type: b.type, klantId: k.id, klantNaam: naam, bezoeker: b.type === 'bezoek' ? (k.bezoeker||'') : '' });
     });
   });
   afsprakenData.forEach(a => {
@@ -1250,15 +1278,17 @@ function agendaEventHtml(e) {
     if (e.adres) extraRegels.push('📍 '+escapeHtml(e.adres));
     if (e.telefoon) extraRegels.push('📞 '+escapeHtml(e.telefoon));
     return '<div class="agenda-event" onclick="openAfspraakForm('+e.id+')">'
-      + '<span class="bolletje" style="background:'+AGENDA_KLEUREN[e.type]+';"></span>'
+      + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
       + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div>'
       + (onderschrift ? '<div class="klant">'+escapeHtml(onderschrift)+'</div>' : '')
       + (extraRegels.length ? '<div class="klant">'+extraRegels.join(' &nbsp; ')+'</div>' : '')
       + '</div></div>';
   }
+  const tijdTekst = e.tijd ? (e.tijd + (e.eindtijd ? '–'+e.eindtijd : '')) : '';
+  const onderschrift = [tijdTekst, e.klantNaam].filter(Boolean).join(' · ');
   return '<div class="agenda-event" onclick="laadKlant(\''+e.klantId+'\')">'
-    + '<span class="bolletje" style="background:'+AGENDA_KLEUREN[e.type]+';"></span>'
-    + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(e.klantNaam)+'</div></div>'
+    + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
+    + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(onderschrift)+'</div></div>'
     + '</div>';
 }
 
@@ -1320,7 +1350,7 @@ function renderAgendaMaand(events) {
     if (iso === vandaag) klassen.push('vandaag');
     if (iso === agendaGeselecteerdDag) klassen.push('geselecteerd');
     const dagEvents = agendaEventsOpDag(events, iso);
-    const dotsHtml = dagEvents.slice(0,4).map(e => '<span style="background:'+AGENDA_KLEUREN[e.type]+';"></span>').join('');
+    const dotsHtml = dagEvents.slice(0,4).map(e => '<span style="background:'+agendaKleur(e)+';"></span>').join('');
     html += '<div class="'+klassen.join(' ')+'" onclick="agendaKiesDag(\''+iso+'\')"><span>'+d.getDate()+'</span>'+(dagEvents.length ? '<div class="dots">'+dotsHtml+'</div>' : '')+'</div>';
   }
   html += '</div></div><div id="agenda-detail">';
@@ -1352,12 +1382,100 @@ function renderAgendaWeek(events) {
   document.getElementById('agenda-inhoud').innerHTML = html;
 }
 
+const AGENDA_PX_PER_MIN = 1;
+function agendaMinuten(tijdStr) {
+  if (!tijdStr) return null;
+  const m = /^(\d{1,2}):(\d{2})/.exec(tijdStr);
+  if (!m) return null;
+  return Number(m[1])*60 + Number(m[2]);
+}
+function agendaLichtereKleur(hex, factor) {
+  const h = (hex||'#999999').replace('#','');
+  const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+  const mix = c => Math.round(c + (255-c)*factor);
+  return 'rgb('+mix(r)+','+mix(g)+','+mix(b)+')';
+}
+function agendaPakOverlap(evts) {
+  const sorted = [...evts].sort((a,b) => a._begin - b._begin || a._eind - b._eind);
+  let clusterEind = -Infinity, cluster = [];
+  const clusters = [];
+  sorted.forEach(e => {
+    if (cluster.length && e._begin >= clusterEind) { clusters.push(cluster); cluster = []; clusterEind = -Infinity; }
+    cluster.push(e);
+    clusterEind = Math.max(clusterEind, e._eind);
+  });
+  if (cluster.length) clusters.push(cluster);
+  clusters.forEach(c => {
+    const kolomEind = [];
+    c.forEach(e => {
+      let k = kolomEind.findIndex(t => t <= e._begin);
+      if (k === -1) { k = kolomEind.length; kolomEind.push(e._eind); } else kolomEind[k] = e._eind;
+      e._kolom = k;
+    });
+    const totaal = kolomEind.length;
+    c.forEach(e => { e._totaalKolommen = totaal; });
+  });
+  return sorted;
+}
+function agendaBlokHtml(e, roosterStart) {
+  const kleur = agendaKleur(e);
+  const achtergrond = agendaLichtereKleur(kleur, 0.8);
+  const klik = e.bron === 'afspraak' ? ("openAfspraakForm("+e.id+")") : ("laadKlant('"+e.klantId+"')");
+  const tijdTekst = e.tijd + (e.eindtijd ? '–'+e.eindtijd : '');
+  const breedte = 100/e._totaalKolommen;
+  const links = e._kolom*breedte;
+  const top = (e._begin - roosterStart)*AGENDA_PX_PER_MIN;
+  const hoogte = Math.max((e._eind - e._begin)*AGENDA_PX_PER_MIN - 2, 20);
+  const onderschrift = [e.label, e.klantNaam].filter(Boolean).join(' · ');
+  return '<div class="dagrooster-event" style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
+    + '<div class="diklabel">'+escapeHtml(tijdTekst)+'</div>'
+    + '<div class="subtitel">'+escapeHtml(onderschrift)+'</div>'
+    + '</div>';
+}
 function renderAgendaDag(events) {
   document.getElementById('agenda-periode-titel').textContent = agendaPeriodeTitel();
   const iso = agendaISO(agendaDatum);
   const dagEvents = agendaEventsOpDag(events, iso);
   let html = '<div class="card">';
-  html += dagEvents.length ? dagEvents.map(agendaEventHtml).join('') : '<div style="font-size:13px;color:#aaa;">Geen afspraken op deze dag</div>';
+  if (!dagEvents.length) {
+    html += '<div style="font-size:13px;color:#aaa;">Geen afspraken op deze dag</div></div>';
+    document.getElementById('agenda-inhoud').innerHTML = html;
+    return;
+  }
+  const metTijd = [], zonderTijd = [];
+  dagEvents.forEach(e => {
+    const begin = agendaMinuten(e.tijd);
+    if (begin === null) { zonderTijd.push(e); return; }
+    let eind = agendaMinuten(e.eindtijd);
+    if (eind === null) eind = begin + 60;
+    if (eind <= begin) eind = begin + 30;
+    metTijd.push(Object.assign({}, e, { _begin: begin, _eind: eind }));
+  });
+  if (zonderTijd.length) {
+    html += '<div class="dagrooster-alleendag">' + zonderTijd.map(agendaEventHtml).join('') + '</div>';
+  }
+  if (metTijd.length) {
+    let vroegste = Math.min(7*60, ...metTijd.map(e => Math.floor(e._begin/60)*60));
+    let laatste = Math.max(19*60, ...metTijd.map(e => Math.ceil(e._eind/60)*60));
+    agendaPakOverlap(metTijd);
+    const uren = [];
+    for (let t = vroegste; t <= laatste; t += 60) uren.push(t);
+    const hoogteTotaal = (laatste-vroegste)*AGENDA_PX_PER_MIN;
+    html += '<div class="dagrooster-wrap"><div class="dagrooster-uren" style="height:'+hoogteTotaal+'px;">'
+      + uren.map(t => '<div class="uur-label" style="top:'+((t-vroegste)*AGENDA_PX_PER_MIN)+'px;">'+String(Math.floor(t/60)).padStart(2,'0')+':00</div>').join('')
+      + '</div><div class="dagrooster-grid" style="height:'+hoogteTotaal+'px;">'
+      + uren.map(t => '<div class="dagrooster-lijn" style="top:'+((t-vroegste)*AGENDA_PX_PER_MIN)+'px;"></div>').join('');
+    const vandaagIso = agendaISO(new Date());
+    if (iso === vandaagIso) {
+      const nu = new Date();
+      const nuMin = nu.getHours()*60 + nu.getMinutes();
+      if (nuMin >= vroegste && nuMin <= laatste) {
+        html += '<div class="dagrooster-nu" style="top:'+((nuMin-vroegste)*AGENDA_PX_PER_MIN)+'px;"></div>';
+      }
+    }
+    html += '<div class="dagrooster-events">' + metTijd.map(e => agendaBlokHtml(e, vroegste)).join('') + '</div>';
+    html += '</div></div>';
+  }
   html += '</div>';
   document.getElementById('agenda-inhoud').innerHTML = html;
 }
@@ -1735,7 +1853,8 @@ function renderSamenvatting() {
   const r = (label, value) => value ? '<div class="sam-row"><span class="sam-label">'+label+'</span><span class="sam-value">'+value+'</span></div>' : '';
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
   const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
-  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum'))) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  const tijdRange = gv('naw-tijd') ? ' van '+gv('naw-tijd')+(gv('naw-eindtijd') ? ' tot '+gv('naw-eindtijd') : '') : '';
+  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum')) + tijdRange) + r('Naam bezoeker', gv('naw-bezoeker')) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
   const patroon = getPatronen().join(', ');
   const afm = [gv('tv-lengte'), gv('tv-breedte'), gv('tv-dikte')].filter(Boolean).join(' x ');
@@ -1788,7 +1907,7 @@ function bouwOpslaanData() {
   const prT = profielen.reduce((s,p)=>s+p.lengte,0);
   return {
     updated_at: new Date().toISOString(),
-    opdracht: gv('naw-opdracht'), datum_bezoek: gv('naw-datum'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
+    opdracht: gv('naw-opdracht'), datum_bezoek: gv('naw-datum'), tijd_bezoek: gv('naw-tijd'), eindtijd_bezoek: gv('naw-eindtijd'), bezoeker: gv('naw-bezoeker'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
     straat: gv('naw-straat'), huisnummer: gv('naw-huisnr'), postcode: gv('naw-postcode'), plaats: gv('naw-plaats'), notities: gv('naw-notities'),
     type_vloer: vloerType||'', houtsoort: gv('tv-houtsoort'), sortering: sort, patroon: patroon,
     afmeting_lengte: gv('tv-lengte'), afmeting_breedte: gv('tv-breedte'), afmeting_dikte: gv('tv-dikte'),
@@ -1830,9 +1949,9 @@ let opslaanBezig = false;
 function setCloudStatus(status, titel) {
   const el = document.getElementById('cloud-status');
   if (!el) return;
-  el.classList.remove('leeg', 'bezig', 'ok', 'fout');
+  el.classList.remove('idle', 'bezig', 'ok', 'fout');
   el.classList.add(status);
-  el.textContent = { leeg: '•', bezig: '…', ok: '✓', fout: '!' }[status] || '';
+  el.textContent = { idle: '•', bezig: '…', ok: '✓', fout: '!' }[status] || '';
   el.title = titel || '';
 }
 
@@ -1908,7 +2027,7 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(','));
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(','));
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
@@ -1994,7 +2113,7 @@ async function laadKlant(id) {
     huidigId = k.id;
     resetFormulier();
     vorigeKlantStand = k;
-    sv('naw-opdracht', k.opdracht); sv('naw-datum', k.datum_bezoek); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
+    sv('naw-opdracht', k.opdracht); sv('naw-datum', k.datum_bezoek); sv('naw-tijd', k.tijd_bezoek); sv('naw-eindtijd', k.eindtijd_bezoek); sv('naw-bezoeker', k.bezoeker); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
     sv('naw-email', k.email); sv('naw-straat', k.straat); sv('naw-huisnr', k.huisnummer);
     sv('naw-postcode', k.postcode); sv('naw-plaats', k.plaats); sv('naw-notities', k.notities);
     if (k.type_vloer) { const btn = Array.from(document.querySelectorAll('.vtbtn')).find(b => b.textContent === k.type_vloer); if (btn) { vloerType = k.type_vloer; btn.classList.add('active'); } }
