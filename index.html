@@ -20,7 +20,7 @@ h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .dash-grid > .card { flex: 1 1 260px; margin-bottom: 12px; }
 @media (max-width: 700px) { .dash-grid > .card { flex: 1 1 100%; } }
 .cloud-status { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; vertical-align: middle; margin-left: 8px; cursor: default; }
-.cloud-status.leeg { background: #ccc; font-size: 8px; }
+.cloud-status.leeg { width: 8px; height: 8px; background: #ccc; font-size: 0; }
 .cloud-status.bezig { background: #B5651D; }
 .cloud-status.ok { background: #1D9E75; }
 .cloud-status.fout { background: #E24B4A; }
@@ -196,7 +196,7 @@ textarea { resize: vertical; min-height: 60px; }
 <div class="panel active" id="panel-adressen">
   <div class="dash-grid">
     <div class="card" id="dashboard-card" style="display:none;border-color:#fde8e8;background:#fff8f8;">
-      <p class="section-title" style="color:#E24B4A;">Openstaande stappen</p>
+      <p class="section-title" style="color:#E24B4A;">Offerte nog te versturen</p>
       <div id="dashboard-lijst"></div>
     </div>
     <div class="card" id="mutaties-card">
@@ -297,6 +297,16 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field"><label>Breedte (mm)</label><input type="number" id="tv-breedte" placeholder="bijv. 190" min="0" /></div>
       <div class="field"><label>Dikte (mm)</label><input type="number" id="tv-dikte" placeholder="bijv. 14" min="0" step="0.5" /></div>
     </div>
+  </div>
+  <div class="card"><p class="section-title">Patroon</p>
+    <div class="cb-grid" id="patroon-grid">
+      <label class="cb-item" id="cb-patroon-stroken"><input type="checkbox" onchange="toggleCb(this,'cb-patroon-stroken')" /><span>Stroken</span></label>
+      <label class="cb-item" id="cb-patroon-visgraat"><input type="checkbox" onchange="toggleCb(this,'cb-patroon-visgraat')" /><span>Visgraat</span></label>
+      <label class="cb-item" id="cb-patroon-hongaars"><input type="checkbox" onchange="toggleCb(this,'cb-patroon-hongaars')" /><span>Hongaars punt</span></label>
+      <label class="cb-item" id="cb-patroon-weens"><input type="checkbox" onchange="toggleCb(this,'cb-patroon-weens')" /><span>Weens punt</span></label>
+      <label class="cb-item" id="cb-patroon-overig"><input type="checkbox" onchange="toggleCb(this,'cb-patroon-overig');toggleOv('patroon')" /><span>Overige</span></label>
+    </div>
+    <div class="ovveld" id="ov-patroon"><input type="text" id="tv-patroon-overig" placeholder="Omschrijf patroon..." /></div>
   </div>
   <div class="card"><p class="section-title">Bewerkingen</p>
     <div class="cb-grid">
@@ -843,7 +853,7 @@ const VELD_GROEPEN = {
   telefoon:'Telefoonnummer', email:'E-mailadres',
   straat:'Adres', huisnummer:'Adres', postcode:'Adres', plaats:'Adres',
   notities:'Notities',
-  type_vloer:'Type vloer', houtsoort:'Houtsoort', sortering:'Sortering',
+  type_vloer:'Type vloer', houtsoort:'Houtsoort', sortering:'Sortering', patroon:'Patroon',
   afmeting_lengte:'Afmeting', afmeting_breedte:'Afmeting', afmeting_dikte:'Afmeting',
   bijzonderheden_vloer:'Bijzonderheden vloer', bewerkingen:'Bewerkingen', afwerking:'Afwerking',
   constructievloer:'Constructievloer', vloerverwarming:'Vloerverwarming', type_ondervloer:'Ondervloer',
@@ -868,7 +878,7 @@ const VELD_GROEPEN = {
 };
 const VELD_GROEPEN_VOLGORDE = [
   'Bezoekdatum','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
-  'Type vloer','Houtsoort','Sortering','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
+  'Type vloer','Houtsoort','Sortering','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtpercentage','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
   'Opmeting vloer','Aftrek vloer','Afvalpercentage vloer',
@@ -960,19 +970,19 @@ const CHECKLIST_DB_COLS = {
   afdeklattenBesteld: 'checklist_afdeklatten_besteld', olieBesteld: 'checklist_olie_besteld', leggerIngedeeld: 'checklist_legger_ingedeeld',
   bezorgschema: 'checklist_bezorgschema', offerteGemaakt: 'checklist_offerte', factuurGemaakt: 'checklist_factuur'
 };
-function telOpenstaandeStappen(klant) {
-  return Object.values(CHECKLIST_DB_COLS).filter(col => klant[col] !== 'ja' && klant[col] !== 'nvt').length;
+function offerteNietVerstuurd(klant) {
+  return klant.checklist_offerte !== 'ja' && klant.checklist_offerte !== 'nvt';
 }
 function renderDashboard(data) {
   const kaart = document.getElementById('dashboard-card');
   const lijst = document.getElementById('dashboard-lijst');
   if (!kaart || !lijst) return;
-  const openKlanten = data.filter(k => k.checklist_niet_doorgegaan !== 'ja').map(k => ({ k, open: telOpenstaandeStappen(k) })).filter(x => x.open > 0);
+  const openKlanten = data.filter(k => k.checklist_niet_doorgegaan !== 'ja' && offerteNietVerstuurd(k));
   if (!openKlanten.length) { kaart.style.display = 'none'; lijst.innerHTML = ''; return; }
   kaart.style.display = 'block';
-  lijst.innerHTML = openKlanten.map(({k, open}) => {
+  lijst.innerHTML = openKlanten.map(k => {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
-    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">'+open+' open</div><button class="del-btn" title="Klant niet doorgegaan — uit deze lijst halen" onclick="event.stopPropagation();negeerKlant(\''+k.id+'\')">X</button></div>';
+    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">Offerte nog niet verstuurd</div><button class="del-btn" title="Klant niet doorgegaan — uit deze lijst halen" onclick="event.stopPropagation();negeerKlant(\''+k.id+'\')">X</button></div>';
   }).join('');
 }
 function fmtMutatieTijd(iso) {
@@ -1017,7 +1027,7 @@ function renderMutaties(data) {
 async function negeerKlant(id) {
   const item = klantenData.find(x => String(x.id) === String(id));
   const naam = item ? ((item.voornaam||'')+' '+(item.achternaam||'')).trim() : '';
-  const ok = await bevestig('Klant' + (naam ? ' "'+naam+'"' : '') + ' niet doorgegaan? De klant wordt dan niet meer getoond bij "Openstaande stappen" (de gegevens blijven gewoon bewaard).');
+  const ok = await bevestig('Klant' + (naam ? ' "'+naam+'"' : '') + ' niet doorgegaan? De klant wordt dan niet meer getoond bij "Offerte nog te versturen" (de gegevens blijven gewoon bewaard).');
   if (!ok) return;
   try {
     await sbFetch('PATCH', 'klanten?id=eq.'+id, { checklist_niet_doorgegaan: 'ja' });
@@ -1048,7 +1058,7 @@ function resetFormulier() {
   clearTimeout(autosaveTimer);
   autosaveFoutGetoond = false;
   ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities',
-   'tv-houtsoort','tv-sortering-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
+   'tv-houtsoort','tv-sortering-overig','tv-patroon-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','foto-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
@@ -1064,6 +1074,7 @@ function resetFormulier() {
   document.getElementById('sortex').classList.remove('zichtbaar');
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
+  document.getElementById('ov-patroon').classList.remove('zichtbaar');
   ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra','offerteGemaakt-extra','factuurGemaakt-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
   offertePdfUrl = null; factuurPdfUrl = null; renderChecklistPdfLinks();
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
@@ -1085,6 +1096,12 @@ function checkOndervloerOverig() {
   document.getElementById('ondervloer-overig-veld').classList.toggle('zichtbaar', document.getElementById('c-ondervloer').value === 'Overige');
 }
 function checkSortOv() { document.getElementById('sortex').classList.toggle('zichtbaar', gv('tv-sortering') === 'Overige'); }
+function getPatronen() {
+  const items = [{id:'cb-patroon-stroken',l:'Stroken'},{id:'cb-patroon-visgraat',l:'Visgraat'},{id:'cb-patroon-hongaars',l:'Hongaars punt'},{id:'cb-patroon-weens',l:'Weens punt'}];
+  const r = items.filter(i => document.querySelector('#'+i.id+' input').checked).map(i => i.l);
+  if (document.querySelector('#cb-patroon-overig input').checked) { const t = gv('tv-patroon-overig'); r.push(t ? 'Overige: '+t : 'Overige'); }
+  return r;
+}
 function checkOpdrachtAfval() {
   if (gv('naw-opdracht') === 'Renovatie') {
     sv('v-afval', '0');
@@ -1720,8 +1737,9 @@ function renderSamenvatting() {
   const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
   document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum'))) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
+  const patroon = getPatronen().join(', ');
   const afm = [gv('tv-lengte'), gv('tv-breedte'), gv('tv-dikte')].filter(Boolean).join(' x ');
-  document.getElementById('sam-vloer-type').innerHTML = r('Type', vloerType) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) + r('Bijzonderheden vloer', gv('tv-bijzonderheden')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  document.getElementById('sam-vloer-type').innerHTML = r('Type', vloerType) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Patroon', patroon) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) + r('Bijzonderheden vloer', gv('tv-bijzonderheden')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   document.getElementById('sam-controle').innerHTML = r('Constructievloer', gv('c-type')) + r('Type ondervloer', gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer')) + r('Vloerverwarming', getVVTekst()) + r('Luchtvochtigheid', gv('c-lv') ? gv('c-lv')+'%' : '') + r('Vochtpercentage', gv('c-vp') ? gv('c-vp')+'%' : '') + r('Krastest', gv('c-kras')) + r('Vlakte', gv('c-vlakte')) + r('Dekvloer schoon', tog.schoon) + r('Visuele scheuren', tog.scheuren) + r('Opstartprotocol', tog.opstartprotocol) + r('Opmerkingen', gv('c-opm')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const vTotaal = vloeren.reduce((s,k) => s+k.opp, 0);
@@ -1759,6 +1777,7 @@ function renderSamenvatting() {
 
 function bouwOpslaanData() {
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
+  const patroon = getPatronen().join(', ');
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const pAfval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
   const aAfval = Math.max(0, parseFloat(document.getElementById('a-afval').value)||0);
@@ -1771,7 +1790,7 @@ function bouwOpslaanData() {
     updated_at: new Date().toISOString(),
     opdracht: gv('naw-opdracht'), datum_bezoek: gv('naw-datum'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
     straat: gv('naw-straat'), huisnummer: gv('naw-huisnr'), postcode: gv('naw-postcode'), plaats: gv('naw-plaats'), notities: gv('naw-notities'),
-    type_vloer: vloerType||'', houtsoort: gv('tv-houtsoort'), sortering: sort,
+    type_vloer: vloerType||'', houtsoort: gv('tv-houtsoort'), sortering: sort, patroon: patroon,
     afmeting_lengte: gv('tv-lengte'), afmeting_breedte: gv('tv-breedte'), afmeting_dikte: gv('tv-dikte'),
     bijzonderheden_vloer: gv('tv-bijzonderheden'),
     bewerkingen: getBewerkingen().join(', '), afwerking: getAfwerking().join(', '),
@@ -1983,6 +2002,12 @@ async function laadKlant(id) {
     const stdSort = ['Rustiek','Natuur','Select','AB','ABC','BC'];
     if (k.sortering && stdSort.includes(k.sortering)) { sv('tv-sortering', k.sortering); }
     else if (k.sortering) { sv('tv-sortering','Overige'); sv('tv-sortering-overig', k.sortering); document.getElementById('sortex').classList.add('zichtbaar'); }
+    const patroonMap = {'Stroken':'cb-patroon-stroken','Visgraat':'cb-patroon-visgraat','Hongaars punt':'cb-patroon-hongaars','Weens punt':'cb-patroon-weens'};
+    (k.patroon||'').split(', ').forEach(p => {
+      if (!p) return;
+      if (patroonMap[p]) { document.getElementById(patroonMap[p]).classList.add('active'); document.querySelector('#'+patroonMap[p]+' input').checked = true; }
+      else if (p.startsWith('Overige')) { document.getElementById('cb-patroon-overig').classList.add('active'); document.querySelector('#cb-patroon-overig input').checked = true; document.getElementById('ov-patroon').classList.add('zichtbaar'); sv('tv-patroon-overig', p.replace('Overige: ','')); }
+    });
     sv('tv-lengte', k.afmeting_lengte); sv('tv-breedte', k.afmeting_breedte); sv('tv-dikte', k.afmeting_dikte); sv('tv-bijzonderheden', k.bijzonderheden_vloer); ['lak','hardwax','woca','monocoat'].forEach(t => { const cap = t.charAt(0).toUpperCase()+t.slice(1); const m = (k.afwerking||'').match(new RegExp(cap+' \\(([^)]+)\\)')); if (m) { sv(t+'-kleur', m[1]); document.getElementById(t+'-kleur-veld').classList.add('zichtbaar'); } });
     const bewMap = {'Velling lange zijde':'cb-velling-lang','Velling korte zijde':'cb-velling-kort','Gerookt':'cb-gerookt','Verouderd':'cb-verouderd'};
     (k.bewerkingen||'').split(', ').forEach(b => {
