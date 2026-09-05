@@ -24,6 +24,9 @@ h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .cloud-status.bezig { background: #B5651D; }
 .cloud-status.ok { background: #1D9E75; }
 .cloud-status.fout { background: #E24B4A; }
+.ververs-btn { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-left: 8px; border: 1px solid #ddd; border-radius: 50%; background: #fff; color: #666; font-size: 14px; line-height: 1; cursor: pointer; vertical-align: middle; padding: 0; font-family: inherit; }
+.ververs-btn:hover { background: #f0f0f0; }
+.ververs-btn:active { transform: rotate(90deg); }
 .section-title { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; color: #666; }
@@ -190,7 +193,7 @@ textarea { resize: vertical; min-height: 60px; }
 </head>
 <body>
 <div class="app">
-<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span></h1>
+<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button></h1>
 <div class="tabs">
   <button class="tab active" onclick="switchTab('adressen')">Adressen</button>
   <button class="tab" onclick="switchTab('naw')">Klantgegevens</button>
@@ -209,6 +212,10 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- ADRESSEN -->
 <div class="panel active" id="panel-adressen">
   <div class="dash-grid">
+    <div class="card" id="legdatum-waarschuwing-card" style="display:none;border-color:#fde8e8;background:#fff8f8;">
+      <p class="section-title" style="color:#E24B4A;">Checklist niet compleet vóór legdatum</p>
+      <div id="legdatum-waarschuwing-lijst"></div>
+    </div>
     <div class="card" id="dashboard-card" style="display:none;border-color:#fde8e8;background:#fff8f8;">
       <p class="section-title" style="color:#E24B4A;">Offerte nog te versturen</p>
       <div id="dashboard-lijst"></div>
@@ -266,7 +273,7 @@ textarea { resize: vertical; min-height: 60px; }
   </div>
   <div class="card"><p class="section-title">Adres</p>
     <div class="grid2">
-      <div class="field full"><label>Straat</label><input type="text" id="naw-straat" placeholder="Kerkstraat" /></div>
+      <div class="field full"><label>Straat</label><input type="text" id="naw-straat" placeholder="Kerkstraat" onblur="zoekAdres()" /></div>
       <div class="field"><label>Huisnummer</label><input type="text" id="naw-huisnr" placeholder="12 A" onblur="zoekAdres()" /></div>
       <div class="field"><label>Postcode</label><input type="text" id="naw-postcode" placeholder="1234 AB" onblur="zoekAdres()" /></div>
       <div class="field full"><label>Plaats</label><input type="text" id="naw-plaats" placeholder="Amsterdam" /></div>
@@ -751,20 +758,6 @@ textarea { resize: vertical; min-height: 60px; }
         <input type="file" accept="application/pdf" id="ch-offerte-pdf-input" onchange="uploadChecklistPdf('offerte', this)" style="font-size:13px;width:100%;" />
       </div>
     </div>
-    <div class="toggle-row"><span class="toggle-label">Factuur gemaakt</span>
-      <div class="toggle-btns">
-        <button class="tbtn ja" id="tb-factuurGemaakt-ja" onclick="setToggleReveal('factuurGemaakt','ja',this,'factuurGemaakt-extra')">Ja</button>
-        <button class="tbtn nee" id="tb-factuurGemaakt-nee" onclick="setToggleReveal('factuurGemaakt','nee',this,'factuurGemaakt-extra')">Nee</button>
-        <button class="tbtn nvt" id="tb-factuurGemaakt-nvt" onclick="setToggleReveal('factuurGemaakt','nvt',this,'factuurGemaakt-extra')">NVT</button>
-      </div>
-    </div>
-    <div class="ovveld" id="factuurGemaakt-extra">
-      <div class="field" style="margin-top:8px;">
-        <label>Factuur PDF</label>
-        <div id="factuur-pdf-link" style="margin:4px 0;"></div>
-        <input type="file" accept="application/pdf" id="ch-factuur-pdf-input" onchange="uploadChecklistPdf('factuur', this)" style="font-size:13px;width:100%;" />
-      </div>
-    </div>
   </div>
 </div>
 
@@ -869,7 +862,7 @@ async function sbFetch(method, path, body) {
 }
 
 let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
-const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null, factuurGemaakt: null };
+const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null };
 let vvAanwezig = null, vvType = null, vloerType = null, huidigId = null;
 let vorigeKlantStand = null;
 const VELD_GROEPEN = {
@@ -898,8 +891,7 @@ const VELD_GROEPEN = {
   checklist_olie_besteld:'Olie/lak besteld', checklist_olie_leverancier:'Olie/lak besteld', checklist_olie_datum:'Olie/lak besteld',
   checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld',
   checklist_bezorgschema:'Bezorgschema', checklist_bezorgschema_datum:'Bezorgschema',
-  checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte',
-  checklist_factuur:'Factuur', checklist_factuur_pdf:'Factuur'
+  checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte'
 };
 const VELD_GROEPEN_VOLGORDE = [
   'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
@@ -911,7 +903,7 @@ const VELD_GROEPEN_VOLGORDE = [
   'Specificatie afdeklatten','Opmeting afdeklatten','Afvalpercentage afdeklatten',
   'Opmeting profielen','Afvalpercentage profielen',
   'Vloer besteld','Plinten besteld','Ondervloer besteld','Afdeklatten besteld','Olie/lak besteld',
-  'Vloerenlegger ingedeeld','Bezorgschema','Offerte','Factuur'
+  'Vloerenlegger ingedeeld','Bezorgschema','Offerte'
 ];
 function fotoMutatieLabel(nieuw, vorig) {
   let aantalNieuw = 0, aantalVorig = 0;
@@ -944,7 +936,7 @@ function bepaalMutatieOmschrijving(nieuw, vorig) {
 }
 let klantenData = [];
 let klantenSortering = { veld: 'naam', richting: 'asc' };
-let offertePdfUrl = null, factuurPdfUrl = null;
+let offertePdfUrl = null;
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -989,11 +981,11 @@ function updateBanners() {
 }
 
 const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','agenda'];
-const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt','factuurGemaakt'];
+const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
   afdeklattenBesteld: 'checklist_afdeklatten_besteld', olieBesteld: 'checklist_olie_besteld', leggerIngedeeld: 'checklist_legger_ingedeeld',
-  bezorgschema: 'checklist_bezorgschema', offerteGemaakt: 'checklist_offerte', factuurGemaakt: 'checklist_factuur'
+  bezorgschema: 'checklist_bezorgschema', offerteGemaakt: 'checklist_offerte'
 };
 function offerteNietVerstuurd(klant) {
   return klant.checklist_offerte !== 'ja' && klant.checklist_offerte !== 'nvt';
@@ -1008,6 +1000,31 @@ function renderDashboard(data) {
   lijst.innerHTML = openKlanten.map(k => {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
     return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">Offerte nog niet verstuurd</div><button class="del-btn" title="Klant niet doorgegaan — uit deze lijst halen" onclick="event.stopPropagation();negeerKlant(\''+k.id+'\')">X</button></div>';
+  }).join('');
+}
+function checklistCompleet(klant) {
+  return CHECKLIST_KEYS.every(k => { const v = klant[CHECKLIST_DB_COLS[k]]; return v === 'ja' || v === 'nvt'; });
+}
+function dagenTotLegdatum(datumStr) {
+  const d = new Date(datumStr + 'T00:00:00');
+  const vandaag = new Date(); vandaag.setHours(0,0,0,0);
+  return Math.round((d - vandaag) / 86400000);
+}
+function renderLegdatumWaarschuwing(data) {
+  const kaart = document.getElementById('legdatum-waarschuwing-card');
+  const lijst = document.getElementById('legdatum-waarschuwing-lijst');
+  if (!kaart || !lijst) return;
+  const items = data
+    .filter(k => k.checklist_niet_doorgegaan !== 'ja' && k.checklist_legger_datum && !checklistCompleet(k))
+    .map(k => ({ k, dagen: dagenTotLegdatum(k.checklist_legger_datum) }))
+    .filter(x => x.dagen <= 7)
+    .sort((a, b) => a.dagen - b.dagen);
+  if (!items.length) { kaart.style.display = 'none'; lijst.innerHTML = ''; return; }
+  kaart.style.display = 'block';
+  lijst.innerHTML = items.map(({k, dagen}) => {
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
+    const tekst = dagen === 0 ? 'vandaag' : dagen === 1 ? 'morgen' : dagen === -1 ? 'gisteren' : dagen > 1 ? 'over '+dagen+' dagen' : (-dagen)+' dagen geleden';
+    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">Legdatum '+tekst+' — checklist nog niet compleet</div></div>';
   }).join('');
 }
 function fmtMutatieTijd(iso) {
@@ -1058,6 +1075,7 @@ async function negeerKlant(id) {
     await sbFetch('PATCH', 'klanten?id=eq.'+id, { checklist_niet_doorgegaan: 'ja' });
     if (item) item.checklist_niet_doorgegaan = 'ja';
     renderDashboard(klantenData);
+    renderLegdatumWaarschuwing(klantenData);
     toast('Klant uit openstaande stappen gehaald');
   } catch(e) {
     toast('Fout: '+e.message, 4000);
@@ -1100,8 +1118,8 @@ function resetFormulier() {
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
   document.getElementById('ov-patroon').classList.remove('zichtbaar');
-  ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra','offerteGemaakt-extra','factuurGemaakt-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
-  offertePdfUrl = null; factuurPdfUrl = null; renderChecklistPdfLinks();
+  ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra','offerteGemaakt-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
+  offertePdfUrl = null; renderChecklistPdfLinks();
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
@@ -1139,8 +1157,14 @@ function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
 async function zoekAdres() {
   const postcode = gv('naw-postcode').replace(/\s+/g, '').toUpperCase();
   const huisnrMatch = gv('naw-huisnr').match(/\d+/);
-  if (!/^[1-9][0-9]{3}[A-Z]{2}$/.test(postcode) || !huisnrMatch) return;
-  const huisnr = huisnrMatch[0];
+  const straat = gv('naw-straat').trim();
+  if (/^[1-9][0-9]{3}[A-Z]{2}$/.test(postcode) && huisnrMatch) {
+    await zoekAdresOpPostcode(postcode, huisnrMatch[0]);
+  } else if (straat && huisnrMatch) {
+    await zoekPostcodeOpStraat(straat, gv('naw-huisnr').trim());
+  }
+}
+async function zoekAdresOpPostcode(postcode, huisnr) {
   try {
     const url = 'https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?' + new URLSearchParams({ q: 'postcode:'+postcode+' AND huisnummer:'+huisnr, rows: '1' });
     const res = await fetch(url);
@@ -1155,6 +1179,25 @@ async function zoekAdres() {
     }
   } catch (e) {
     toast('Adres opzoeken mislukt (geen internet?)', 2500);
+  }
+}
+async function zoekPostcodeOpStraat(straat, huisnr) {
+  try {
+    const plaats = gv('naw-plaats').trim();
+    const q = [straat, huisnr, plaats].filter(Boolean).join(' ');
+    const url = 'https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?' + new URLSearchParams({ q: q, fq: 'type:adres', rows: '1' });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const doc = data.response && data.response.docs && data.response.docs[0];
+    if (doc && doc.postcode) {
+      sv('naw-postcode', doc.postcode);
+      sv('naw-plaats', doc.woonplaatsnaam);
+    } else {
+      toast('Postcode niet gevonden bij dit adres', 2500);
+    }
+  } catch (e) {
+    toast('Postcode opzoeken mislukt (geen internet?)', 2500);
   }
 }
 
@@ -1186,9 +1229,7 @@ const PDF_BUCKET = 'Documenten';
 
 function renderChecklistPdfLinks() {
   const offerteEl = document.getElementById('offerte-pdf-link');
-  const factuurEl = document.getElementById('factuur-pdf-link');
   if (offerteEl) offerteEl.innerHTML = offertePdfUrl ? '<a href="'+offertePdfUrl+'" target="_blank" rel="noopener" class="btn" style="height:32px;padding:0 12px;font-size:13px;">📄 Bekijk offerte-PDF</a>' : '<span style="font-size:13px;color:#aaa;">Nog geen PDF geüpload</span>';
-  if (factuurEl) factuurEl.innerHTML = factuurPdfUrl ? '<a href="'+factuurPdfUrl+'" target="_blank" rel="noopener" class="btn" style="height:32px;padding:0 12px;font-size:13px;">📄 Bekijk factuur-PDF</a>' : '<span style="font-size:13px;color:#aaa;">Nog geen PDF geüpload</span>';
 }
 
 async function uploadChecklistPdf(type, inputEl) {
@@ -1206,7 +1247,7 @@ async function uploadChecklistPdf(type, inputEl) {
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
     const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad + '?t=' + Date.now();
-    if (type === 'offerte') offertePdfUrl = url; else factuurPdfUrl = url;
+    if (type === 'offerte') offertePdfUrl = url;
     renderChecklistPdfLinks();
     toast('PDF geüpload!');
     await autoOpslaan();
@@ -1941,8 +1982,8 @@ function bouwOpslaanData() {
     checklist_afdeklatten_besteld: tog.afdeklattenBesteld||'', checklist_afdeklatten_leverancier: gv('ch-afdeklatten-leverancier'), checklist_afdeklatten_datum: gv('ch-afdeklatten-datum'),
     checklist_olie_besteld: tog.olieBesteld||'', checklist_olie_leverancier: gv('ch-olie-leverancier'), checklist_olie_datum: gv('ch-olie-datum'),
     checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'), checklist_legger_datum: gv('ch-legger-datum'),
-    checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'', checklist_factuur: tog.factuurGemaakt||'',
-    checklist_offerte_pdf: offertePdfUrl||'', checklist_factuur_pdf: factuurPdfUrl||''
+    checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'',
+    checklist_offerte_pdf: offertePdfUrl||''
   };
 }
 
@@ -2033,6 +2074,7 @@ async function laadKlanten() {
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
+    renderLegdatumWaarschuwing(data);
     renderMutaties(data);
     renderAgenda();
   } catch(e) {
@@ -2193,9 +2235,7 @@ async function laadKlant(id) {
     restoreToggle('bezorgschema', k.checklist_bezorgschema, 'bezorgschema-extra');
     sv('ch-bezorgschema-datum', k.checklist_bezorgschema_datum);
     restoreToggle('offerteGemaakt', k.checklist_offerte, 'offerteGemaakt-extra');
-    restoreToggle('factuurGemaakt', k.checklist_factuur, 'factuurGemaakt-extra');
     offertePdfUrl = k.checklist_offerte_pdf || null;
-    factuurPdfUrl = k.checklist_factuur_pdf || null;
     renderChecklistPdfLinks();
     renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress();
     setCloudStatus('ok', 'Geladen op '+new Date().toLocaleString('nl-NL'));
