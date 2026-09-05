@@ -751,6 +751,9 @@ textarea { resize: vertical; min-height: 60px; }
         <button class="tbtn nvt" id="tb-offerteGemaakt-nvt" onclick="setToggleReveal('offerteGemaakt','nvt',this,'offerteGemaakt-extra')">NVT</button>
       </div>
     </div>
+    <div class="field" style="margin-top:8px;">
+      <button type="button" class="btn" onclick="maakMoneybirdOfferte()">📄 Concept-offerte aanmaken in Moneybird</button>
+    </div>
     <div class="ovveld" id="offerteGemaakt-extra">
       <div class="field" style="margin-top:8px;">
         <label>Offerte PDF</label>
@@ -1255,6 +1258,25 @@ async function uploadChecklistPdf(type, inputEl) {
     toast('Uploaden mislukt: ' + e.message, 4000);
   } finally {
     inputEl.value = '';
+  }
+}
+
+async function maakMoneybirdOfferte() {
+  if (!huidigId) { toast('Sla de klant eerst op voordat je een offerte aanmaakt', 3000); return; }
+  await flushPendingAutosave();
+  toast('Concept-offerte aanmaken in Moneybird...', 10000);
+  try {
+    const res = await fetch(SB_URL + '/functions/v1/moneybird-offerte', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ klantId: huidigId })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error || ('HTTP '+res.status));
+    toast('Concept-offerte aangemaakt in Moneybird!');
+    if (data.url) window.open(data.url, '_blank');
+  } catch(e) {
+    toast('Aanmaken offerte in Moneybird mislukt: ' + e.message, 6000);
   }
 }
 
