@@ -807,24 +807,46 @@ textarea { resize: vertical; min-height: 60px; }
 
 <!-- TARIEVEN -->
 <div class="panel" id="panel-tarieven">
-  <div class="card"><p class="section-title">Tarief per houtsoort</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per m², excl. btw. "Standaard" wordt gebruikt als de houtsoort van een opname niet in dit lijstje voorkomt.</div>
+  <div class="card"><p class="section-title">Omschrijvingen offerte</p>
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">Maak hier teksten aan die je bij de tarieven hieronder kunt kiezen als omschrijving op de offerte in Moneybird. Kies je niks, dan gebruikt de app een automatische standaardtekst.</div>
     <div class="rij-form">
-      <div class="form-row-vl">
-        <div class="field"><label>Houtsoort</label><input type="text" id="tar-vloer-naam" placeholder="bijv. Eiken" /></div>
-        <div class="field"><label>Prijs per m² (€)</label><input type="number" id="tar-vloer-prijs" placeholder="0.00" step="0.01" min="0" /></div>
-        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegTariefToe('vloer')">+ Voeg toe</button></div>
+      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+        <div class="field" style="flex:1;min-width:240px;"><label>Omschrijving</label><input type="text" id="tar-omschr-tekst" placeholder="bijv. Leveren en leggen laminaat vloer incl. plinten" /></div>
+        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegOmschrijvingToe()">+ Voeg toe</button></div>
       </div>
     </div>
-    <div id="tarief-vloer-lijst"></div>
+    <div id="tarief-omschrijvingen-lijst"></div>
   </div>
 
-  <div class="card"><p class="section-title">Patroon-toeslag</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Extra percentage bovenop de vloerprijs, afhankelijk van het gekozen legpatroon. Stroken en Overige krijgen geen toeslag.</div>
-    <div class="grid3">
-      <div class="field"><label>Visgraat (%)</label><input type="number" id="tar-toeslag-visgraat" placeholder="0" min="0" onchange="wijzigInstelling('toeslag_visgraat', this.value)" /></div>
-      <div class="field"><label>Hongaars punt (%)</label><input type="number" id="tar-toeslag-hongaars" placeholder="0" min="0" onchange="wijzigInstelling('toeslag_hongaars', this.value)" /></div>
-      <div class="field"><label>Weens punt (%)</label><input type="number" id="tar-toeslag-weens" placeholder="0" min="0" onchange="wijzigInstelling('toeslag_weens', this.value)" /></div>
+  <div class="card"><p class="section-title">Tarief schuren en afwerken</p>
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per m², excl. btw.</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="min-width:220px;flex:1;">
+        <div class="field"><label>Schuren en lakken (€/m²)</label><input type="number" id="tar-schuren-lakken" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_schuren_lakken', this.value)" /></div>
+        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-schuren-lakken-omschr" onchange="wijzigInstellingTekst('omschrijving_schuren_lakken', this.value)"></select></div>
+      </div>
+      <div style="min-width:220px;flex:1;">
+        <div class="field"><label>Schuren en oliën (€/m²)</label><input type="number" id="tar-schuren-olien" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_schuren_olien', this.value)" /></div>
+        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-schuren-olien-omschr" onchange="wijzigInstellingTekst('omschrijving_schuren_olien', this.value)"></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><p class="section-title">Tarief legloon</p>
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per m², excl. btw.</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="min-width:220px;flex:1;">
+        <div class="field"><label>Legloon laminaat (€/m²)</label><input type="number" id="tar-legloon-laminaat" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_laminaat', this.value)" /></div>
+        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-laminaat-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_laminaat', this.value)"></select></div>
+      </div>
+      <div style="min-width:220px;flex:1;">
+        <div class="field"><label>Legloon lamelparket zwevend (€/m²)</label><input type="number" id="tar-legloon-lamelparket-zwevend" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_lamelparket_zwevend', this.value)" /></div>
+        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-lamelparket-zwevend-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_lamelparket_zwevend', this.value)"></select></div>
+      </div>
+      <div style="min-width:220px;flex:1;">
+        <div class="field"><label>Legloon lamelparket vol verlijmd (€/m²)</label><input type="number" id="tar-legloon-lamelparket-vol-verlijmd" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_lamelparket_vol_verlijmd', this.value)" /></div>
+        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-lamelparket-vol-verlijmd-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_lamelparket_vol_verlijmd', this.value)"></select></div>
+      </div>
     </div>
   </div>
 
@@ -2401,19 +2423,23 @@ async function verwijderKlant(id) {
 
 // ===== TARIEVEN =====
 let tarieven = { vloer: [], plint: [], afdeklat: [], profiel: [] };
-let tariefInstellingen = { btw_percentage: 21, toeslag_visgraat: 0, toeslag_hongaars: 0, toeslag_weens: 0 };
+let tariefInstellingen = { btw_percentage: 21, tarief_schuren_lakken: 0, tarief_schuren_olien: 0, tarief_legloon_laminaat: 0, tarief_legloon_lamelparket_zwevend: 0, tarief_legloon_lamelparket_vol_verlijmd: 0, omschrijving_schuren_lakken: null, omschrijving_schuren_olien: null, omschrijving_legloon_laminaat: null, omschrijving_legloon_lamelparket_zwevend: null, omschrijving_legloon_lamelparket_vol_verlijmd: null };
+let tariefOmschrijvingen = [];
+const OMSCHR_INSTELLING_VELDEN = ['omschrijving_schuren_lakken','omschrijving_schuren_olien','omschrijving_legloon_laminaat','omschrijving_legloon_lamelparket_zwevend','omschrijving_legloon_lamelparket_vol_verlijmd'];
 let tarievenGeladen = false;
 
 async function laadTarieven() {
   const container = document.getElementById('panel-tarieven');
   try {
-    const [items, instellingen] = await Promise.all([
+    const [items, instellingen, omschrijvingen] = await Promise.all([
       sbFetch('GET', 'tarief_items?order=categorie.asc,naam.asc'),
-      sbFetch('GET', 'tarief_instellingen?id=eq.1')
+      sbFetch('GET', 'tarief_instellingen?id=eq.1'),
+      sbFetch('GET', 'tarief_omschrijvingen?order=tekst.asc')
     ]);
     tarieven = { vloer: [], plint: [], afdeklat: [], profiel: [] };
     (items || []).forEach(r => { if (tarieven[r.categorie]) tarieven[r.categorie].push(r); });
     if (instellingen && instellingen[0]) tariefInstellingen = instellingen[0];
+    tariefOmschrijvingen = omschrijvingen || [];
     tarievenGeladen = true;
     renderTarieven();
   } catch(e) {
@@ -2421,12 +2447,91 @@ async function laadTarieven() {
   }
 }
 
+function omschrOpties(geselecteerd) {
+  let html = '<option value=""' + (!geselecteerd ? ' selected' : '') + '>— standaardtekst —</option>';
+  tariefOmschrijvingen.forEach(o => {
+    html += '<option value="'+escapeHtml(o.tekst)+'"'+(geselecteerd===o.tekst ? ' selected' : '')+'>'+escapeHtml(o.tekst)+'</option>';
+  });
+  return html;
+}
+
+function vulOmschrSelect(id, geselecteerd) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = omschrOpties(geselecteerd);
+}
+
+function renderOmschrijvingen() {
+  const el = document.getElementById('tarief-omschrijvingen-lijst');
+  if (!el) return;
+  if (!tariefOmschrijvingen.length) { el.innerHTML = '<div class="leeg" style="padding:12px;margin-top:8px;">Nog geen omschrijvingen toegevoegd.</div>'; }
+  else {
+    el.innerHTML = tariefOmschrijvingen.map(o =>
+      '<div class="data-rij"><div class="naam">'+escapeHtml(o.tekst)+'</div><button class="del-btn" onclick="verwijderOmschrijving('+o.id+')">X</button></div>'
+    ).join('');
+  }
+  vulOmschrSelect('tar-schuren-lakken-omschr', tariefInstellingen.omschrijving_schuren_lakken);
+  vulOmschrSelect('tar-schuren-olien-omschr', tariefInstellingen.omschrijving_schuren_olien);
+  vulOmschrSelect('tar-legloon-laminaat-omschr', tariefInstellingen.omschrijving_legloon_laminaat);
+  vulOmschrSelect('tar-legloon-lamelparket-zwevend-omschr', tariefInstellingen.omschrijving_legloon_lamelparket_zwevend);
+  vulOmschrSelect('tar-legloon-lamelparket-vol-verlijmd-omschr', tariefInstellingen.omschrijving_legloon_lamelparket_vol_verlijmd);
+}
+
+async function voegOmschrijvingToe() {
+  const el = document.getElementById('tar-omschr-tekst');
+  const tekst = (el.value||'').trim();
+  if (!tekst) { toast('Vul eerst een omschrijving in', 2500); return; }
+  if (tariefOmschrijvingen.some(o => o.tekst.toLowerCase() === tekst.toLowerCase())) {
+    toast('Deze omschrijving staat er al in', 3000);
+    return;
+  }
+  try {
+    const result = await sbFetch('POST', 'tarief_omschrijvingen', { tekst });
+    if (result && result[0]) tariefOmschrijvingen.push(result[0]);
+    tariefOmschrijvingen.sort((a,b) => a.tekst.localeCompare(b.tekst));
+    el.value = '';
+    renderTarieven();
+    toast('Omschrijving toegevoegd');
+  } catch(e) {
+    toast('Toevoegen mislukt: ' + e.message, 4000);
+  }
+}
+
+async function verwijderOmschrijving(id) {
+  const item = tariefOmschrijvingen.find(o => String(o.id) === String(id));
+  if (!item) return;
+  const ok = await bevestig('"' + item.tekst + '" verwijderen? Tarieven die deze omschrijving nu gebruiken, vallen dan terug op de standaardtekst.');
+  if (!ok) return;
+  try {
+    const opdrachten = [sbFetch('DELETE', 'tarief_omschrijvingen?id=eq.'+id)];
+    OMSCHR_INSTELLING_VELDEN.forEach(veld => {
+      if (tariefInstellingen[veld] === item.tekst) opdrachten.push(sbFetch('PATCH', 'tarief_instellingen?id=eq.1', { [veld]: null }));
+    });
+    Object.keys(tarieven).forEach(cat => {
+      (tarieven[cat]||[]).forEach(r => {
+        if (r.omschrijving === item.tekst) opdrachten.push(sbFetch('PATCH', 'tarief_items?id=eq.'+r.id, { omschrijving: null }));
+      });
+    });
+    await Promise.all(opdrachten);
+    tariefOmschrijvingen = tariefOmschrijvingen.filter(o => String(o.id) !== String(id));
+    OMSCHR_INSTELLING_VELDEN.forEach(veld => { if (tariefInstellingen[veld] === item.tekst) tariefInstellingen[veld] = null; });
+    Object.keys(tarieven).forEach(cat => { (tarieven[cat]||[]).forEach(r => { if (r.omschrijving === item.tekst) r.omschrijving = null; }); });
+    renderTarieven();
+    toast('Omschrijving verwijderd');
+  } catch(e) {
+    toast('Verwijderen mislukt: ' + e.message, 4000);
+  }
+}
+
 function renderTarieven() {
-  ['vloer','plint','afdeklat','profiel'].forEach(renderTariefLijst);
+  renderOmschrijvingen();
+  ['plint','afdeklat','profiel'].forEach(renderTariefLijst);
   sv('tar-btw', tariefInstellingen.btw_percentage);
-  sv('tar-toeslag-visgraat', tariefInstellingen.toeslag_visgraat);
-  sv('tar-toeslag-hongaars', tariefInstellingen.toeslag_hongaars);
-  sv('tar-toeslag-weens', tariefInstellingen.toeslag_weens);
+  sv('tar-schuren-lakken', tariefInstellingen.tarief_schuren_lakken);
+  sv('tar-schuren-olien', tariefInstellingen.tarief_schuren_olien);
+  sv('tar-legloon-laminaat', tariefInstellingen.tarief_legloon_laminaat);
+  sv('tar-legloon-lamelparket-zwevend', tariefInstellingen.tarief_legloon_lamelparket_zwevend);
+  sv('tar-legloon-lamelparket-vol-verlijmd', tariefInstellingen.tarief_legloon_lamelparket_vol_verlijmd);
 }
 
 function renderTariefLijst(categorie) {
@@ -2438,6 +2543,7 @@ function renderTariefLijst(categorie) {
     const isStandaard = r.naam === 'Standaard';
     return '<div class="data-rij">'
       + '<div class="naam">'+escapeHtml(r.naam)+(isStandaard ? ' <span style="font-weight:400;color:#aaa;">(vult aan als niets anders past)</span>' : '')+'</div>'
+      + '<select style="width:180px;height:32px;font-size:12px;padding:4px 6px;" onchange="wijzigTariefOmschrijving(\''+categorie+'\','+r.id+',this.value)">'+omschrOpties(r.omschrijving)+'</select>'
       + '<div class="maat">€ <input type="number" step="0.01" min="0" value="'+(r.prijs!=null?r.prijs:0)+'" style="width:80px;" onchange="wijzigTariefPrijs(\''+categorie+'\','+r.id+',this.value)" /></div>'
       + (isStandaard ? '' : '<button class="del-btn" onclick="verwijderTarief(\''+categorie+'\','+r.id+')">X</button>')
       + '</div>';
@@ -2490,11 +2596,34 @@ async function verwijderTarief(categorie, id) {
   }
 }
 
+async function wijzigTariefOmschrijving(categorie, id, waarde) {
+  const omschrijving = waarde || null;
+  try {
+    await sbFetch('PATCH', 'tarief_items?id=eq.'+id, { omschrijving });
+    const rij = (tarieven[categorie]||[]).find(r => String(r.id) === String(id));
+    if (rij) rij.omschrijving = omschrijving;
+    toast('Omschrijving bijgewerkt');
+  } catch(e) {
+    toast('Opslaan mislukt: ' + e.message, 4000);
+  }
+}
+
 async function wijzigInstelling(veld, waarde) {
   const getal = Math.max(0, parseFloat(waarde) || 0);
   try {
     await sbFetch('PATCH', 'tarief_instellingen?id=eq.1', { [veld]: getal });
     tariefInstellingen[veld] = getal;
+    toast('Opgeslagen');
+  } catch(e) {
+    toast('Opslaan mislukt: ' + e.message, 4000);
+  }
+}
+
+async function wijzigInstellingTekst(veld, waarde) {
+  const tekst = waarde || null;
+  try {
+    await sbFetch('PATCH', 'tarief_instellingen?id=eq.1', { [veld]: tekst });
+    tariefInstellingen[veld] = tekst;
     toast('Opgeslagen');
   } catch(e) {
     toast('Opslaan mislukt: ' + e.message, 4000);
