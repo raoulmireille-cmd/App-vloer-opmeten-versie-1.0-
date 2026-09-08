@@ -188,7 +188,11 @@ textarea { resize: vertical; min-height: 60px; }
   .app { max-width: 100%; padding: 0; margin: 0; }
   .card { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
   #print-titel { display: block !important; }
+  .no-print { display: none !important; }
 }
+.foto-groep-titel { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 8px; }
+.foto-groep-titel:first-child { margin-top: 0; }
+#handtekening-canvas { cursor: crosshair; }
 </style>
 </head>
 <body>
@@ -278,6 +282,9 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field"><label>Huisnummer</label><input type="text" id="naw-huisnr" placeholder="12 A" onblur="zoekAdres()" /></div>
       <div class="field"><label>Postcode</label><input type="text" id="naw-postcode" placeholder="1234 AB" onblur="zoekAdres()" /></div>
       <div class="field full"><label>Plaats</label><input type="text" id="naw-plaats" placeholder="Amsterdam" /></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+      <button type="button" class="btn" onclick="openRoute()">📍 Route in Google Maps</button>
     </div>
   </div>
   <div class="card"><p class="section-title">Type opdracht</p>
@@ -627,11 +634,18 @@ textarea { resize: vertical; min-height: 60px; }
   <div id="banner-fotos" style="display:none;" class="banner"></div>
   <div class="card">
     <p class="section-title">Foto toevoegen</p>
-    <div class="field" style="margin-bottom:10px;"><label>Omschrijving (optioneel)</label><input type="text" id="foto-omschrijving" placeholder="bijv. Scheur bij het raam in de woonkamer" /></div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="field"><label>Ruimte</label>
+        <select id="foto-ruimte">
+          <option value="">— Geen specifieke ruimte —</option>
+        </select>
+      </div>
+      <div class="field"><label>Omschrijving (optioneel)</label><input type="text" id="foto-omschrijving" placeholder="bijv. Scheur bij het raam" /></div>
+    </div>
     <input type="file" accept="image/*" id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
-    <p style="font-size:12px;color:#888;margin-top:8px;">Kies of maak een foto — deze wordt direct opgeslagen bij deze klant. Sla de klant eerst één keer op (bijvoorbeeld door naam en adres in te vullen) voordat je hier foto's toevoegt.</p>
+    <p style="font-size:12px;color:#888;margin-top:8px;">Kies of maak een foto — deze wordt direct opgeslagen bij deze klant. Sla de klant eerst één keer op (bijvoorbeeld door naam en adres in te vullen) voordat je hier foto's toevoegt. Ruimtes komen uit de tab "Vloer" — voeg daar eerst de ruimtes toe.</p>
   </div>
-  <div id="foto-lijst" class="foto-grid"></div>
+  <div id="foto-lijst"></div>
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('samenvatting')">Naar samenvatting →</button></div>
 </div>
 
@@ -646,6 +660,21 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="card"><p class="section-title">Opmeting plinten</p><div id="sam-plint-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-plint-rijen"></div><div id="sam-plint-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
   <div class="card"><p class="section-title">Afdeklatten</p><div id="sam-afdek-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-afdek-rijen"></div><div id="sam-afdek-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
   <div class="card"><p class="section-title">Profielen</p><div id="sam-profiel-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-profiel-rijen"></div><div id="sam-profiel-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
+  <div class="card"><p class="section-title">Handtekening klant</p>
+    <div id="handtekening-weergave" style="display:none;">
+      <img id="handtekening-img" style="max-width:280px;width:100%;border:1px solid #e5e5e5;border-radius:8px;background:#fff;display:block;margin-bottom:6px;" />
+      <div style="font-size:12px;color:#888;" id="handtekening-datum-tekst"></div>
+      <button type="button" class="btn no-print" style="margin-top:8px;" onclick="opnieuwOndertekenen()">Opnieuw ondertekenen</button>
+    </div>
+    <div id="handtekening-invoer">
+      <p style="font-size:12px;color:#888;margin-bottom:8px;">Laat de klant hieronder met de vinger of muis ondertekenen voor akkoord op deze opname.</p>
+      <canvas id="handtekening-canvas" width="600" height="200" style="width:100%;max-width:600px;height:200px;border:1px solid #ddd;border-radius:8px;background:#fff;touch-action:none;display:block;"></canvas>
+      <div class="no-print" style="display:flex;gap:8px;margin-top:8px;">
+        <button type="button" class="btn" onclick="wisHandtekening()">Wissen</button>
+        <button type="button" class="btn btn-primary" onclick="opslaanHandtekening()">Handtekening opslaan</button>
+      </div>
+    </div>
+  </div>
   <div class="knop-blok">
     <button class="btn btn-green btn-full" onclick="exporteerPDF()">📄 Download als PDF</button>
   </div>
@@ -1002,9 +1031,17 @@ const VELD_GROEPEN_VOLGORDE = [
   'Vloerenlegger ingedeeld','Bezorgschema','Offerte'
 ];
 function fotoMutatieLabel(nieuw, vorig) {
-  let aantalNieuw = 0, aantalVorig = 0;
-  try { aantalNieuw = JSON.parse(nieuw.fotos || '[]').length; } catch { aantalNieuw = 0; }
-  try { aantalVorig = JSON.parse(vorig.fotos || '[]').length; } catch { aantalVorig = 0; }
+  let nieuwArr = [], vorigArr = [];
+  try { nieuwArr = JSON.parse(nieuw.fotos || '[]'); } catch { nieuwArr = []; }
+  try { vorigArr = JSON.parse(vorig.fotos || '[]'); } catch { vorigArr = []; }
+  // De handtekening zit als speciale entry (type:'handtekening') in dezelfde lijst; apart benoemen i.p.v. als "foto" tellen.
+  const sigNieuw = nieuwArr.find(f => f.type === 'handtekening');
+  const sigVorig = vorigArr.find(f => f.type === 'handtekening');
+  const aantalNieuw = nieuwArr.filter(f => f.type !== 'handtekening').length;
+  const aantalVorig = vorigArr.filter(f => f.type !== 'handtekening').length;
+  if ((sigNieuw?.url||'') !== (sigVorig?.url||'') && aantalNieuw === aantalVorig) {
+    return sigNieuw ? 'Handtekening klant toegevoegd' : 'Handtekening klant verwijderd';
+  }
   if (aantalNieuw > aantalVorig) {
     const n = aantalNieuw - aantalVorig;
     return n === 1 ? 'Foto toegevoegd' : n + ' foto\'s toegevoegd';
@@ -1058,6 +1095,18 @@ function mailKlant() {
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
   const onderwerp = 'Parket Specialist Gouda' + (naam ? ' – ' + naam : '');
   window.location.href = 'mailto:' + encodeURIComponent(adres) + '?subject=' + encodeURIComponent(onderwerp);
+}
+
+function openRoute() {
+  const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
+  if (!adres) { toast('Vul eerst een adres in', 3000); return; }
+  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(adres), '_blank');
+}
+function openRouteVoorKlant(id) {
+  const k = klantenData.find(x => String(x.id) === String(id));
+  const adres = k ? [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ') : '';
+  if (!adres) { toast('Geen adres bekend voor deze klant', 3000); return; }
+  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(adres), '_blank');
 }
 
 function getBanner() {
@@ -1185,6 +1234,7 @@ function switchTab(name) {
   const idx = TABS.indexOf(name);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if (name === 'adressen') laadKlanten();
+  if (name === 'fotos') vulFotoRuimteSelect();
   if (name === 'samenvatting') renderSamenvatting();
   if (name === 'checklist') renderChecklistProgress();
   if (name === 'agenda') laadAfspraken();
@@ -1220,10 +1270,11 @@ function resetFormulier() {
   offertePdfUrl = null; renderChecklistPdfLinks();
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
+  handtekeningUrl = null; handtekeningDatum = null;
   ['v-afval','p-afval','a-afval','pr-afval'].forEach(id => sv(id,'10'));
   setCloudStatus('idle', 'Nog niet opgeslagen');
   vorigeKlantStand = null;
-  renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos(); renderChecklistProgress();
+  renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos(); renderChecklistProgress(); renderHandtekening();
 }
 
 function setVloerType(type, btn) { vloerType = type; document.querySelectorAll('#typevloer-grid .vtbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
@@ -1800,6 +1851,7 @@ async function uploadFoto(inputEl) {
   if (!huidigId) { toast('Sla de klant eerst op voordat je een foto toevoegt', 3000); inputEl.value = ''; return; }
   if (!file.type.startsWith('image/')) { toast('Alleen afbeeldingen zijn toegestaan', 3000); inputEl.value = ''; return; }
   const omschrijving = gv('foto-omschrijving');
+  const ruimte = gv('foto-ruimte');
   const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_').replace(/\.\w+$/, '') + '.jpg';
   const pad = 'fotos/' + huidigId + '/' + Date.now() + '-' + veiligeNaam;
   toast('Foto verwerken...', 8000);
@@ -1818,7 +1870,7 @@ async function uploadFoto(inputEl) {
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
     const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
-    fotos.push({ id: Date.now(), naam: omschrijving||'', url, pad });
+    fotos.push({ id: Date.now(), naam: omschrijving||'', ruimte: ruimte||'', url, pad });
     sv('foto-omschrijving', '');
     renderFotos();
     toast('Foto toegevoegd!');
@@ -1829,18 +1881,120 @@ async function uploadFoto(inputEl) {
     inputEl.value = '';
   }
 }
-function verwijderFoto(id) { fotos = fotos.filter(f => f.id !== id); renderFotos(); }
+function verwijderFoto(id) { fotos = fotos.filter(f => f.id !== id); renderFotos(); autoOpslaan(); }
+// Vult de ruimte-keuzelijst bij Foto's met de ruimtes die op de tab "Vloer" zijn ingevoerd.
+function vulFotoRuimteSelect() {
+  const select = document.getElementById('foto-ruimte');
+  if (!select) return;
+  const huidigeKeuze = select.value;
+  const ruimtes = [...new Set(vloeren.map(v => v.naam).filter(Boolean))];
+  select.innerHTML = '<option value="">— Geen specifieke ruimte —</option>' + ruimtes.map(r => '<option value="'+escapeHtml(r)+'">'+escapeHtml(r)+'</option>').join('');
+  if (ruimtes.includes(huidigeKeuze)) select.value = huidigeKeuze;
+}
+// Losse foto's (die geen "type" hebben) tonen we hier; een handtekening wordt hier bewust uitgefilterd
+// -- die zit als speciale entry in dezelfde 'fotos'-lijst opgeslagen, zie renderHandtekening().
 function renderFotos() {
   const el = document.getElementById('foto-lijst');
   if (!el) return;
-  if (!fotos.length) { el.innerHTML = '<div class="leeg">Nog geen foto\'s toegevoegd.</div>'; return; }
-  el.innerHTML = fotos.map(f =>
+  const echteFotos = fotos.filter(f => f.type !== 'handtekening');
+  if (!echteFotos.length) { el.innerHTML = '<div class="leeg">Nog geen foto\'s toegevoegd.</div>'; return; }
+  const fotoKaartHtml = f =>
     '<div class="foto-kaart">'
     + '<img src="'+f.url+'" alt="'+escapeHtml(f.naam||'Foto')+'" onclick="window.open(\''+f.url+'\',\'_blank\')" />'
     + '<button class="del-btn foto-del-btn" title="Verwijder foto" onclick="verwijderFoto('+f.id+')">X</button>'
     + (f.naam ? '<div class="foto-tekst">'+escapeHtml(f.naam)+'</div>' : '')
-    + '</div>'
+    + '</div>';
+  const heeftRuimtes = echteFotos.some(f => f.ruimte);
+  if (!heeftRuimtes) { el.innerHTML = '<div class="foto-grid">'+echteFotos.map(fotoKaartHtml).join('')+'</div>'; return; }
+  const groepen = {};
+  echteFotos.forEach(f => { const naam = f.ruimte || 'Overig'; if (!groepen[naam]) groepen[naam] = []; groepen[naam].push(f); });
+  el.innerHTML = Object.entries(groepen).map(([naam, items]) =>
+    '<div class="foto-groep-titel">'+escapeHtml(naam)+'</div><div class="foto-grid">'+items.map(fotoKaartHtml).join('')+'</div>'
   ).join('');
+}
+
+// --- Handtekening klant ---
+// Opgeslagen als speciale entry ({type:'handtekening', url, datum}) in de bestaande 'fotos'-lijst/kolom,
+// zodat er geen aanpassing aan de database-tabel nodig is.
+let handtekeningUrl = null, handtekeningDatum = null, sigTekenBezig = false, sigLaatstePunt = null;
+function sigCanvas() { return document.getElementById('handtekening-canvas'); }
+function sigPositie(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  const schaalX = canvas.width / rect.width, schaalY = canvas.height / rect.height;
+  return { x: (e.clientX - rect.left) * schaalX, y: (e.clientY - rect.top) * schaalY };
+}
+function initHandtekeningCanvas() {
+  const canvas = sigCanvas();
+  if (!canvas || canvas.dataset.init) return;
+  canvas.dataset.init = '1';
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a1a1a';
+  canvas.addEventListener('pointerdown', e => {
+    sigTekenBezig = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch {}
+    sigLaatstePunt = sigPositie(canvas, e);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!sigTekenBezig) return;
+    const p = sigPositie(canvas, e);
+    ctx.beginPath(); ctx.moveTo(sigLaatstePunt.x, sigLaatstePunt.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    sigLaatstePunt = p;
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => canvas.addEventListener(ev, () => { sigTekenBezig = false; }));
+}
+function wisHandtekening() {
+  const canvas = sigCanvas();
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+function canvasIsLeeg(canvas) {
+  const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+  for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) return false;
+  return true;
+}
+async function opslaanHandtekening() {
+  const canvas = sigCanvas();
+  if (!canvas || canvasIsLeeg(canvas)) { toast('Laat de klant eerst ondertekenen', 3000); return; }
+  if (!huidigId) { toast('Sla de klant eerst op voordat je de handtekening opslaat', 3000); return; }
+  toast('Handtekening opslaan...', 6000);
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const pad = 'handtekeningen/' + huidigId + '-' + Date.now() + '.png';
+    const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/png', 'x-upsert': 'true' },
+      body: blob
+    });
+    if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
+    handtekeningUrl = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
+    handtekeningDatum = new Date().toISOString();
+    fotos = fotos.filter(f => f.type !== 'handtekening');
+    fotos.push({ id: 'handtekening-'+Date.now(), type: 'handtekening', url: handtekeningUrl, pad, datum: handtekeningDatum });
+    renderHandtekening();
+    toast('Handtekening opgeslagen!');
+    await autoOpslaan();
+  } catch(e) {
+    toast('Opslaan handtekening mislukt: ' + e.message, 4000);
+  }
+}
+function opnieuwOndertekenen() {
+  handtekeningUrl = null; handtekeningDatum = null;
+  fotos = fotos.filter(f => f.type !== 'handtekening');
+  renderHandtekening();
+  wisHandtekening();
+  autoOpslaan();
+}
+function renderHandtekening() {
+  const weergave = document.getElementById('handtekening-weergave');
+  const invoer = document.getElementById('handtekening-invoer');
+  if (!weergave || !invoer) return;
+  if (handtekeningUrl) {
+    weergave.style.display = 'block'; invoer.style.display = 'none';
+    document.getElementById('handtekening-img').src = handtekeningUrl;
+    document.getElementById('handtekening-datum-tekst').textContent = handtekeningDatum ? 'Ondertekend op ' + new Date(handtekeningDatum).toLocaleString('nl-NL') : '';
+  } else {
+    weergave.style.display = 'none'; invoer.style.display = 'block';
+    initHandtekeningCanvas();
+  }
 }
 
 function upVP() {
@@ -1918,6 +2072,7 @@ function renderVloer() {
   c.innerHTML = vloeren.length ? vloerVerdiepingGroepenHtml(vloeren, true) : '<div class="leeg">Nog geen ruimtes toegevoegd.</div>';
   ac.innerHTML = !aftrekken.length ? '' :
     aftrekken.map(k => '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+k.naam+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderAftrek('+k.id+')">X</button></div>').join('');
+  vulFotoRuimteSelect();
 }
 
 function lengteVlakHtml(rijen, verwijderbaar, verwijderFn) {
@@ -2052,6 +2207,7 @@ function renderSamenvatting() {
   document.getElementById('sam-profiel-spec').innerHTML = '';
   document.getElementById('sam-profiel-rijen').innerHTML = !profielen.length ? '<span style="color:#bbb;font-size:14px;">Geen locaties ingevoerd</span>' : profielen.map(p => '<div class="data-rij"><div class="naam">'+p.naam+(p.type?' — '+p.type:'')+(p.breedte?' ('+p.breedte+' mm)':'')+'</div><div class="opp">'+fmt(p.lengte)+' m</div></div>').join('');
   document.getElementById('sam-profiel-totaal').innerHTML = 'Netto: '+fmt(prTotaal)+' m &nbsp;|&nbsp; Incl. '+prAfval+'% afval: <span style="color:#B5651D">'+fmt(prTotaal*(1+prAfval/100))+' m</span>';
+  renderHandtekening();
   updateBanners();
 }
 
@@ -2262,7 +2418,8 @@ function renderKlantenLijst(data, q) {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
     const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ');
     const datum = k.created_at ? new Date(k.created_at).toLocaleDateString('nl-NL') : '';
-    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+'</div><div class="klant-adres">'+(adres||'(geen adres)')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span><button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
+    const routeBtn = adres ? '<button class="btn" style="height:30px;padding:0 10px;font-size:14px;" title="Route in Google Maps" onclick="event.stopPropagation();openRouteVoorKlant(\''+k.id+'\')">📍</button>' : '';
+    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+'</div><div class="klant-adres">'+(adres||'(geen adres)')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span>'+routeBtn+'<button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
   }).join('');
 }
 
@@ -2322,7 +2479,11 @@ async function laadKlant(id) {
     sv('p-type', k.plinten_type); sv('p-hoogte', k.plinten_hoogte); sv('p-dikte', k.plinten_dikte); sv('p-kleur', k.plinten_kleur);
     sv('a-type', k.afdek_type); sv('a-breedte', k.afdek_hoogte); sv('a-kleur', k.afdek_kleur);
     try { aftrekken = (JSON.parse(k.vloer_aftrek)||[]).map((r,i) => ({...r, id: Date.now()+i+300})); } catch { aftrekken = []; }
-    try { fotos = (JSON.parse(k.fotos)||[]).map((r,i) => ({...r, id: Date.now()+i+400})); } catch { fotos = []; } renderFotos();
+    try { fotos = (JSON.parse(k.fotos)||[]).map((r,i) => ({...r, id: r.type==='handtekening' ? r.id : Date.now()+i+400})); } catch { fotos = []; }
+    const sigEntry = fotos.find(f => f.type === 'handtekening');
+    handtekeningUrl = sigEntry ? sigEntry.url : null;
+    handtekeningDatum = sigEntry ? sigEntry.datum : null;
+    renderFotos();
     try { profielen = (JSON.parse(k.profielen_opmeting)||[]).map((r,i) => ({...r, id: Date.now()+i+500})); } catch { profielen = []; }
     sv('c-opm', k.opmerkingen);
     if (k.vloer_afval) sv('v-afval', k.vloer_afval);
@@ -2356,7 +2517,7 @@ async function laadKlant(id) {
     restoreToggle('offerteGemaakt', k.checklist_offerte, 'offerteGemaakt-extra');
     offertePdfUrl = k.checklist_offerte_pdf || null;
     renderChecklistPdfLinks();
-    renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress();
+    renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress(); renderHandtekening();
     setCloudStatus('ok', 'Geladen op '+new Date().toLocaleString('nl-NL'));
     toast('Klant geladen!');
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
