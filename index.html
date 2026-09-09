@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parket Specialist Gouda</title>
+<script>(function(){try{if(localStorage.getItem('pvThema')==='donker')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EDE6DA; color: #1a1a1a; }
@@ -193,29 +194,315 @@ textarea { resize: vertical; min-height: 60px; }
 .foto-groep-titel { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 8px; }
 .foto-groep-titel:first-child { margin-top: 0; }
 #handtekening-canvas { cursor: crosshair; }
+/* ================= STIJL B — "Modern Vakwerk" ================= */
+:root{
+  --accent:#0F766E; --accent-dark:#0B564F; --accent-tint:#E3F4F1;
+  --ink:#1E2530; --paper:#F3F5F7;
+}
+body{ background: var(--paper); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+h1{
+  margin:-16px -16px 22px -16px; padding:20px 16px;
+  background:#151C28; color:#EAF1F0; border-radius:0 0 18px 18px;
+  box-shadow:0 6px 18px rgba(21,28,40,0.2);
+  display:flex; align-items:center; font-size:19px; font-weight:700;
+}
+.ververs-btn{ background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.2); color:#EAF1F0; }
+.ververs-btn:hover{ background:rgba(255,255,255,0.2); }
+.cloud-status.idle{ background:rgba(255,255,255,0.3); }
+
+.tabs{ background:#fff; border:none; border-radius:12px; padding:6px; gap:2px;
+  box-shadow:0 2px 8px rgba(21,28,40,0.06); }
+.tab{ border-radius:8px; padding:9px 13px; color:#8792A2; font-weight:600; }
+.tab.active{ background:var(--accent); color:#fff; border-bottom:none; box-shadow:0 2px 6px rgba(15,118,110,0.3); }
+.tab:hover:not(.active){ background:#EEF2F4; color:var(--ink); }
+
+.card{ border-radius:16px; border:1px solid #E7EBEF; box-shadow:0 1px 6px rgba(21,28,40,0.04); }
+.section-title{ color:var(--accent-dark); font-weight:700; }
+.klant-kaart{ border-radius:14px; border:1px solid #E7EBEF; box-shadow:0 1px 4px rgba(21,28,40,0.04); }
+.klant-kaart:hover{ border-color:var(--accent); box-shadow:0 6px 16px rgba(15,118,110,0.12); transform:translateY(-1px); transition:.15s; }
+
+.btn{ border-radius:9px; font-weight:600; }
+.btn-primary{ background:var(--accent); border-color:var(--accent); box-shadow:0 2px 6px rgba(15,118,110,0.3); }
+.btn-primary:hover{ background:var(--accent-dark); border-color:var(--accent-dark); }
+.vtbtn{ border-radius:10px; }
+.vtbtn.active{ background:var(--accent); border-color:var(--accent); box-shadow:0 2px 6px rgba(15,118,110,0.3); }
+.vtbtn:hover{ border-color:var(--accent); }
+.cb-item{ border-radius:10px; }
+.cb-item.active{ border-color:var(--accent); background:var(--accent-tint); }
+.cb-item.active span{ color:var(--accent-dark); }
+input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(15,118,110,0.15); }
+.tbtn.opt.active{ background:var(--accent); border-color:var(--accent); }
+
+.totaal-card{ border-radius:16px; border:1px solid #E7EBEF; box-shadow:0 1px 6px rgba(21,28,40,0.04); }
+.totaal-waarde{ color:var(--accent-dark); }
+.sort-btn.active{ background:var(--accent); border-color:var(--accent); }
+.info-btn{ background:var(--accent); }
+.info-btn:hover{ background:var(--accent-dark); }
+.rij-form{ border-radius:16px; background:#F7FAFB; border:1px solid #E7EBEF; }
+.snelknop{ border-radius:20px; }
+.snelknop:hover{ background:var(--accent-tint); border-color:var(--accent); color:var(--accent-dark); }
+.foto-kaart{ border-radius:12px; }
+.foto-groep-titel{ color:var(--accent-dark); }
+.btn-green{ background:#2C8C63; border-color:#2C8C63; }
+.btn-danger{ background:#D64545; border-color:#D64545; }
+.agenda-cel.vandaag{ border-color:var(--accent); }
+.agenda-cel.geselecteerd{ background:var(--accent-tint); border-color:var(--accent); }
+.confirm-box{ border-radius:18px; }
+
+.icon{ display:block; }
+
+/* Beginscherm */
+.start-wrap{ display:flex; flex-direction:column; gap:14px; padding:8px 0 28px; max-width:520px; margin:0 auto; }
+.start-rij-boven{ display:flex; gap:14px; }
+.start-tegel{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  padding:30px 16px; border-radius:20px; border:1px solid #E7EBEF; background:#fff; cursor:pointer;
+  box-shadow:0 1px 6px rgba(21,28,40,0.04); font-family:inherit; color:var(--ink); font-size:16px; font-weight:700; }
+.start-tegel:hover{ border-color:var(--accent); box-shadow:0 8px 20px rgba(15,118,110,0.14); transform:translateY(-2px); transition:.15s; }
+.start-tegel .start-ico{ width:36px; height:36px; color:var(--accent); }
+.start-tegel-groot{ padding:38px 16px; font-size:19px; }
+.start-tegel-groot .start-ico{ width:50px; height:50px; }
+@media (max-width: 480px) { .start-rij-boven{ flex-direction:column; } }
+
+/* Subnavigatie tijdens een opname (met terug-naar-start knop) */
+.subnav{ display:none; align-items:center; gap:10px; margin-bottom:14px; }
+.subnav-terug{ display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+.subnav-terug .icon{ width:16px; height:16px; }
+#opname-tabs{ flex:1; overflow-x:auto; }
+.tab-ico{ display:inline-flex; margin-right:5px; vertical-align:-3px; }
+.tab-ico .icon{ width:15px; height:15px; }
+
+.route-icon-btn{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; padding:0; border-radius:9px; color:var(--accent-dark); }
+.route-icon-btn:hover{ background:var(--accent-tint); border-color:var(--accent); }
+.route-icon-btn svg{ width:18px; height:18px; }
+
+/* "Vandaag" overzicht op het beginscherm */
+#vandaag-card{ max-width:520px; margin:0 auto 14px; }
+.vandaag-kop{ font-size:11px; font-weight:700; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; }
+.vandaag-kop:first-child{ margin-top:0; }
+.taak-klant-badge{ font-size:12px; padding:3px 10px; }
+
+/* ================= Donkere modus ================= */
+[data-theme="dark"]{
+  --paper:#12161D; --accent:#2DD4BF; --accent-dark:#5EEAD4; --accent-tint:#123B37; --ink:#EAF1F0;
+}
+[data-theme="dark"] body{ background:var(--paper); color:#EAF1F0; }
+[data-theme="dark"] .card,
+[data-theme="dark"] .totaal-card,
+[data-theme="dark"] .confirm-box{ background:#1B2129; border-color:#2B333D; color:#EAF1F0; }
+[data-theme="dark"] .field label{ color:#9AA5B1; }
+[data-theme="dark"] input[type=text], [data-theme="dark"] input[type=number], [data-theme="dark"] input[type=tel],
+[data-theme="dark"] input[type=email], [data-theme="dark"] input[type=date], [data-theme="dark"] input[type=time],
+[data-theme="dark"] input[type=password], [data-theme="dark"] textarea, [data-theme="dark"] select{
+  background-color:#20272F; color:#EAF1F0; border-color:#333D48;
+}
+[data-theme="dark"] input[readonly]{ background-color:#181D24; color:#7D8793; }
+[data-theme="dark"] select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239AA5B1'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+[data-theme="dark"] .btn{ background:#20272F; color:#EAF1F0; border-color:#333D48; }
+[data-theme="dark"] .btn:hover{ background:#2B333D; }
+[data-theme="dark"] .btn-primary{ background:var(--accent); border-color:var(--accent); color:#0B2320; font-weight:700; }
+[data-theme="dark"] .btn-primary:hover{ background:var(--accent-dark); border-color:var(--accent-dark); }
+[data-theme="dark"] .btn-green{ background:#1D9E75; border-color:#1D9E75; color:#fff; }
+[data-theme="dark"] .btn-danger{ background:#B4413F; border-color:#B4413F; color:#fff; }
+[data-theme="dark"] .tabs{ background:#1B2129; box-shadow:none; }
+[data-theme="dark"] .tab{ color:#9AA5B1; }
+[data-theme="dark"] .tab.active{ background:var(--accent); color:#0B2320; }
+[data-theme="dark"] .tab:hover:not(.active){ background:#242C35; color:#EAF1F0; }
+[data-theme="dark"] .subnav-terug{ background:#20272F; color:#EAF1F0; border-color:#333D48; }
+[data-theme="dark"] .klant-kaart{ background:#1B2129; border-color:#2B333D; }
+[data-theme="dark"] .klant-kaart:hover{ border-color:var(--accent); }
+[data-theme="dark"] .klant-naam{ color:#EAF1F0; }
+[data-theme="dark"] .klant-adres{ color:#9AA5B1; }
+[data-theme="dark"] .klant-datum{ color:#5A6470; }
+[data-theme="dark"] .data-rij{ background:#1B2129; border-color:#2B333D; color:#EAF1F0; }
+[data-theme="dark"] .data-rij .maat, [data-theme="dark"] .data-rij .opp{ color:#9AA5B1; }
+[data-theme="dark"] .banner{ background:#20272F; border-color:#2B333D; color:#9AA5B1; }
+[data-theme="dark"] .rij-form{ background:#181D24; border-color:#2B333D; }
+[data-theme="dark"] .vv-extra{ border-top-color:#2B333D; }
+[data-theme="dark"] .snelknop{ background:#20272F; border-color:#333D48; color:#9AA5B1; }
+[data-theme="dark"] .snelknop:hover{ background:var(--accent-tint); border-color:var(--accent); color:var(--accent-dark); }
+[data-theme="dark"] .cb-item{ background:#20272F; border-color:#333D48; color:#EAF1F0; }
+[data-theme="dark"] .cb-item.active{ border-color:var(--accent); background:var(--accent-tint); }
+[data-theme="dark"] .cb-item.active span{ color:var(--accent-dark); }
+[data-theme="dark"] .foto-kaart{ background:#181D24; border-color:#2B333D; }
+[data-theme="dark"] .foto-kaart .foto-tekst{ color:#9AA5B1; }
+[data-theme="dark"] .foto-groep-titel{ color:var(--accent-dark); }
+[data-theme="dark"] .agenda-cel{ background:#1B2129; border-color:#2B333D; color:#EAF1F0; }
+[data-theme="dark"] .agenda-cel.buiten-maand{ background:#141920; color:#4B5560; }
+[data-theme="dark"] .agenda-cel.vandaag{ border-color:var(--accent); }
+[data-theme="dark"] .agenda-cel.geselecteerd{ background:var(--accent-tint); border-color:var(--accent); }
+[data-theme="dark"] .leeg{ color:#5A6470; border-color:#333D48; }
+[data-theme="dark"] .loading{ color:#5A6470; }
+[data-theme="dark"] .start-tegel{ background:#1B2129; border-color:#2B333D; color:#EAF1F0; }
+[data-theme="dark"] .start-tegel:hover{ border-color:var(--accent); }
+[data-theme="dark"] .route-icon-btn{ color:var(--accent-dark); }
+[data-theme="dark"] .route-icon-btn:hover{ background:var(--accent-tint); border-color:var(--accent); }
+[data-theme="dark"] .totaal-waarde{ color:var(--accent-dark); }
+[data-theme="dark"] .info-btn{ background:var(--accent); color:#0B2320; }
+[data-theme="dark"] .sort-btn.active{ background:var(--accent); border-color:var(--accent); color:#0B2320; }
+[data-theme="dark"] .vtbtn{ background:#20272F; border-color:#333D48; color:#9AA5B1; }
+[data-theme="dark"] .vtbtn:hover{ border-color:var(--accent); color:#EAF1F0; }
+[data-theme="dark"] .vtbtn.active{ background:var(--accent); border-color:var(--accent); color:#0B2320; }
+[data-theme="dark"] .tbtn{ background:#20272F; border-color:#333D48; color:#9AA5B1; }
+[data-theme="dark"] .tbtn.opt.active{ background:var(--accent); border-color:var(--accent); color:#0B2320; }
+[data-theme="dark"] .info-tekst{ color:#C5CCD3; }
+[data-theme="dark"] .info-tekst th, [data-theme="dark"] .info-tekst td{ border-bottom-color:#2B333D; }
+[data-theme="dark"] .info-tekst th{ color:#9AA5B1; }
+[data-theme="dark"] .vandaag-kop{ color:var(--accent-dark); }
+[data-theme="dark"] #profiel-avatar{ box-shadow:0 0 0 2px #2B333D; }
+[data-theme="dark"] #legdatum-waarschuwing-card,
+[data-theme="dark"] #dashboard-card{ background:#241819 !important; border-color:#5C2E2E !important; }
+
+
 </style>
 </head>
 <body>
 <div class="app">
 <h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button></h1>
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('adressen')">Adressen</button>
-  <button class="tab" onclick="switchTab('naw')">Klantgegevens</button>
-  <button class="tab" onclick="switchTab('typevloer')">Type vloer</button>
-  <button class="tab" onclick="switchTab('controle')">Controle</button>
-  <button class="tab" onclick="switchTab('vloer')">Vloer</button>
-  <button class="tab" onclick="switchTab('plint')">Plinten</button>
-  <button class="tab" onclick="switchTab('afdek')">Afdeklatten</button>
-  <button class="tab" onclick="switchTab('profielen')">Profielen</button>
-  <button class="tab" onclick="switchTab('fotos')">Foto's</button>
-  <button class="tab" onclick="switchTab('samenvatting')">Samenvatting</button>
-  <button class="tab" onclick="switchTab('checklist')">Checklist</button>
-  <button class="tab" onclick="switchTab('agenda')">Agenda</button>
-  <button class="tab" onclick="switchTab('tarieven')">Tarieven</button>
+<div class="subnav" id="subnav">
+  <button type="button" class="btn subnav-terug" onclick="switchTab('start')" title="Terug naar startscherm">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+    <span>Start</span>
+  </button>
+  <div class="tabs" id="opname-tabs">
+    <button class="tab" onclick="switchTab('naw')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"/></svg></span> Klantgegevens</button>
+    <button class="tab" onclick="switchTab('typevloer')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="15" width="18" height="4" rx="1"/></svg></span> Type vloer</button>
+    <button class="tab" onclick="switchTab('controle')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20"/><path d="M7.5 10l1.8 1.8L13 8"/></svg></span> Controle</button>
+    <button class="tab" onclick="switchTab('vloer')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="1"/><path d="M7 9v2M11 9v3M15 9v2M19 9v3"/></svg></span> Vloer</button>
+    <button class="tab" onclick="switchTab('plint')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="11" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg></span> Plinten</button>
+    <button class="tab" onclick="switchTab('afdek')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="10" height="18" rx="1"/><circle cx="13.3" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg></span> Afdeklatten</button>
+    <button class="tab" onclick="switchTab('profielen')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2 2.8-2.8Z"/></svg></span> Profielen</button>
+    <button class="tab" onclick="switchTab('fotos')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="14" r="3.3"/></svg></span> Foto's</button>
+    <button class="tab" onclick="switchTab('samenvatting')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span> Samenvatting</button>
+    <button class="tab" onclick="switchTab('checklist')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.4 1.4L8 5"/><path d="M11 6.5h9"/><path d="M4 12.5l1.4 1.4L8 11"/><path d="M11 12.5h9"/><path d="M4 18.5l1.4 1.4L8 17"/><path d="M11 18.5h9"/></svg></span> Checklist</button>
+    <button class="tab" onclick="switchTab('tarieven')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7.2a6.3 6.3 0 1 0 0 9.6"/><path d="M4 10.2h8.5M4 13.2h7.5"/></svg></span> Tarieven</button>
+  </div>
 </div>
 
+<!-- START (beginscherm) -->
+<div class="panel active" id="panel-start">
+  <div class="card" id="vandaag-card">
+    <p class="section-title" style="margin-bottom:2px;">Vandaag</p>
+    <div style="font-size:13px;color:#888;margin-bottom:4px;" id="vandaag-datum"></div>
+    <div id="vandaag-afspraken"></div>
+    <div id="vandaag-taken"></div>
+  </div>
+  <div class="start-wrap">
+    <div class="start-rij-boven">
+      <button type="button" class="start-tegel" onclick="switchTab('adressen')">
+        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c2.6.4 4.5 2.6 4.5 5.3"/></svg>
+        <span>Klanten</span>
+      </button>
+      <button type="button" class="start-tegel" onclick="switchTab('agenda')">
+        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg>
+        <span>Agenda</span>
+      </button>
+    </div>
+    <div class="start-rij-boven">
+      <button type="button" class="start-tegel" onclick="switchTab('taken')">
+        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="4.5" height="4.5" rx="1"/><path d="M4.9 6.2l0.9 0.9L7.6 5"/><path d="M11 6.2h9"/><rect x="4" y="10.7" width="4.5" height="4.5" rx="1"/><path d="M4.9 13l0.9 0.9L7.6 11.7"/><path d="M11 13h9"/><rect x="4" y="17.5" width="4.5" height="4.5" rx="1"/><path d="M11 19.7h9"/></svg>
+        <span>Taken</span>
+      </button>
+      <button type="button" class="start-tegel" onclick="switchTab('instellingen')">
+        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="6" stroke-width="2.1"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(45 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(90 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(135 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(180 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(225 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(270 12 12)"/>
+          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(315 12 12)"/>
+        </svg>
+        <span>Gebruikersinstellingen</span>
+      </button>
+    </div>
+    <button type="button" class="start-tegel start-tegel-groot" onclick="nieuweOpmeting()">
+      <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M12 10v6M9 13h6"/></svg>
+      <span>Nieuwe opmeting</span>
+    </button>
+  </div>
+</div>
+
+<!-- TAKEN -->
+<div class="panel" id="panel-taken">
+  <div class="card">
+    <p class="section-title">Nieuwe taak</p>
+    <div class="field" style="margin-bottom:10px;">
+      <input type="text" id="taak-nieuw" placeholder="bijv. Hardwax bijbestellen bij leverancier..." onkeydown="if(event.key==='Enter'){event.preventDefault();taakToevoegen();}" />
+    </div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="field"><label>Klant (optioneel)</label><select id="taak-klant"><option value="">— Geen klant —</option></select></div>
+      <div class="field"><label>Datum (optioneel)</label><input type="date" id="taak-datum" /></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button type="button" class="btn btn-primary" onclick="taakToevoegen()">+ Taak toevoegen</button>
+    </div>
+  </div>
+  <div class="card">
+    <p class="section-title">Nog te doen</p>
+    <div id="taken-open-lijst"><div class="loading">Bezig met laden...</div></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Al gedaan</p>
+    <div id="taken-klaar-lijst"></div>
+  </div>
+</div>
+
+<!-- GEBRUIKERSINSTELLINGEN -->
+<div class="panel" id="panel-instellingen">
+  <div class="card">
+    <p class="section-title">Wie ben je?</p>
+    <div class="field" style="margin-bottom:0;">
+      <select id="inst-wie" onchange="wisselGebruiker(this.value)">
+        <option value="raoul">Raoul</option>
+        <option value="mireille">Mireille</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <p class="section-title">Profiel</p>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+      <div id="profiel-avatar" style="width:72px;height:72px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;overflow:hidden;flex-shrink:0;background-size:cover;background-position:center;">?</div>
+      <div>
+        <input type="file" id="profiel-foto-input" accept="image/*" style="display:none;" onchange="profielFotoWijzigen(event)" />
+        <button type="button" class="btn" onclick="document.getElementById('profiel-foto-input').click()">Foto wijzigen</button>
+        <div style="font-size:12px;color:#888;margin-top:6px;">JPG of PNG, max 5 MB.</div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Naam</label><input type="text" id="inst-naam" /></div>
+      <div class="field"><label>Functie</label>
+        <select id="inst-functie">
+          <option>Eigenaar</option><option>Vloerenlegger</option><option>Kantoor</option>
+        </select>
+      </div>
+      <div class="field"><label>E-mailadres</label><input type="email" id="inst-email" /></div>
+      <div class="field"><label>Telefoonnummer</label><input type="tel" id="inst-tel" /></div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="section-title">Voorkeuren</p>
+    <div class="grid2">
+      <div class="field"><label>Taal</label>
+        <select id="inst-taal"><option value="nl">Nederlands</option><option value="en">English</option></select>
+      </div>
+      <div class="field"><label>Weergave</label>
+        <select id="inst-thema" onchange="setThema(this.value)"><option value="licht">Licht</option><option value="donker">Donker</option></select>
+      </div>
+    </div>
+    <label class="cb-item" id="cb-inst-mail" style="margin-top:4px;"><input type="checkbox" checked onchange="toggleCb(this,'cb-inst-mail')" /><span>E-mail bij nieuwe afspraak</span></label>
+    <label class="cb-item" id="cb-inst-herinner" style="margin-top:8px;"><input type="checkbox" checked onchange="toggleCb(this,'cb-inst-herinner')" /><span>Herinnering vóór legdatum</span></label>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;">
+    <button type="button" class="btn btn-danger" onclick="uitloggenGebruiker()">Uitloggen op dit apparaat</button>
+    <button type="button" class="btn btn-primary" onclick="instellingenOpslaan()">Wijzigingen opslaan</button>
+  </div>
+</div>
+
+
 <!-- ADRESSEN -->
-<div class="panel active" id="panel-adressen">
+<div class="panel" id="panel-adressen">
   <div class="dash-grid">
     <div class="card" id="legdatum-waarschuwing-card" style="display:none;border-color:#fde8e8;background:#fff8f8;">
       <p class="section-title" style="color:#E24B4A;">Checklist niet compleet vóór legdatum</p>
@@ -284,7 +571,9 @@ textarea { resize: vertical; min-height: 60px; }
       <div class="field full"><label>Plaats</label><input type="text" id="naw-plaats" placeholder="Amsterdam" /></div>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-      <button type="button" class="btn" onclick="openRoute()">📍 Route in Google Maps</button>
+      <button type="button" class="btn route-icon-btn" onclick="openRoute()" title="Route in Google Maps" aria-label="Route in Google Maps">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C7.86 2 4.5 5.36 4.5 9.5C4.5 15.13 12 22 12 22C12 22 19.5 15.13 19.5 9.5C19.5 5.36 16.14 2 12 2Z" fill="currentColor"/><circle cx="12" cy="9.5" r="2.8" fill="#fff"/></svg>
+      </button>
     </div>
   </div>
   <div class="card"><p class="section-title">Type opdracht</p>
@@ -1125,7 +1414,7 @@ function updateBanners() {
   });
 }
 
-const TABS = ['adressen','naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','agenda','tarieven'];
+const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','tarieven'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -1240,6 +1529,283 @@ function switchTab(name) {
   if (name === 'agenda') laadAfspraken();
   if (name === 'tarieven') laadTarieven();
   updateBanners();
+}
+// --- Vereenvoudigde navigatie: toont het beginscherm of de subnavigatie met "Terug naar start",
+//     afhankelijk van welk scherm actief is. Verandert niets aan switchTab() zelf, alleen aan wat je er omheen ziet. ---
+const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','tarieven'];
+const _origSwitchTab = switchTab;
+switchTab = function(name) {
+  _origSwitchTab(name);
+  const subnav = document.getElementById('subnav');
+  const opnameTabs = document.getElementById('opname-tabs');
+  if (!subnav || !opnameTabs) return;
+  if (name === 'start') {
+    subnav.style.display = 'none';
+  } else {
+    subnav.style.display = 'flex';
+    opnameTabs.style.display = OPNAME_PANELEN.indexOf(name) >= 0 ? '' : 'none';
+  }
+  if (name === 'taken') { vulTaakKlantSelect(); renderTaken(); }
+  if (name === 'start') renderVandaagOverzicht();
+};
+
+// --- Taken: persoonlijke/gedeelde takenlijst met optionele koppeling aan een klant, opgeslagen in Supabase (tabel 'taken') ---
+let takenData = [];
+function vandaagStr() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function vandaagStrVan(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtTaakDatum(iso) {
+  const vandaag = vandaagStr();
+  if (iso === vandaag) return 'Vandaag';
+  const gisteren = new Date(); gisteren.setDate(gisteren.getDate()-1);
+  if (iso === vandaagStrVan(gisteren)) return 'Gisteren';
+  return new Date(iso+'T00:00:00').toLocaleDateString('nl-NL', { day:'numeric', month:'short' });
+}
+function klantNaamVoor(klantId) {
+  const k = klantenData.find(x => String(x.id) === String(klantId));
+  return k ? ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)' : '';
+}
+async function laadTaken() {
+  try {
+    takenData = await sbFetch('GET', 'taken?select=*');
+  } catch(e) {
+    takenData = [];
+  }
+  renderTaken();
+}
+function vulTaakKlantSelect() {
+  const sel = document.getElementById('taak-klant');
+  if (!sel) return;
+  const huidig = sel.value;
+  sel.innerHTML = '<option value="">— Geen klant —</option>' + klantenData.map(k =>
+    '<option value="'+k.id+'">'+escapeHtml(klantNaamVoor(k.id))+'</option>'
+  ).join('');
+  sel.value = huidig;
+}
+function taakRijHtml(t) {
+  const klantNaam = t.klant_id ? klantNaamVoor(t.klant_id) : '';
+  const klantBadge = klantNaam ? '<button type="button" class="snelknop taak-klant-badge" onclick="event.stopPropagation();laadKlant(\''+t.klant_id+'\')" title="Bekijk klantgegevens">'+escapeHtml(klantNaam)+'</button>' : '';
+  let datumBadge = '';
+  if (t.datum) {
+    const teLaat = !t.klaar && t.datum < vandaagStr();
+    const kleur = teLaat ? '#D64545' : (t.klaar ? '#aaa' : '#B5651D');
+    datumBadge = '<span style="font-size:11px;font-weight:600;color:'+kleur+';white-space:nowrap;">'+(teLaat?'Te laat · ':'')+fmtTaakDatum(t.datum)+'</span>';
+  }
+  return '<div class="data-rij" style="align-items:center;gap:10px;flex-wrap:wrap;">'
+    + '<input type="checkbox" style="width:18px;height:18px;flex-shrink:0;" '+(t.klaar?'checked':'')+' onchange="taakToggle(\''+t.id+'\')" />'
+    + '<span style="flex:1;min-width:140px;'+(t.klaar?'text-decoration:line-through;color:#aaa;':'')+'">'+escapeHtml(t.tekst)+'</span>'
+    + klantBadge + datumBadge
+    + '<button type="button" class="btn btn-danger" style="height:30px;padding:0 10px;font-size:13px;" onclick="taakVerwijderen(\''+t.id+'\')">Verwijder</button>'
+    + '</div>';
+}
+function renderTaken() {
+  const openLijst = document.getElementById('taken-open-lijst');
+  const klaarLijst = document.getElementById('taken-klaar-lijst');
+  if (openLijst && klaarLijst) {
+    const open = takenData.filter(t => !t.klaar).sort((a,b) => (a.datum||'9999-99-99') < (b.datum||'9999-99-99') ? -1 : 1);
+    const klaar = takenData.filter(t => t.klaar).sort((a,b) => (b.datum||'') < (a.datum||'') ? -1 : 1);
+    openLijst.innerHTML = open.length ? open.map(taakRijHtml).join('') : '<div class="leeg" style="padding:16px;margin-bottom:0;">Geen openstaande taken.</div>';
+    klaarLijst.innerHTML = klaar.length ? klaar.map(taakRijHtml).join('') : '<div class="leeg" style="padding:16px;margin-bottom:0;">Nog geen afgeronde taken.</div>';
+  }
+  renderVandaagOverzicht();
+}
+async function taakToevoegen() {
+  const input = document.getElementById('taak-nieuw');
+  const tekst = (input.value || '').trim();
+  if (!tekst) return;
+  const klantSel = document.getElementById('taak-klant');
+  const datumInput = document.getElementById('taak-datum');
+  const nieuw = { tekst, klaar: false, klant_id: (klantSel && klantSel.value) || null, datum: (datumInput && datumInput.value) || null, gemaakt_door: huidigeGebruikerId() };
+  try {
+    const resultaat = await sbFetch('POST', 'taken', nieuw);
+    if (resultaat && resultaat[0]) takenData.push(resultaat[0]);
+    input.value = '';
+    if (klantSel) klantSel.value = '';
+    if (datumInput) datumInput.value = '';
+    input.focus();
+    renderTaken();
+  } catch(e) {
+    toast('Taak toevoegen mislukt: ' + e.message, 4000);
+  }
+}
+async function taakToggle(id) {
+  const t = takenData.find(x => String(x.id) === String(id));
+  if (!t) return;
+  t.klaar = !t.klaar;
+  renderTaken();
+  try {
+    await sbFetch('PATCH', 'taken?id=eq.'+id, { klaar: t.klaar });
+  } catch(e) {
+    t.klaar = !t.klaar;
+    renderTaken();
+    toast('Bijwerken van taak mislukt: '+e.message, 4000);
+  }
+}
+async function taakVerwijderen(id) {
+  const vorige = takenData;
+  takenData = takenData.filter(x => String(x.id) !== String(id));
+  renderTaken();
+  try {
+    await sbFetch('DELETE', 'taken?id=eq.'+id);
+  } catch(e) {
+    takenData = vorige;
+    renderTaken();
+    toast('Verwijderen van taak mislukt: '+e.message, 4000);
+  }
+}
+
+// --- "Vandaag" overzicht op het beginscherm: afspraken en taken die nu belangrijk zijn om te zien ---
+function renderVandaagOverzicht() {
+  const kopEl = document.getElementById('vandaag-datum');
+  const afEl = document.getElementById('vandaag-afspraken');
+  const takEl = document.getElementById('vandaag-taken');
+  if (!kopEl || !afEl || !takEl) return;
+  const vandaag = vandaagStr();
+  kopEl.textContent = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const afsprakenVandaag = (afsprakenData || []).filter(a => a.datum === vandaag).sort((a,b) => (a.tijd||'') < (b.tijd||'') ? -1 : 1);
+  const takenVandaag = takenData.filter(t => !t.klaar && t.datum && t.datum <= vandaag).sort((a,b) => (a.datum||'') < (b.datum||'') ? -1 : 1);
+
+  afEl.innerHTML = afsprakenVandaag.length ? '<div class="vandaag-kop">Afspraken vandaag</div>' + afsprakenVandaag.map(a =>
+    '<div class="data-rij" style="gap:10px;">'
+    + '<span style="font-weight:700;min-width:44px;">'+escapeHtml(a.tijd||'')+'</span>'
+    + '<span style="flex:1;">'+escapeHtml(a.titel||'')+'</span>'
+    + '</div>'
+  ).join('') : '';
+
+  takEl.innerHTML = takenVandaag.length ? '<div class="vandaag-kop">Taken voor vandaag</div>' + takenVandaag.map(t => {
+    const teLaat = t.datum < vandaag;
+    const klantNaam = t.klant_id ? klantNaamVoor(t.klant_id) : '';
+    return '<div class="data-rij" style="gap:10px;">'
+      + '<input type="checkbox" style="width:18px;height:18px;flex-shrink:0;" onchange="taakToggle(\''+t.id+'\')" />'
+      + '<span style="flex:1;">'+escapeHtml(t.tekst)+(klantNaam?' <span style="color:#888;font-size:12px;">— '+escapeHtml(klantNaam)+'</span>':'')+'</span>'
+      + '<span style="font-size:11px;font-weight:600;color:'+(teLaat?'#D64545':'#B5651D')+';white-space:nowrap;">'+(teLaat?'Te laat · ':'')+fmtTaakDatum(t.datum)+'</span>'
+      + '</div>';
+  }).join('') : '';
+
+  if (!afsprakenVandaag.length && !takenVandaag.length) {
+    takEl.innerHTML = '<div style="font-size:13px;color:#888;padding:6px 0 0;">Niets gepland voor vandaag.</div>';
+  }
+}
+
+const _origLaadKlanten = laadKlanten;
+laadKlanten = async function() {
+  await _origLaadKlanten();
+  vulTaakKlantSelect();
+  renderVandaagOverzicht();
+};
+const _origLaadAfspraken = laadAfspraken;
+laadAfspraken = async function() {
+  await _origLaadAfspraken();
+  renderVandaagOverzicht();
+};
+
+// --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
+let huidigeGebruikerData = null;
+function huidigeGebruikerId() {
+  try { return localStorage.getItem('pvGebruiker') || null; } catch(e) { return null; }
+}
+function setHuidigeGebruikerId(id) {
+  try { localStorage.setItem('pvGebruiker', id); } catch(e) {}
+}
+function initialenVoor(g) {
+  const bron = (g && (g.naam || g.id)) || '?';
+  return bron.trim().charAt(0).toUpperCase();
+}
+async function laadGebruiker(id) {
+  try {
+    const data = await sbFetch('GET', 'gebruikers?id=eq.'+id);
+    huidigeGebruikerData = data[0] || { id, naam: id.charAt(0).toUpperCase()+id.slice(1), functie:'Eigenaar', taal:'nl', thema:'licht', notificatie_mail:true, notificatie_herinnering:true };
+  } catch(e) {
+    huidigeGebruikerData = { id, naam: id, functie:'Eigenaar', taal:'nl', thema:'licht', notificatie_mail:true, notificatie_herinnering:true };
+  }
+  renderInstellingen();
+  setThema(huidigeGebruikerData.thema || 'licht');
+  try { localStorage.setItem('pvThema', huidigeGebruikerData.thema || 'licht'); } catch(e) {}
+}
+async function wisselGebruiker(id) {
+  setHuidigeGebruikerId(id);
+  await laadGebruiker(id);
+}
+function renderInstellingen() {
+  const g = huidigeGebruikerData;
+  if (!g) return;
+  const wieSel = document.getElementById('inst-wie'); if (wieSel) wieSel.value = g.id;
+  sv('inst-naam', g.naam || '');
+  const functieSel = document.getElementById('inst-functie'); if (functieSel) functieSel.value = g.functie || 'Eigenaar';
+  sv('inst-email', g.email || '');
+  sv('inst-tel', g.telefoon || '');
+  const taalSel = document.getElementById('inst-taal'); if (taalSel) taalSel.value = g.taal || 'nl';
+  const themaSel = document.getElementById('inst-thema'); if (themaSel) themaSel.value = g.thema || 'licht';
+  const mailCb = document.querySelector('#cb-inst-mail input');
+  if (mailCb) { mailCb.checked = g.notificatie_mail !== false; document.getElementById('cb-inst-mail').classList.toggle('active', mailCb.checked); }
+  const herinnerCb = document.querySelector('#cb-inst-herinner input');
+  if (herinnerCb) { herinnerCb.checked = g.notificatie_herinnering !== false; document.getElementById('cb-inst-herinner').classList.toggle('active', herinnerCb.checked); }
+  const avatar = document.getElementById('profiel-avatar');
+  if (avatar) {
+    if (g.profielfoto_url) { avatar.style.backgroundImage = 'url('+g.profielfoto_url+')'; avatar.textContent = ''; }
+    else { avatar.style.backgroundImage = ''; avatar.textContent = initialenVoor(g); }
+  }
+}
+async function instellingenOpslaan() {
+  if (!huidigeGebruikerData) return;
+  const updates = {
+    naam: gv('inst-naam'),
+    functie: gv('inst-functie'),
+    email: gv('inst-email'),
+    telefoon: gv('inst-tel'),
+    taal: gv('inst-taal'),
+    thema: gv('inst-thema'),
+    notificatie_mail: document.querySelector('#cb-inst-mail input').checked,
+    notificatie_herinnering: document.querySelector('#cb-inst-herinner input').checked
+  };
+  try {
+    await sbFetch('PATCH', 'gebruikers?id=eq.'+huidigeGebruikerData.id, updates);
+    Object.assign(huidigeGebruikerData, updates);
+    try { localStorage.setItem('pvThema', updates.thema); } catch(e) {}
+    toast('Instellingen opgeslagen');
+  } catch(e) {
+    toast('Opslaan mislukt: '+e.message, 4000);
+  }
+}
+function uitloggenGebruiker() {
+  try { localStorage.removeItem('pvGebruiker'); } catch(e) {}
+  huidigeGebruikerData = null;
+  switchTab('start');
+  toast('Je bent uitgelogd op dit apparaat');
+}
+async function profielFotoWijzigen(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!huidigeGebruikerData) { toast('Kies eerst wie je bent', 3000); e.target.value = ''; return; }
+  if (!file.type.startsWith('image/')) { toast('Alleen afbeeldingen zijn toegestaan', 3000); e.target.value = ''; return; }
+  toast('Foto uploaden...', 8000);
+  try {
+    let uploadBestand = file;
+    try { uploadBestand = await verkleinFoto(file, 500, 0.85); } catch(_) { uploadBestand = file; }
+    const pad = 'profielfotos/' + huidigeGebruikerData.id + '.jpg';
+    const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      body: uploadBestand
+    });
+    if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
+    const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad + '?t=' + Date.now();
+    await sbFetch('PATCH', 'gebruikers?id=eq.'+huidigeGebruikerData.id, { profielfoto_url: url });
+    huidigeGebruikerData.profielfoto_url = url;
+    const avatar = document.getElementById('profiel-avatar');
+    avatar.style.backgroundImage = 'url('+url+')';
+    avatar.textContent = '';
+    toast('Profielfoto bijgewerkt!');
+  } catch(err) {
+    toast('Uploaden mislukt: ' + err.message, 4000);
+  } finally {
+    e.target.value = '';
+  }
+}
+
+// --- Licht / donker weergave: past het thema direct toe op de hele app ---
+function setThema(v) {
+  document.documentElement.setAttribute('data-theme', v === 'donker' ? 'dark' : 'light');
 }
 
 async function nieuweOpmeting() { await flushPendingAutosave(); huidigId = null; resetFormulier(); switchTab('naw'); }
@@ -2317,7 +2883,7 @@ async function flushPendingAutosave() {
 }
 
 function moetAutosaven(el) {
-  return !!(el && el.closest && !el.closest('#panel-adressen'));
+  return !!(el && el.closest && !el.closest('#panel-adressen') && !el.closest('#panel-start') && !el.closest('#panel-taken') && !el.closest('#panel-instellingen'));
 }
 document.addEventListener('input', e => { if (moetAutosaven(e.target)) planAutosave(); });
 document.addEventListener('change', e => { if (moetAutosaven(e.target)) planAutosave(); });
@@ -2520,11 +3086,7 @@ async function laadKlant(id) {
     renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress(); renderHandtekening();
     setCloudStatus('ok', 'Geladen op '+new Date().toLocaleString('nl-NL'));
     toast('Klant geladen!');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-naw').classList.add('active');
-    document.querySelectorAll('.tab')[1].classList.add('active');
-    updateBanners();
+    switchTab('naw');
   } catch(e) { toast('Fout bij laden: '+e.message, 4000); }
 }
 
@@ -2794,6 +3356,8 @@ async function wijzigInstellingTekst(veld, waarde) {
 renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
 laadKlanten();
 laadAfspraken();
+laadTaken();
+wisselGebruiker(huidigeGebruikerId() || 'raoul');
 </script>
 </body>
 </html>
