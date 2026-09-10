@@ -374,6 +374,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
     <button class="tab" onclick="switchTab('fotos')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="14" r="3.3"/></svg></span> Foto's</button>
     <button class="tab" onclick="switchTab('samenvatting')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span> Samenvatting</button>
     <button class="tab" onclick="switchTab('checklist')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.4 1.4L8 5"/><path d="M11 6.5h9"/><path d="M4 12.5l1.4 1.4L8 11"/><path d="M11 12.5h9"/><path d="M4 18.5l1.4 1.4L8 17"/><path d="M11 18.5h9"/></svg></span> Checklist</button>
+    <button class="tab" onclick="switchTab('offerte')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M15 3v4h4"/><path d="M9 13h6M9 16.5h4"/></svg></span> Offerte</button>
     <button class="tab" onclick="switchTab('tarieven')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7.2a6.3 6.3 0 1 0 0 9.6"/><path d="M4 10.2h8.5M4 13.2h7.5"/></svg></span> Tarieven</button>
   </div>
 </div>
@@ -1076,9 +1077,6 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <button class="tbtn nvt" id="tb-offerteGemaakt-nvt" onclick="setToggleReveal('offerteGemaakt','nvt',this,'offerteGemaakt-extra')">NVT</button>
       </div>
     </div>
-    <div class="field" style="margin-top:8px;">
-      <button type="button" class="btn" onclick="maakMoneybirdOfferte()">📄 Concept-offerte aanmaken in Moneybird</button>
-    </div>
     <div class="ovveld" id="offerteGemaakt-extra">
       <div class="field" style="margin-top:8px;">
         <label>Offerte PDF</label>
@@ -1086,6 +1084,16 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <input type="file" accept="application/pdf" id="ch-offerte-pdf-input" onchange="uploadChecklistPdf('offerte', this)" style="font-size:13px;width:100%;" />
       </div>
     </div>
+  </div>
+</div>
+
+<!-- OFFERTE -->
+<div class="panel" id="panel-offerte">
+  <div class="card"><p class="section-title">Diensten op offerte</p>
+    <div id="offerte-diensten-lijst" style="margin-top:4px;"></div>
+  </div>
+  <div class="card">
+    <button type="button" class="btn" onclick="maakMoneybirdOfferte()">📄 Concept-offerte aanmaken in Moneybird</button>
   </div>
 </div>
 
@@ -1125,83 +1133,27 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 
 <!-- TARIEVEN -->
 <div class="panel" id="panel-tarieven">
-  <div class="card"><p class="section-title">Omschrijvingen offerte</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Maak hier teksten aan die je bij de tarieven hieronder kunt kiezen als omschrijving op de offerte in Moneybird. Kies je niks, dan gebruikt de app een automatische standaardtekst.</div>
+  <div class="card"><p class="section-title">Diensten</p>
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">Excl. btw. Kies per dienst de bron waarop automatisch wordt gerekend en het onderwerp waaronder hij op het tabblad Offerte wordt getoond.</div>
     <div class="rij-form">
-      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
-        <div class="field" style="flex:1;min-width:240px;"><label>Omschrijving</label><input type="text" id="tar-omschr-tekst" placeholder="bijv. Leveren en leggen laminaat vloer incl. plinten" /></div>
-        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegOmschrijvingToe()">+ Voeg toe</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+        <div class="field" style="flex:1.4;min-width:200px;"><label>Omschrijving dienst</label><input type="text" id="tar-dienst-naam" placeholder="bijv. Schuren en lakken" /></div>
+        <div class="field" style="min-width:170px;"><label>Bron (hoeveelheid)</label>
+          <select id="tar-dienst-bron">
+            <option value="vloer_m2">m² vloeroppervlakte</option>
+            <option value="plint_m">meter plinten</option>
+            <option value="afdeklat_m">meter afdeklatten</option>
+            <option value="profiel_m">meter profielen</option>
+          </select>
+        </div>
+        <div class="field" style="min-width:170px;"><label>Onderwerp</label>
+          <select id="tar-dienst-groep"></select>
+        </div>
+        <div class="field" style="min-width:100px;"><label>Prijs (€)</label><input type="number" id="tar-dienst-prijs" placeholder="0.00" step="0.01" min="0" /></div>
+        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegDienstToe()">+ Voeg toe</button></div>
       </div>
     </div>
-    <div id="tarief-omschrijvingen-lijst"></div>
-  </div>
-
-  <div class="card"><p class="section-title">Tarief schuren en afwerken</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per m², excl. btw.</div>
-    <div style="display:flex;gap:20px;flex-wrap:wrap;">
-      <div style="min-width:220px;flex:1;">
-        <div class="field"><label>Schuren en lakken (€/m²)</label><input type="number" id="tar-schuren-lakken" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_schuren_lakken', this.value)" /></div>
-        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-schuren-lakken-omschr" onchange="wijzigInstellingTekst('omschrijving_schuren_lakken', this.value)"></select></div>
-      </div>
-      <div style="min-width:220px;flex:1;">
-        <div class="field"><label>Schuren en oliën (€/m²)</label><input type="number" id="tar-schuren-olien" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_schuren_olien', this.value)" /></div>
-        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-schuren-olien-omschr" onchange="wijzigInstellingTekst('omschrijving_schuren_olien', this.value)"></select></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card"><p class="section-title">Tarief legloon</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per m², excl. btw.</div>
-    <div style="display:flex;gap:20px;flex-wrap:wrap;">
-      <div style="min-width:220px;flex:1;">
-        <div class="field"><label>Legloon laminaat (€/m²)</label><input type="number" id="tar-legloon-laminaat" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_laminaat', this.value)" /></div>
-        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-laminaat-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_laminaat', this.value)"></select></div>
-      </div>
-      <div style="min-width:220px;flex:1;">
-        <div class="field"><label>Legloon lamelparket zwevend (€/m²)</label><input type="number" id="tar-legloon-lamelparket-zwevend" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_lamelparket_zwevend', this.value)" /></div>
-        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-lamelparket-zwevend-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_lamelparket_zwevend', this.value)"></select></div>
-      </div>
-      <div style="min-width:220px;flex:1;">
-        <div class="field"><label>Legloon lamelparket vol verlijmd (€/m²)</label><input type="number" id="tar-legloon-lamelparket-vol-verlijmd" placeholder="0.00" step="0.01" min="0" onchange="wijzigInstelling('tarief_legloon_lamelparket_vol_verlijmd', this.value)" /></div>
-        <div class="field" style="margin-top:8px;"><label>Omschrijving op offerte</label><select id="tar-legloon-lamelparket-vol-verlijmd-omschr" onchange="wijzigInstellingTekst('omschrijving_legloon_lamelparket_vol_verlijmd', this.value)"></select></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card"><p class="section-title">Tarief plinten</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per meter, excl. btw.</div>
-    <div class="rij-form">
-      <div class="form-row-vl">
-        <div class="field"><label>Type plint</label><input type="text" id="tar-plint-naam" placeholder="bijv. MDF" /></div>
-        <div class="field"><label>Prijs per m (€)</label><input type="number" id="tar-plint-prijs" placeholder="0.00" step="0.01" min="0" /></div>
-        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegTariefToe('plint')">+ Voeg toe</button></div>
-      </div>
-    </div>
-    <div id="tarief-plint-lijst"></div>
-  </div>
-
-  <div class="card"><p class="section-title">Tarief afdeklatten</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per meter, excl. btw.</div>
-    <div class="rij-form">
-      <div class="form-row-vl">
-        <div class="field"><label>Type afdeklat</label><input type="text" id="tar-afdeklat-naam" placeholder="bijv. T-profiel" /></div>
-        <div class="field"><label>Prijs per m (€)</label><input type="number" id="tar-afdeklat-prijs" placeholder="0.00" step="0.01" min="0" /></div>
-        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegTariefToe('afdeklat')">+ Voeg toe</button></div>
-      </div>
-    </div>
-    <div id="tarief-afdeklat-lijst"></div>
-  </div>
-
-  <div class="card"><p class="section-title">Tarief profielen</p>
-    <div style="font-size:12px;color:#888;margin-bottom:8px;">Prijs per meter, excl. btw.</div>
-    <div class="rij-form">
-      <div class="form-row-vl">
-        <div class="field"><label>Type profiel</label><input type="text" id="tar-profiel-naam" placeholder="bijv. T-profiel" /></div>
-        <div class="field"><label>Prijs per m (€)</label><input type="number" id="tar-profiel-prijs" placeholder="0.00" step="0.01" min="0" /></div>
-        <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegTariefToe('profiel')">+ Voeg toe</button></div>
-      </div>
-    </div>
-    <div id="tarief-profiel-lijst"></div>
+    <div id="tarief-dienst-lijst"></div>
   </div>
 
   <div class="card"><p class="section-title">Btw</p>
@@ -1414,7 +1366,7 @@ function updateBanners() {
   });
 }
 
-const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','tarieven'];
+const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -1532,7 +1484,7 @@ function switchTab(name) {
 }
 // --- Vereenvoudigde navigatie: toont het beginscherm of de subnavigatie met "Terug naar start",
 //     afhankelijk van welk scherm actief is. Verandert niets aan switchTab() zelf, alleen aan wat je er omheen ziet. ---
-const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','tarieven'];
+const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven'];
 const _origSwitchTab = switchTab;
 switchTab = function(name) {
   _origSwitchTab(name);
@@ -1834,6 +1786,7 @@ function resetFormulier() {
   document.getElementById('ov-patroon').classList.remove('zichtbaar');
   ['vloerBesteld-extra','plintenBesteld-extra','ondervloerBesteld-extra','afdeklattenBesteld-extra','olieBesteld-extra','leggerIngedeeld-extra','bezorgschema-extra','offerteGemaakt-extra'].forEach(id => document.getElementById(id).classList.remove('zichtbaar'));
   offertePdfUrl = null; renderChecklistPdfLinks();
+  geselecteerdeDiensten = []; renderOfferteDiensten();
   CHECKLIST_KEYS.forEach(k => { tog[k] = 'nee'; const btn = document.getElementById('tb-'+k+'-nee'); if (btn) btn.classList.add('active'); });
   vloeren = []; aftrekken = []; plinten = []; afdeklatten = []; profielen = []; fotos = [];
   handtekeningUrl = null; handtekeningDatum = null;
@@ -2007,10 +1960,11 @@ const AGENDA_BRONNEN = [
   { veld: 'checklist_ondervloer_datum', label: 'Ondervloer verwacht', type: 'besteld' },
   { veld: 'checklist_afdeklatten_datum', label: 'Afdeklatten verwacht', type: 'besteld' },
   { veld: 'checklist_olie_datum', label: 'Olie/lak verwacht', type: 'besteld' },
-  { veld: 'checklist_legger_datum', label: 'Vloer leggen', type: 'legger' },
+  { veld: 'checklist_legger_datum', label: 'Vloer leggen', type: 'legger', naamveld: 'checklist_legger_naam' },
   { veld: 'checklist_bezorgschema_datum', label: 'Bezorging', type: 'bezorging' },
 ];
 const AGENDA_DATUM_VELDEN = AGENDA_BRONNEN.map(b => b.veld);
+const AGENDA_NAAM_VELDEN = AGENDA_BRONNEN.filter(b => b.naamveld).map(b => b.naamveld);
 const AGENDA_MAAND_NAMEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 const AGENDA_DAG_KORT = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
 const AGENDA_DAG_VOL = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
@@ -2033,7 +1987,10 @@ function bouwAgendaEvents() {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
     AGENDA_BRONNEN.forEach(b => {
       const datum = k[b.veld];
-      if (datum) events.push({ bron: 'checklist', datum, tijd: (b.tijdveld && k[b.tijdveld]) || '', eindtijd: b.type === 'bezoek' ? (k.eindtijd_bezoek||'') : '', label: b.label, type: b.type, klantId: k.id, klantNaam: naam, bezoeker: b.type === 'bezoek' ? (k.bezoeker||'') : '' });
+      if (datum) {
+        const leggerNaam = b.naamveld ? (k[b.naamveld]||'') : '';
+        events.push({ bron: 'checklist', datum, tijd: (b.tijdveld && k[b.tijdveld]) || '', eindtijd: b.type === 'bezoek' ? (k.eindtijd_bezoek||'') : '', label: b.label, type: b.type, klantId: k.id, klantNaam: naam, leggerNaam, bezoeker: b.type === 'bezoek' ? (k.bezoeker||'') : '' });
+      }
     });
   });
   afsprakenData.forEach(a => {
@@ -2063,7 +2020,7 @@ function agendaEventHtml(e) {
       + '</div></div>';
   }
   const tijdTekst = e.tijd ? (e.tijd + (e.eindtijd ? '–'+e.eindtijd : '')) : '';
-  const onderschrift = [tijdTekst, e.klantNaam].filter(Boolean).join(' · ');
+  const onderschrift = [tijdTekst, e.klantNaam, e.leggerNaam ? 'Legger: '+e.leggerNaam : ''].filter(Boolean).join(' · ');
   return '<div class="agenda-event" onclick="laadKlant(\''+e.klantId+'\')">'
     + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
     + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(onderschrift)+'</div></div>'
@@ -2204,7 +2161,7 @@ function agendaBlokHtml(e, roosterStart) {
   const links = e._kolom*breedte;
   const top = (e._begin - roosterStart)*AGENDA_PX_PER_MIN;
   const hoogte = Math.max((e._eind - e._begin)*AGENDA_PX_PER_MIN - 2, 20);
-  const onderschrift = [e.label, e.klantNaam].filter(Boolean).join(' · ');
+  const onderschrift = [e.label, e.klantNaam, e.leggerNaam ? 'Legger: '+e.leggerNaam : ''].filter(Boolean).join(' · ');
   return '<div class="dagrooster-event" style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
     + '<div class="diklabel">'+escapeHtml(tijdTekst)+'</div>'
     + '<div class="subtitel">'+escapeHtml(onderschrift)+'</div>'
@@ -2823,7 +2780,8 @@ function bouwOpslaanData() {
     checklist_olie_besteld: tog.olieBesteld||'', checklist_olie_leverancier: gv('ch-olie-leverancier'), checklist_olie_datum: gv('ch-olie-datum'),
     checklist_legger_ingedeeld: tog.leggerIngedeeld||'', checklist_legger_naam: gv('ch-legger-naam'), checklist_legger_datum: gv('ch-legger-datum'),
     checklist_bezorgschema: tog.bezorgschema||'', checklist_bezorgschema_datum: gv('ch-bezorgschema-datum'), checklist_offerte: tog.offerteGemaakt||'',
-    checklist_offerte_pdf: offertePdfUrl||''
+    checklist_offerte_pdf: offertePdfUrl||'',
+    offerte_diensten: JSON.stringify(geselecteerdeDiensten)
   };
 }
 
@@ -2910,7 +2868,7 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(','));
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(',')+(AGENDA_NAAM_VELDEN.length ? ','+AGENDA_NAAM_VELDEN.join(',') : ''));
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
@@ -3083,6 +3041,8 @@ async function laadKlant(id) {
     restoreToggle('offerteGemaakt', k.checklist_offerte, 'offerteGemaakt-extra');
     offertePdfUrl = k.checklist_offerte_pdf || null;
     renderChecklistPdfLinks();
+    try { geselecteerdeDiensten = (JSON.parse(k.offerte_diensten)||[]).map(String); } catch { geselecteerdeDiensten = []; }
+    renderOfferteDiensten();
     renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderChecklistProgress(); renderHandtekening();
     setCloudStatus('ok', 'Geladen op '+new Date().toLocaleString('nl-NL'));
     toast('Klant geladen!');
@@ -3145,24 +3105,21 @@ async function verwijderKlant(id) {
 }
 
 // ===== TARIEVEN =====
-let tarieven = { vloer: [], plint: [], afdeklat: [], profiel: [] };
-let tariefInstellingen = { btw_percentage: 21, tarief_schuren_lakken: 0, tarief_schuren_olien: 0, tarief_legloon_laminaat: 0, tarief_legloon_lamelparket_zwevend: 0, tarief_legloon_lamelparket_vol_verlijmd: 0, omschrijving_schuren_lakken: null, omschrijving_schuren_olien: null, omschrijving_legloon_laminaat: null, omschrijving_legloon_lamelparket_zwevend: null, omschrijving_legloon_lamelparket_vol_verlijmd: null };
-let tariefOmschrijvingen = [];
-const OMSCHR_INSTELLING_VELDEN = ['omschrijving_schuren_lakken','omschrijving_schuren_olien','omschrijving_legloon_laminaat','omschrijving_legloon_lamelparket_zwevend','omschrijving_legloon_lamelparket_vol_verlijmd'];
+const DIENST_BRON_LABEL = { vloer_m2: 'm² vloer', plint_m: 'm plint', afdeklat_m: 'm afdeklat', profiel_m: 'm profiel' };
+const DIENST_GROEPEN = ['Prijzen leggen', 'Prijzen schuren', 'Prijzen plinten', 'Prijzen afdeklatten', 'Prijzen profielen'];
+let diensten = [];
+let geselecteerdeDiensten = [];
+let tariefInstellingen = { btw_percentage: 21 };
 let tarievenGeladen = false;
 
 async function laadTarieven() {
-  const container = document.getElementById('panel-tarieven');
   try {
-    const [items, instellingen, omschrijvingen] = await Promise.all([
-      sbFetch('GET', 'tarief_items?order=categorie.asc,naam.asc'),
+    const [items, instellingen] = await Promise.all([
+      sbFetch('GET', 'tarief_items?order=naam.asc'),
       sbFetch('GET', 'tarief_instellingen?id=eq.1'),
-      sbFetch('GET', 'tarief_omschrijvingen?order=tekst.asc')
     ]);
-    tarieven = { vloer: [], plint: [], afdeklat: [], profiel: [] };
-    (items || []).forEach(r => { if (tarieven[r.categorie]) tarieven[r.categorie].push(r); });
+    diensten = items || [];
     if (instellingen && instellingen[0]) tariefInstellingen = instellingen[0];
-    tariefOmschrijvingen = omschrijvingen || [];
     tarievenGeladen = true;
     renderTarieven();
   } catch(e) {
@@ -3170,135 +3127,89 @@ async function laadTarieven() {
   }
 }
 
-function omschrOpties(geselecteerd) {
-  let html = '<option value=""' + (!geselecteerd ? ' selected' : '') + '>— standaardtekst —</option>';
-  tariefOmschrijvingen.forEach(o => {
-    html += '<option value="'+escapeHtml(o.tekst)+'"'+(geselecteerd===o.tekst ? ' selected' : '')+'>'+escapeHtml(o.tekst)+'</option>';
-  });
-  return html;
-}
-
-function vulOmschrSelect(id, geselecteerd) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = omschrOpties(geselecteerd);
-}
-
-function renderOmschrijvingen() {
-  const el = document.getElementById('tarief-omschrijvingen-lijst');
-  if (!el) return;
-  if (!tariefOmschrijvingen.length) { el.innerHTML = '<div class="leeg" style="padding:12px;margin-top:8px;">Nog geen omschrijvingen toegevoegd.</div>'; }
-  else {
-    el.innerHTML = tariefOmschrijvingen.map(o =>
-      '<div class="data-rij"><div class="naam">'+escapeHtml(o.tekst)+'</div><button class="del-btn" onclick="verwijderOmschrijving('+o.id+')">X</button></div>'
-    ).join('');
-  }
-  vulOmschrSelect('tar-schuren-lakken-omschr', tariefInstellingen.omschrijving_schuren_lakken);
-  vulOmschrSelect('tar-schuren-olien-omschr', tariefInstellingen.omschrijving_schuren_olien);
-  vulOmschrSelect('tar-legloon-laminaat-omschr', tariefInstellingen.omschrijving_legloon_laminaat);
-  vulOmschrSelect('tar-legloon-lamelparket-zwevend-omschr', tariefInstellingen.omschrijving_legloon_lamelparket_zwevend);
-  vulOmschrSelect('tar-legloon-lamelparket-vol-verlijmd-omschr', tariefInstellingen.omschrijving_legloon_lamelparket_vol_verlijmd);
-}
-
-async function voegOmschrijvingToe() {
-  const el = document.getElementById('tar-omschr-tekst');
-  const tekst = (el.value||'').trim();
-  if (!tekst) { toast('Vul eerst een omschrijving in', 2500); return; }
-  if (tariefOmschrijvingen.some(o => o.tekst.toLowerCase() === tekst.toLowerCase())) {
-    toast('Deze omschrijving staat er al in', 3000);
-    return;
-  }
-  try {
-    const result = await sbFetch('POST', 'tarief_omschrijvingen', { tekst });
-    if (result && result[0]) tariefOmschrijvingen.push(result[0]);
-    tariefOmschrijvingen.sort((a,b) => a.tekst.localeCompare(b.tekst));
-    el.value = '';
-    renderTarieven();
-    toast('Omschrijving toegevoegd');
-  } catch(e) {
-    toast('Toevoegen mislukt: ' + e.message, 4000);
-  }
-}
-
-async function verwijderOmschrijving(id) {
-  const item = tariefOmschrijvingen.find(o => String(o.id) === String(id));
-  if (!item) return;
-  const ok = await bevestig('"' + item.tekst + '" verwijderen? Tarieven die deze omschrijving nu gebruiken, vallen dan terug op de standaardtekst.');
-  if (!ok) return;
-  try {
-    const opdrachten = [sbFetch('DELETE', 'tarief_omschrijvingen?id=eq.'+id)];
-    OMSCHR_INSTELLING_VELDEN.forEach(veld => {
-      if (tariefInstellingen[veld] === item.tekst) opdrachten.push(sbFetch('PATCH', 'tarief_instellingen?id=eq.1', { [veld]: null }));
-    });
-    Object.keys(tarieven).forEach(cat => {
-      (tarieven[cat]||[]).forEach(r => {
-        if (r.omschrijving === item.tekst) opdrachten.push(sbFetch('PATCH', 'tarief_items?id=eq.'+r.id, { omschrijving: null }));
-      });
-    });
-    await Promise.all(opdrachten);
-    tariefOmschrijvingen = tariefOmschrijvingen.filter(o => String(o.id) !== String(id));
-    OMSCHR_INSTELLING_VELDEN.forEach(veld => { if (tariefInstellingen[veld] === item.tekst) tariefInstellingen[veld] = null; });
-    Object.keys(tarieven).forEach(cat => { (tarieven[cat]||[]).forEach(r => { if (r.omschrijving === item.tekst) r.omschrijving = null; }); });
-    renderTarieven();
-    toast('Omschrijving verwijderd');
-  } catch(e) {
-    toast('Verwijderen mislukt: ' + e.message, 4000);
-  }
-}
-
 function renderTarieven() {
-  renderOmschrijvingen();
-  ['plint','afdeklat','profiel'].forEach(renderTariefLijst);
+  vulDienstGroepSelect();
+  renderTariefLijst();
+  renderOfferteDiensten();
   sv('tar-btw', tariefInstellingen.btw_percentage);
-  sv('tar-schuren-lakken', tariefInstellingen.tarief_schuren_lakken);
-  sv('tar-schuren-olien', tariefInstellingen.tarief_schuren_olien);
-  sv('tar-legloon-laminaat', tariefInstellingen.tarief_legloon_laminaat);
-  sv('tar-legloon-lamelparket-zwevend', tariefInstellingen.tarief_legloon_lamelparket_zwevend);
-  sv('tar-legloon-lamelparket-vol-verlijmd', tariefInstellingen.tarief_legloon_lamelparket_vol_verlijmd);
 }
 
-function renderTariefLijst(categorie) {
-  const el = document.getElementById('tarief-'+categorie+'-lijst');
+function bronOpties(geselecteerd) {
+  return Object.keys(DIENST_BRON_LABEL).map(b =>
+    '<option value="'+b+'"'+(geselecteerd===b ? ' selected' : '')+'>'+DIENST_BRON_LABEL[b]+'</option>'
+  ).join('');
+}
+
+function groepOpties(geselecteerd) {
+  return DIENST_GROEPEN.map(g =>
+    '<option value="'+escapeHtml(g)+'"'+(geselecteerd===g ? ' selected' : '')+'>'+escapeHtml(g)+'</option>'
+  ).join('');
+}
+
+function vulDienstGroepSelect() {
+  const el = document.getElementById('tar-dienst-groep');
+  if (el && !el.innerHTML) el.innerHTML = groepOpties(DIENST_GROEPEN[0]);
+}
+
+function renderTariefLijst() {
+  const el = document.getElementById('tarief-dienst-lijst');
   if (!el) return;
-  const rijen = tarieven[categorie] || [];
-  if (!rijen.length) { el.innerHTML = '<div class="leeg" style="padding:12px;margin-top:8px;">Nog geen tarieven toegevoegd.</div>'; return; }
-  el.innerHTML = rijen.map(r => {
-    const isStandaard = r.naam === 'Standaard';
+  if (!diensten.length) { el.innerHTML = '<div class="leeg" style="padding:12px;margin-top:8px;">Nog geen diensten toegevoegd.</div>'; return; }
+  el.innerHTML = diensten.map(r => {
     return '<div class="data-rij">'
-      + '<div class="naam">'+escapeHtml(r.naam)+(isStandaard ? ' <span style="font-weight:400;color:#aaa;">(vult aan als niets anders past)</span>' : '')+'</div>'
-      + '<select style="width:180px;height:32px;font-size:12px;padding:4px 6px;" onchange="wijzigTariefOmschrijving(\''+categorie+'\','+r.id+',this.value)">'+omschrOpties(r.omschrijving)+'</select>'
-      + '<div class="maat">€ <input type="number" step="0.01" min="0" value="'+(r.prijs!=null?r.prijs:0)+'" style="width:80px;" onchange="wijzigTariefPrijs(\''+categorie+'\','+r.id+',this.value)" /></div>'
-      + (isStandaard ? '' : '<button class="del-btn" onclick="verwijderTarief(\''+categorie+'\','+r.id+')">X</button>')
+      + '<div class="naam">'+escapeHtml(r.naam)+'</div>'
+      + '<select style="width:130px;height:32px;font-size:12px;padding:4px 6px;" onchange="wijzigDienstBron('+r.id+',this.value)">'+bronOpties(r.bron)+'</select>'
+      + '<select style="width:160px;height:32px;font-size:12px;padding:4px 6px;" onchange="wijzigDienstGroep('+r.id+',this.value)">'+groepOpties(r.groep)+'</select>'
+      + '<div class="maat">€ <input type="number" step="0.01" min="0" value="'+(r.prijs!=null?r.prijs:0)+'" style="width:80px;" onchange="wijzigDienstPrijs('+r.id+',this.value)" /></div>'
+      + '<button class="del-btn" onclick="verwijderDienst('+r.id+')">X</button>'
       + '</div>';
   }).join('');
 }
 
-async function voegTariefToe(categorie) {
-  const naamEl = document.getElementById('tar-'+categorie+'-naam');
-  const prijsEl = document.getElementById('tar-'+categorie+'-prijs');
+async function voegDienstToe() {
+  const naamEl = document.getElementById('tar-dienst-naam');
+  const bronEl = document.getElementById('tar-dienst-bron');
+  const groepEl = document.getElementById('tar-dienst-groep');
+  const prijsEl = document.getElementById('tar-dienst-prijs');
   const naam = (naamEl.value||'').trim();
+  const bron = bronEl.value;
+  const groep = groepEl.value || DIENST_GROEPEN[0];
   const prijs = parseFloat(prijsEl.value) || 0;
-  if (!naam) { toast('Vul eerst een naam in', 2500); return; }
-  if ((tarieven[categorie]||[]).some(r => r.naam.toLowerCase() === naam.toLowerCase())) {
-    toast('"' + naam + '" staat er al in — pas het bestaande tarief aan', 3000);
+  if (!naam) { toast('Vul eerst een omschrijving in', 2500); return; }
+  if (diensten.some(r => r.naam.toLowerCase() === naam.toLowerCase())) {
+    toast('"' + naam + '" staat er al in — pas de bestaande dienst aan', 3000);
     return;
   }
   try {
-    const result = await sbFetch('POST', 'tarief_items', { categorie, naam, prijs });
-    if (result && result[0]) tarieven[categorie].push(result[0]);
-    naamEl.value = ''; prijsEl.value = '';
-    renderTariefLijst(categorie);
-    toast('Tarief toegevoegd');
+    const result = await sbFetch('POST', 'tarief_items', { categorie: 'dienst', naam, prijs, bron, groep });
+    if (result && result[0]) diensten.push(result[0]);
+    diensten.sort((a,b) => a.naam.localeCompare(b.naam));
+    naamEl.value = ''; prijsEl.value = ''; bronEl.value = 'vloer_m2'; groepEl.value = DIENST_GROEPEN[0];
+    renderTariefLijst();
+    renderOfferteDiensten();
+    toast('Dienst toegevoegd');
   } catch(e) {
     toast('Toevoegen mislukt: ' + e.message, 4000);
   }
 }
 
-async function wijzigTariefPrijs(categorie, id, waarde) {
+async function wijzigDienstGroep(id, groep) {
+  try {
+    await sbFetch('PATCH', 'tarief_items?id=eq.'+id, { groep });
+    const rij = diensten.find(r => String(r.id) === String(id));
+    if (rij) rij.groep = groep;
+    renderOfferteDiensten();
+    toast('Bijgewerkt');
+  } catch(e) {
+    toast('Opslaan mislukt: ' + e.message, 4000);
+  }
+}
+
+async function wijzigDienstPrijs(id, waarde) {
   const prijs = parseFloat(waarde) || 0;
   try {
     await sbFetch('PATCH', 'tarief_items?id=eq.'+id, { prijs });
-    const rij = (tarieven[categorie]||[]).find(r => String(r.id) === String(id));
+    const rij = diensten.find(r => String(r.id) === String(id));
     if (rij) rij.prijs = prijs;
     toast('Tarief bijgewerkt');
   } catch(e) {
@@ -3306,29 +3217,68 @@ async function wijzigTariefPrijs(categorie, id, waarde) {
   }
 }
 
-async function verwijderTarief(categorie, id) {
-  const ok = await bevestig('Dit tarief verwijderen?');
+async function wijzigDienstBron(id, bron) {
+  try {
+    await sbFetch('PATCH', 'tarief_items?id=eq.'+id, { bron });
+    const rij = diensten.find(r => String(r.id) === String(id));
+    if (rij) rij.bron = bron;
+    renderOfferteDiensten();
+    toast('Bijgewerkt');
+  } catch(e) {
+    toast('Opslaan mislukt: ' + e.message, 4000);
+  }
+}
+
+async function verwijderDienst(id) {
+  const ok = await bevestig('Deze dienst verwijderen?');
   if (!ok) return;
   try {
     await sbFetch('DELETE', 'tarief_items?id=eq.'+id);
-    tarieven[categorie] = (tarieven[categorie]||[]).filter(r => String(r.id) !== String(id));
-    renderTariefLijst(categorie);
-    toast('Tarief verwijderd');
+    diensten = diensten.filter(r => String(r.id) !== String(id));
+    geselecteerdeDiensten = geselecteerdeDiensten.filter(x => x !== String(id));
+    renderTariefLijst();
+    renderOfferteDiensten();
+    toast('Dienst verwijderd');
   } catch(e) {
     toast('Verwijderen mislukt: ' + e.message, 4000);
   }
 }
 
-async function wijzigTariefOmschrijving(categorie, id, waarde) {
-  const omschrijving = waarde || null;
-  try {
-    await sbFetch('PATCH', 'tarief_items?id=eq.'+id, { omschrijving });
-    const rij = (tarieven[categorie]||[]).find(r => String(r.id) === String(id));
-    if (rij) rij.omschrijving = omschrijving;
-    toast('Omschrijving bijgewerkt');
-  } catch(e) {
-    toast('Opslaan mislukt: ' + e.message, 4000);
-  }
+function offerteDienstRijHtml(r) {
+  const checked = geselecteerdeDiensten.includes(String(r.id));
+  return '<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px;cursor:pointer;">'
+    + '<input type="checkbox" '+(checked ? 'checked' : '')+' onchange="toggleOfferteDienst(\''+r.id+'\', this.checked)" />'
+    + '<span style="flex:1;">'+escapeHtml(r.naam)+'</span>'
+    + '<span style="color:#888;">€ '+fmt(r.prijs||0)+' / '+(DIENST_BRON_LABEL[r.bron]||'m² vloer')+'</span>'
+    + '</label>';
+}
+
+function renderOfferteDiensten() {
+  const el = document.getElementById('offerte-diensten-lijst');
+  if (!el) return;
+  const rijen = diensten || [];
+  if (!rijen.length) { el.innerHTML = '<div style="font-size:13px;color:#aaa;">Nog geen diensten aangemaakt op het tabblad Tarieven.</div>'; return; }
+  const groepen = DIENST_GROEPEN.slice();
+  rijen.forEach(r => { if (!groepen.includes(r.groep)) groepen.push(r.groep || 'Overig'); });
+  let html = '';
+  groepen.forEach(groep => {
+    const items = rijen.filter(r => (r.groep || 'Overig') === groep);
+    if (!items.length) return;
+    const aantalAangevinkt = items.filter(r => geselecteerdeDiensten.includes(String(r.id))).length;
+    html += '<details style="margin-bottom:8px;border:1px solid #e5e5e5;border-radius:8px;padding:2px 12px;" open>'
+      + '<summary style="cursor:pointer;padding:8px 0;font-size:14px;font-weight:600;">'+escapeHtml(groep)
+      + (aantalAangevinkt ? ' <span style="font-weight:400;color:#888;">('+aantalAangevinkt+' aangevinkt)</span>' : '')
+      + '</summary>'
+      + '<div style="padding-bottom:6px;">' + items.map(offerteDienstRijHtml).join('') + '</div>'
+      + '</details>';
+  });
+  el.innerHTML = html;
+}
+
+function toggleOfferteDienst(id, checked) {
+  id = String(id);
+  if (checked) { if (!geselecteerdeDiensten.includes(id)) geselecteerdeDiensten.push(id); }
+  else { geselecteerdeDiensten = geselecteerdeDiensten.filter(x => x !== id); }
 }
 
 async function wijzigInstelling(veld, waarde) {
@@ -3342,21 +3292,11 @@ async function wijzigInstelling(veld, waarde) {
   }
 }
 
-async function wijzigInstellingTekst(veld, waarde) {
-  const tekst = waarde || null;
-  try {
-    await sbFetch('PATCH', 'tarief_instellingen?id=eq.1', { [veld]: tekst });
-    tariefInstellingen[veld] = tekst;
-    toast('Opgeslagen');
-  } catch(e) {
-    toast('Opslaan mislukt: ' + e.message, 4000);
-  }
-}
-
 renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
 laadKlanten();
 laadAfspraken();
 laadTaken();
+laadTarieven();
 wisselGebruiker(huidigeGebruikerId() || 'raoul');
 </script>
 </body>
