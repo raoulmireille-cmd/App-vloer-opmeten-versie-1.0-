@@ -280,6 +280,10 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .vandaag-kop{ font-size:11px; font-weight:700; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; }
 .vandaag-kop:first-child{ margin-top:0; }
 .taak-klant-badge{ font-size:12px; padding:3px 10px; }
+.taak-klant-dropdown{ display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1px solid #e5e5e5; border-radius:10px; max-height:220px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:50; }
+.taak-klant-optie{ padding:9px 12px; font-size:14px; cursor:pointer; }
+.taak-klant-optie:hover{ background:var(--accent-tint); }
+.taak-klant-leeg{ padding:9px 12px; font-size:13px; color:#999; }
 
 /* ================= Donkere modus ================= */
 [data-theme="dark"]{
@@ -296,6 +300,9 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   background-color:#20272F; color:#EAF1F0; border-color:#333D48;
 }
 [data-theme="dark"] input[readonly]{ background-color:#181D24; color:#7D8793; }
+[data-theme="dark"] .taak-klant-dropdown{ background:#1B2129; border-color:#2B333D; box-shadow:0 8px 20px rgba(0,0,0,0.4); }
+[data-theme="dark"] .taak-klant-optie:hover{ background:var(--accent-tint); }
+[data-theme="dark"] .taak-klant-leeg{ color:#7D8793; }
 [data-theme="dark"] select{ background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239AA5B1'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
 [data-theme="dark"] .btn{ background:#20272F; color:#EAF1F0; border-color:#333D48; }
 [data-theme="dark"] .btn:hover{ background:#2B333D; }
@@ -433,7 +440,12 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <input type="text" id="taak-nieuw" placeholder="bijv. Hardwax bijbestellen bij leverancier..." onkeydown="if(event.key==='Enter'){event.preventDefault();taakToevoegen();}" />
     </div>
     <div class="grid2" style="margin-bottom:10px;">
-      <div class="field"><label>Klant (optioneel)</label><select id="taak-klant"><option value="">— Geen klant —</option></select></div>
+      <div class="field" style="position:relative;">
+        <label>Klant (optioneel)</label>
+        <input type="text" id="taak-klant-zoek" placeholder="Zoek op naam, adres of plaats..." autocomplete="off" oninput="filterTaakKlant()" onfocus="filterTaakKlant()" onblur="setTimeout(sluitTaakKlantDropdown,150)" />
+        <input type="hidden" id="taak-klant" value="" />
+        <div id="taak-klant-dropdown" class="taak-klant-dropdown"></div>
+      </div>
       <div class="field"><label>Datum (optioneel)</label><input type="date" id="taak-datum" /></div>
     </div>
     <div style="display:flex;justify-content:flex-end;">
@@ -542,7 +554,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
           <option>Raoul</option><option>Mireille</option>
         </select>
       </div>
-      <div class="field"><label>Begintijd (optioneel)</label><input type="time" id="naw-tijd" /></div>
+      <div class="field"><label>Begintijd (optioneel)</label><input type="time" id="naw-tijd" onchange="vulEindtijdIn()" /></div>
       <div class="field"><label>Eindtijd (optioneel)</label><input type="time" id="naw-eindtijd" /></div>
     </div>
   </div>
@@ -577,6 +589,27 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       </button>
     </div>
   </div>
+  <div class="card"><p class="section-title">Type woning</p>
+    <div class="field"><label>Type woning</label>
+      <select id="naw-type-woning" onchange="checkTypeWoning()">
+        <option value="">— Selecteer —</option>
+        <option>Woonhuis</option>
+        <option>Appartement</option>
+      </select>
+    </div>
+    <div class="ovveld" id="flat-veld">
+      <div class="toggle-row">
+        <span class="toggle-label">Lift aanwezig</span>
+        <div class="toggle-btns">
+          <button class="tbtn ja" id="tb-lift-ja" onclick="setLiftToggle('ja',this)">Ja</button>
+          <button class="tbtn nee" id="tb-lift-nee" onclick="setLiftToggle('nee',this)">Nee</button>
+        </div>
+      </div>
+      <div class="ovveld" id="trappen-veld">
+        <div class="field"><label>Aantal trappen</label><input type="number" id="naw-trappen" min="0" step="1" placeholder="bijv. 3" /></div>
+      </div>
+    </div>
+  </div>
   <div class="card"><p class="section-title">Type opdracht</p>
     <div class="field"><label>Type opdracht</label>
       <select id="naw-opdracht" onchange="checkOpdrachtAfval()">
@@ -585,6 +618,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <option>Renovatie</option>
         <option>Aanheling</option>
         <option>Schade</option>
+        <option>Schoonmaken en oliën</option>
       </select>
     </div>
   </div>
@@ -606,7 +640,9 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <button class="vtbtn" onclick="setVloerType('Vloerdelen',this)">Vloerdelen</button>
       <button class="vtbtn" onclick="setVloerType('Bourgogne',this)">Bourgogne</button>
       <button class="vtbtn" onclick="setVloerType('PVC',this)">PVC</button>
+      <button class="vtbtn" onclick="setVloerType('Overige',this)">Overige</button>
     </div>
+    <div class="ovveld" id="ov-typevloer"><input type="text" id="tv-typevloer-overig" placeholder="Omschrijf type vloer..." /></div>
   </div>
   <div class="card"><p class="section-title">Houtsoort & sortering</p>
     <div class="grid2">
@@ -1228,7 +1264,7 @@ async function sbFetch(method, path, body) {
 }
 
 let vloeren = [], aftrekken = [], plinten = [], afdeklatten = [], profielen = [], fotos = [];
-const tog = { scheuren: null, opstartprotocol: null, schoon: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null };
+const tog = { scheuren: null, opstartprotocol: null, schoon: null, lift: null, vloerBesteld: null, plintenBesteld: null, ondervloerBesteld: null, afdeklattenBesteld: null, olieBesteld: null, leggerIngedeeld: null, bezorgschema: null, offerteGemaakt: null };
 let vvAanwezig = null, vvType = null, vloerType = null, legwijze = null, huidigId = null;
 let vorigeKlantStand = null;
 const VELD_GROEPEN = {
@@ -1236,6 +1272,7 @@ const VELD_GROEPEN = {
   voornaam:'Naam', achternaam:'Naam',
   telefoon:'Telefoonnummer', email:'E-mailadres',
   straat:'Adres', huisnummer:'Adres', postcode:'Adres', plaats:'Adres',
+  type_woning:'Type woning', lift_aanwezig:'Type woning', aantal_trappen:'Type woning',
   notities:'Notities',
   type_vloer:'Type vloer', houtsoort:'Houtsoort', sortering:'Sortering', legwijze:'Legwijze', patroon:'Patroon',
   afmeting_lengte:'Afmeting', afmeting_breedte:'Afmeting', afmeting_dikte:'Afmeting',
@@ -1260,7 +1297,7 @@ const VELD_GROEPEN = {
   checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte'
 };
 const VELD_GROEPEN_VOLGORDE = [
-  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type opdracht','Notities',
+  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Notities',
   'Type vloer','Houtsoort','Sortering','Legwijze','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtpercentage','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
@@ -1317,6 +1354,15 @@ function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;'
 function fmt(n) { return n.toFixed(2).replace('.', ','); }
 function gv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 function sv(id, v) { const el = document.getElementById(id); if (!el) return; if ('value' in el) el.value = v || ''; else el.textContent = v || ''; }
+function vulEindtijdIn() {
+  const begin = gv('naw-tijd');
+  if (!begin || gv('naw-eindtijd')) return; // niet overschrijven als er al handmatig een eindtijd is ingevuld
+  const [u, m] = begin.split(':').map(Number);
+  if (isNaN(u) || isNaN(m)) return;
+  const totaal = (u * 60 + m + 60) % (24 * 60);
+  sv('naw-eindtijd', String(Math.floor(totaal / 60)).padStart(2, '0') + ':' + String(totaal % 60).padStart(2, '0'));
+  planAutosave();
+}
 
 function toast(msg, duur) {
   const el = document.getElementById('toast');
@@ -1524,14 +1570,44 @@ async function laadTaken() {
   }
   renderTaken();
 }
-function vulTaakKlantSelect() {
-  const sel = document.getElementById('taak-klant');
-  if (!sel) return;
-  const huidig = sel.value;
-  sel.innerHTML = '<option value="">— Geen klant —</option>' + klantenData.map(k =>
-    '<option value="'+k.id+'">'+escapeHtml(klantNaamVoor(k.id))+'</option>'
-  ).join('');
-  sel.value = huidig;
+// vulTaakKlantSelect() bestaat nog puur voor compatibiliteit met bestaande aanroepen
+// (bij het openen van het tabblad en na het (her)laden van de klantenlijst) — de
+// zoekbare klantkoppeling hieronder leest klantenData rechtstreeks bij het typen,
+// dus hier hoeft verder niets te worden opgebouwd.
+function vulTaakKlantSelect() { sluitTaakKlantDropdown(); }
+function taakKlantOpties(q) {
+  const query = (q||'').toLowerCase().trim();
+  const lijst = !query ? klantenData : klantenData.filter(k => {
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).toLowerCase();
+    const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ').toLowerCase();
+    return naam.includes(query) || adres.includes(query);
+  });
+  return lijst.slice(0, 8);
+}
+function renderTaakKlantDropdown(lijst) {
+  const el = document.getElementById('taak-klant-dropdown');
+  if (!el) return;
+  el.innerHTML = lijst.length
+    ? lijst.map(k => '<div class="taak-klant-optie" onmousedown="kiesTaakKlant(\''+k.id+'\')">'+escapeHtml(klantNaamVoor(k.id))+'</div>').join('')
+    : '<div class="taak-klant-leeg">Geen klanten gevonden.</div>';
+  el.style.display = 'block';
+}
+function filterTaakKlant() {
+  const q = gv('taak-klant-zoek');
+  // Als de getypte tekst niet meer overeenkomt met de eerder gekozen klant,
+  // is de koppeling niet meer geldig totdat er weer een klant wordt aangeklikt.
+  const huidigeId = gv('taak-klant');
+  if (huidigeId && q !== klantNaamVoor(huidigeId)) sv('taak-klant', '');
+  renderTaakKlantDropdown(taakKlantOpties(q));
+}
+function kiesTaakKlant(id) {
+  sv('taak-klant', id);
+  sv('taak-klant-zoek', klantNaamVoor(id));
+  sluitTaakKlantDropdown();
+}
+function sluitTaakKlantDropdown() {
+  const el = document.getElementById('taak-klant-dropdown');
+  if (el) el.style.display = 'none';
 }
 function taakRijHtml(t) {
   const klantNaam = t.klant_id ? klantNaamVoor(t.klant_id) : '';
@@ -1572,6 +1648,7 @@ async function taakToevoegen() {
     if (resultaat && resultaat[0]) takenData.push(resultaat[0]);
     input.value = '';
     if (klantSel) klantSel.value = '';
+    sv('taak-klant-zoek', '');
     if (datumInput) datumInput.value = '';
     input.focus();
     renderTaken();
@@ -1765,22 +1842,25 @@ async function nieuweOpmeting() { await flushPendingAutosave(); huidigId = null;
 function resetFormulier() {
   clearTimeout(autosaveTimer);
   autosaveFoutGetoond = false;
-  ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities','naw-tijd','naw-eindtijd',
-   'tv-houtsoort','tv-sortering-overig','tv-patroon-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
+  ['naw-voornaam','naw-achternaam','naw-tel','naw-email','naw-straat','naw-huisnr','naw-postcode','naw-plaats','naw-notities','naw-tijd','naw-eindtijd','naw-trappen',
+   'tv-houtsoort','tv-typevloer-overig','tv-sortering-overig','tv-patroon-overig','tv-lengte','tv-breedte','tv-dikte','tv-bijzonderheden','bew-overig-tekst','afw-overig-tekst',
    'c-lv','c-vp','c-opm','p-type','p-hoogte','p-dikte','p-kleur',
    'a-type','a-breedte','a-kleur','pr-type','pr-breedte','foto-omschrijving',
    'ch-vloer-leverancier','ch-vloer-datum','ch-plinten-leverancier','ch-plinten-datum','ch-ondervloer-leverancier','ch-ondervloer-datum',
    'ch-afdeklatten-leverancier','ch-afdeklatten-datum','ch-olie-leverancier','ch-olie-datum','ch-legger-naam','ch-legger-datum','ch-bezorgschema-datum'].forEach(id => sv(id, ''));
-  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('naw-bezoeker',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
+  sv('c-type',''); sv('c-kras',''); sv('c-vlakte',''); sv('c-ondervloer',''); sv('c-ondervloer-overig',''); sv('tv-sortering',''); sv('vv-bron',''); sv('naw-opdracht',''); sv('naw-type-woning',''); sv('naw-bezoeker',''); sv('v-verdieping',''); sv('v-verdieping-overig',''); sv('p-verdieping',''); sv('p-verdieping-overig',''); sv('a-verdieping',''); sv('a-verdieping-overig',''); sv('naw-datum',''); document.getElementById('ondervloer-overig-veld').classList.remove('zichtbaar'); document.getElementById('v-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('p-verdieping-overig-veld').classList.remove('zichtbaar'); document.getElementById('a-verdieping-overig-veld').classList.remove('zichtbaar'); ['lak','hardwax','woca','monocoat'].forEach(t => { sv(t+'-kleur',''); document.getElementById(t+'-kleur-veld').classList.remove('zichtbaar'); });
   vloerType = null;
   legwijze = null;
   document.querySelectorAll('.vtbtn').forEach(b => b.classList.remove('active'));
-  tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null;
+  tog.scheuren = null; tog.opstartprotocol = null; tog.schoon = null; tog.lift = null;
   vvAanwezig = null; vvType = null;
   document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.cb-item').forEach(b => { b.classList.remove('active'); b.querySelector('input').checked = false; });
   document.getElementById('vv-extra').classList.remove('zichtbaar');
   document.getElementById('sortex').classList.remove('zichtbaar');
+  document.getElementById('ov-typevloer').classList.remove('zichtbaar');
+  document.getElementById('flat-veld').classList.remove('zichtbaar');
+  document.getElementById('trappen-veld').classList.remove('zichtbaar');
   document.getElementById('ov-bew').classList.remove('zichtbaar');
   document.getElementById('ov-afw').classList.remove('zichtbaar');
   document.getElementById('ov-patroon').classList.remove('zichtbaar');
@@ -1796,7 +1876,7 @@ function resetFormulier() {
   renderVloer(); renderPlinten(); renderAfdek(); renderProfielen(); renderFotos(); renderChecklistProgress(); renderHandtekening();
 }
 
-function setVloerType(type, btn) { vloerType = type; document.querySelectorAll('#typevloer-grid .vtbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+function setVloerType(type, btn) { vloerType = type; document.querySelectorAll('#typevloer-grid .vtbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('ov-typevloer').classList.toggle('zichtbaar', type === 'Overige'); }
 function setLegwijze(waarde, btn) { legwijze = waarde; document.querySelectorAll('#legwijze-grid .vtbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 function toggleCb(cb, id) { document.getElementById(id).classList.toggle('active', cb.checked); }
 function toggleOv(type) { const cb = document.querySelector('#cb-' + type + '-overig input'); document.getElementById('ov-' + type).classList.toggle('zichtbaar', cb.checked); }
@@ -1819,6 +1899,21 @@ function checkOpdrachtAfval() {
     sv('v-afval', '0');
     renderVloer();
   }
+}
+function checkTypeWoning() {
+  const appartement = gv('naw-type-woning') === 'Appartement';
+  document.getElementById('flat-veld').classList.toggle('zichtbaar', appartement);
+  if (!appartement) {
+    tog.lift = null;
+    sv('naw-trappen', '');
+    document.getElementById('trappen-veld').classList.remove('zichtbaar');
+    document.querySelectorAll('#flat-veld .tbtn').forEach(b => b.classList.remove('active'));
+  }
+}
+function setLiftToggle(v, btn) {
+  setToggle('lift', v, btn);
+  document.getElementById('trappen-veld').classList.toggle('zichtbaar', v === 'nee');
+  if (v !== 'nee') sv('naw-trappen', '');
 }
 function checkVerdiepingOv(prefix) { document.getElementById(prefix+'-verdieping-overig-veld').classList.toggle('zichtbaar', gv(prefix+'-verdieping') === 'Overige'); }
 function vulK(id, naam) { sv(id, naam); document.getElementById(id).focus(); }
@@ -2693,11 +2788,17 @@ function renderSamenvatting() {
   const naam = (gv('naw-voornaam')+' '+gv('naw-achternaam')).trim();
   const adres = [gv('naw-straat'), gv('naw-huisnr'), gv('naw-postcode'), gv('naw-plaats')].filter(Boolean).join(' ');
   const tijdRange = gv('naw-tijd') ? ' van '+gv('naw-tijd')+(gv('naw-eindtijd') ? ' tot '+gv('naw-eindtijd') : '') : '';
-  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum')) + tijdRange) + r('Naam bezoeker', gv('naw-bezoeker')) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  const typeWoningWeergave = gv('naw-type-woning');
+  let liftWeergave = '';
+  if (gv('naw-type-woning') === 'Appartement' && tog.lift) {
+    liftWeergave = tog.lift === 'ja' ? 'Ja' : ('Nee' + (gv('naw-trappen') ? ' (' + gv('naw-trappen') + ' trappen op)' : ''));
+  }
+  document.getElementById('sam-naw').innerHTML = r('Datum bezoek', fmtDatum(gv('naw-datum')) + tijdRange) + r('Naam bezoeker', gv('naw-bezoeker')) + r('Type opdracht', gv('naw-opdracht')) + r('Naam', naam) + r('Telefoon', gv('naw-tel')) + r('E-mail', gv('naw-email')) + r('Adres', adres) + r('Type woning', typeWoningWeergave) + r('Lift aanwezig', liftWeergave) + r('Notities', gv('naw-notities')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
+  const typeVloerWeergave = vloerType === 'Overige' ? (gv('tv-typevloer-overig')||'Overige') : vloerType;
   const patroon = getPatronen().join(', ');
   const afm = [gv('tv-lengte'), gv('tv-breedte'), gv('tv-dikte')].filter(Boolean).join(' x ');
-  document.getElementById('sam-vloer-type').innerHTML = r('Type', vloerType) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Legwijze', legwijze) + r('Patroon', patroon) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) + r('Bijzonderheden vloer', gv('tv-bijzonderheden')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
+  document.getElementById('sam-vloer-type').innerHTML = r('Type', typeVloerWeergave) + r('Houtsoort', gv('tv-houtsoort')) + r('Sortering', sort) + r('Legwijze', legwijze) + r('Patroon', patroon) + r('Afmeting (mm)', afm) + r('Bewerkingen', getBewerkingen().join(', ')) + r('Afwerking', getAfwerking().join(', ')) + r('Bijzonderheden vloer', gv('tv-bijzonderheden')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   document.getElementById('sam-controle').innerHTML = r('Constructievloer', gv('c-type')) + r('Type ondervloer', gv('c-ondervloer') === 'Overige' ? (gv('c-ondervloer-overig')||'Overige') : gv('c-ondervloer')) + r('Vloerverwarming', getVVTekst()) + r('Luchtvochtigheid', gv('c-lv') ? gv('c-lv')+'%' : '') + r('Vochtpercentage', gv('c-vp') ? gv('c-vp')+'%' : '') + r('Krastest', gv('c-kras')) + r('Vlakte', gv('c-vlakte')) + r('Dekvloer schoon', tog.schoon) + r('Visuele scheuren', tog.scheuren) + r('Opstartprotocol', tog.opstartprotocol) + r('Opmerkingen', gv('c-opm')) || '<span style="color:#bbb;font-size:14px;">Geen gegevens</span>';
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const vTotaal = vloeren.reduce((s,k) => s+k.opp, 0);
@@ -2736,6 +2837,7 @@ function renderSamenvatting() {
 
 function bouwOpslaanData() {
   const sort = gv('tv-sortering') === 'Overige' ? (gv('tv-sortering-overig')||'Overige') : gv('tv-sortering');
+  const typeVloer = vloerType === 'Overige' ? (gv('tv-typevloer-overig')||'Overige') : vloerType;
   const patroon = getPatronen().join(', ');
   const vAfval = Math.max(0, parseFloat(document.getElementById('v-afval').value)||0);
   const pAfval = Math.max(0, parseFloat(document.getElementById('p-afval').value)||0);
@@ -2749,7 +2851,10 @@ function bouwOpslaanData() {
     updated_at: new Date().toISOString(),
     opdracht: gv('naw-opdracht'), datum_bezoek: gv('naw-datum'), tijd_bezoek: gv('naw-tijd'), eindtijd_bezoek: gv('naw-eindtijd'), bezoeker: gv('naw-bezoeker'), voornaam: gv('naw-voornaam'), achternaam: gv('naw-achternaam'), telefoon: gv('naw-tel'), email: gv('naw-email'),
     straat: gv('naw-straat'), huisnummer: gv('naw-huisnr'), postcode: gv('naw-postcode'), plaats: gv('naw-plaats'), notities: gv('naw-notities'),
-    type_vloer: vloerType||'', houtsoort: gv('tv-houtsoort'), sortering: sort, legwijze: legwijze||'', patroon: patroon,
+    type_woning: gv('naw-type-woning'),
+    lift_aanwezig: gv('naw-type-woning') === 'Appartement' ? (tog.lift||'') : '',
+    aantal_trappen: gv('naw-type-woning') === 'Appartement' && tog.lift === 'nee' ? gv('naw-trappen') : '',
+    type_vloer: typeVloer||'', houtsoort: gv('tv-houtsoort'), sortering: sort, legwijze: legwijze||'', patroon: patroon,
     afmeting_lengte: gv('tv-lengte'), afmeting_breedte: gv('tv-breedte'), afmeting_dikte: gv('tv-dikte'),
     bijzonderheden_vloer: gv('tv-bijzonderheden'),
     bewerkingen: getBewerkingen().join(', '), afwerking: getAfwerking().join(', '),
@@ -2959,7 +3064,24 @@ async function laadKlant(id) {
     sv('naw-opdracht', k.opdracht); sv('naw-datum', k.datum_bezoek); sv('naw-tijd', k.tijd_bezoek); sv('naw-eindtijd', k.eindtijd_bezoek); sv('naw-bezoeker', k.bezoeker); sv('naw-voornaam', k.voornaam); sv('naw-achternaam', k.achternaam); sv('naw-tel', k.telefoon);
     sv('naw-email', k.email); sv('naw-straat', k.straat); sv('naw-huisnr', k.huisnummer);
     sv('naw-postcode', k.postcode); sv('naw-plaats', k.plaats); sv('naw-notities', k.notities);
-    if (k.type_vloer) { const btn = Array.from(document.querySelectorAll('#typevloer-grid .vtbtn')).find(b => b.textContent === k.type_vloer); if (btn) { vloerType = k.type_vloer; btn.classList.add('active'); } }
+    sv('naw-type-woning', k.type_woning); checkTypeWoning();
+    if (k.lift_aanwezig) {
+      tog.lift = k.lift_aanwezig;
+      const liftBtn = document.getElementById('tb-lift-'+k.lift_aanwezig);
+      if (liftBtn) liftBtn.classList.add('active');
+      if (k.lift_aanwezig === 'nee') { sv('naw-trappen', k.aantal_trappen); document.getElementById('trappen-veld').classList.add('zichtbaar'); }
+    }
+    if (k.type_vloer) {
+      const btn = Array.from(document.querySelectorAll('#typevloer-grid .vtbtn')).find(b => b.textContent === k.type_vloer);
+      if (btn) { vloerType = k.type_vloer; btn.classList.add('active'); }
+      else {
+        const ovBtn = Array.from(document.querySelectorAll('#typevloer-grid .vtbtn')).find(b => b.textContent === 'Overige');
+        vloerType = 'Overige';
+        if (ovBtn) ovBtn.classList.add('active');
+        sv('tv-typevloer-overig', k.type_vloer);
+        document.getElementById('ov-typevloer').classList.add('zichtbaar');
+      }
+    }
     if (k.legwijze) { const btn = Array.from(document.querySelectorAll('#legwijze-grid .vtbtn')).find(b => b.textContent === k.legwijze); if (btn) { legwijze = k.legwijze; btn.classList.add('active'); } }
     sv('tv-houtsoort', k.houtsoort);
     const stdSort = ['Rustiek','Natuur','Select','AB','ABC','BC'];
