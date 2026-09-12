@@ -1055,8 +1055,8 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <div class="field" style="margin-top:8px;"><label>Verwacht in pakhuis/winkel op</label><input type="date" id="ch-plinten-datum" /></div>
     </div>
 
-    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Ondervloer</div>
-    <div class="toggle-row"><span class="toggle-label">Ondervloer besteld</span>
+    <div style="font-size:13px;font-weight:600;margin:14px 0 2px;border-top:1px solid #f0f0f0;padding-top:12px;">Ondervloer / lijm</div>
+    <div class="toggle-row"><span class="toggle-label">Ondervloer / lijm besteld</span>
       <div class="toggle-btns">
         <button class="tbtn ja" id="tb-ondervloerBesteld-ja" onclick="setToggleReveal('ondervloerBesteld','ja',this,'ondervloerBesteld-extra')">Ja</button>
         <button class="tbtn nee" id="tb-ondervloerBesteld-nee" onclick="setToggleReveal('ondervloerBesteld','nee',this,'ondervloerBesteld-extra')">Nee</button>
@@ -1171,7 +1171,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
     <span><span class="agenda-dot" style="background:#E2A64B;"></span>Materiaal verwacht</span>
     <span><span class="agenda-dot" style="background:#1D9E75;"></span>Vloer leggen</span>
     <span><span class="agenda-dot" style="background:#9B59B6;"></span>Bezorging</span>
-    <span><span class="agenda-dot" style="background:#D63384;"></span>Eigen afspraak</span>
+    <span><span class="agenda-dot" style="background:#7CB342;"></span>Eigen afspraak</span>
   </div>
 
   <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
@@ -1243,8 +1243,11 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <div class="field"><label>Datum</label><input type="date" id="afspraak-datum" /></div>
       <div class="field"><label>Tijd (optioneel)</label><input type="time" id="afspraak-tijd" /></div>
     </div>
-    <div class="field" style="margin-bottom:10px;"><label>Klant (optioneel)</label>
-      <select id="afspraak-klant" onchange="afspraakKlantGewijzigd()"><option value="">— Geen klant —</option></select>
+    <div class="field" style="margin-bottom:10px;position:relative;">
+      <label>Klant (optioneel)</label>
+      <input type="text" id="afspraak-klant-zoek" placeholder="Zoek op naam, adres of plaats..." autocomplete="off" oninput="filterAfspraakKlant()" onfocus="filterAfspraakKlant()" onblur="setTimeout(sluitAfspraakKlantDropdown,150)" />
+      <input type="hidden" id="afspraak-klant" value="" />
+      <div id="afspraak-klant-dropdown" class="taak-klant-dropdown"></div>
     </div>
     <div class="field" style="margin-bottom:10px;"><label>Adres (optioneel)</label><input type="text" id="afspraak-adres" placeholder="bijv. Kerkstraat 12, Gouda" /></div>
     <div class="field" style="margin-bottom:10px;"><label>Telefoonnummer (optioneel)</label><input type="tel" id="afspraak-telefoon" placeholder="06-12345678" /></div>
@@ -1303,7 +1306,7 @@ const VELD_GROEPEN = {
   profielen_opmeting:'Opmeting profielen', profielen_totaal:'Opmeting profielen', profiel_afval:'Afvalpercentage profielen',
   checklist_vloer_besteld:'Vloer besteld', checklist_vloer_leverancier:'Vloer besteld', checklist_vloer_datum:'Vloer besteld',
   checklist_plinten_besteld:'Plinten besteld', checklist_plinten_leverancier:'Plinten besteld', checklist_plinten_datum:'Plinten besteld',
-  checklist_ondervloer_besteld:'Ondervloer besteld', checklist_ondervloer_leverancier:'Ondervloer besteld', checklist_ondervloer_datum:'Ondervloer besteld',
+  checklist_ondervloer_besteld:'Ondervloer / lijm besteld', checklist_ondervloer_leverancier:'Ondervloer / lijm besteld', checklist_ondervloer_datum:'Ondervloer / lijm besteld',
   checklist_afdeklatten_besteld:'Afdeklatten besteld', checklist_afdeklatten_leverancier:'Afdeklatten besteld', checklist_afdeklatten_datum:'Afdeklatten besteld',
   checklist_olie_besteld:'Olie/lak besteld', checklist_olie_leverancier:'Olie/lak besteld', checklist_olie_datum:'Olie/lak besteld',
   checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld',
@@ -1319,7 +1322,7 @@ const VELD_GROEPEN_VOLGORDE = [
   'Specificatie plinten','Opmeting plinten','Afvalpercentage plinten',
   'Specificatie afdeklatten','Opmeting afdeklatten','Afvalpercentage afdeklatten',
   'Opmeting profielen','Afvalpercentage profielen',
-  'Vloer besteld','Plinten besteld','Ondervloer besteld','Afdeklatten besteld','Olie/lak besteld',
+  'Vloer besteld','Plinten besteld','Ondervloer / lijm besteld','Afdeklatten besteld','Olie/lak besteld',
   'Vloerenlegger ingedeeld','Bezorgschema','Offerte'
 ];
 function fotoMutatieLabel(nieuw, vorig) {
@@ -2060,7 +2063,7 @@ async function maakMoneybirdOfferte() {
 }
 
 // ---------- AGENDA ----------
-const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6', afspraak: '#D63384' };
+const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6', afspraak: '#7CB342' };
 const AGENDA_BEZOEKER_KLEUREN = { Raoul: '#5B8DEF', Mireille: '#E24B4A' };
 function agendaKleur(e) {
   if (e.type === 'bezoek' && e.bezoeker && AGENDA_BEZOEKER_KLEUREN[e.bezoeker]) return AGENDA_BEZOEKER_KLEUREN[e.bezoeker];
@@ -2070,7 +2073,7 @@ const AGENDA_BRONNEN = [
   { veld: 'datum_bezoek', tijdveld: 'tijd_bezoek', label: 'Bezoek', type: 'bezoek' },
   { veld: 'checklist_vloer_datum', label: 'Vloer verwacht', type: 'besteld' },
   { veld: 'checklist_plinten_datum', label: 'Plinten verwacht', type: 'besteld' },
-  { veld: 'checklist_ondervloer_datum', label: 'Ondervloer verwacht', type: 'besteld' },
+  { veld: 'checklist_ondervloer_datum', label: 'Ondervloer / lijm verwacht', type: 'besteld' },
   { veld: 'checklist_afdeklatten_datum', label: 'Afdeklatten verwacht', type: 'besteld' },
   { veld: 'checklist_olie_datum', label: 'Olie/lak verwacht', type: 'besteld' },
   { veld: 'checklist_legger_datum', label: 'Vloer leggen', type: 'legger', naamveld: 'checklist_legger_naam' },
@@ -2345,15 +2348,42 @@ async function laadAfspraken() {
 }
 
 function vulAfspraakKlantSelect(geselecteerdId) {
-  const sel = document.getElementById('afspraak-klant');
-  const opties = ['<option value="">— Geen klant —</option>'].concat(
-    klantenData.map(k => {
-      const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
-      return '<option value="'+k.id+'">'+escapeHtml(naam)+'</option>';
-    })
-  );
-  sel.innerHTML = opties.join('');
-  sel.value = geselecteerdId ? String(geselecteerdId) : '';
+  sv('afspraak-klant', geselecteerdId ? String(geselecteerdId) : '');
+  sv('afspraak-klant-zoek', geselecteerdId ? klantNaamVoor(geselecteerdId) : '');
+  sluitAfspraakKlantDropdown();
+}
+function afspraakKlantOpties(q) {
+  const query = (q||'').toLowerCase().trim();
+  const lijst = !query ? klantenData : klantenData.filter(k => {
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).toLowerCase();
+    const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ').toLowerCase();
+    return naam.includes(query) || adres.includes(query);
+  });
+  return lijst.slice(0, 8);
+}
+function renderAfspraakKlantDropdown(lijst) {
+  const el = document.getElementById('afspraak-klant-dropdown');
+  if (!el) return;
+  el.innerHTML = lijst.length
+    ? lijst.map(k => '<div class="taak-klant-optie" onmousedown="kiesAfspraakKlant(\''+k.id+'\')">'+escapeHtml(klantNaamVoor(k.id))+'</div>').join('')
+    : '<div class="taak-klant-leeg">Geen klanten gevonden.</div>';
+  el.style.display = 'block';
+}
+function filterAfspraakKlant() {
+  const q = gv('afspraak-klant-zoek');
+  const huidigeId = gv('afspraak-klant');
+  if (huidigeId && q !== klantNaamVoor(huidigeId)) sv('afspraak-klant', '');
+  renderAfspraakKlantDropdown(afspraakKlantOpties(q));
+}
+function kiesAfspraakKlant(id) {
+  sv('afspraak-klant', id);
+  sv('afspraak-klant-zoek', klantNaamVoor(id));
+  sluitAfspraakKlantDropdown();
+  afspraakKlantGewijzigd();
+}
+function sluitAfspraakKlantDropdown() {
+  const el = document.getElementById('afspraak-klant-dropdown');
+  if (el) el.style.display = 'none';
 }
 
 function nieuweAfspraak() {
