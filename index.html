@@ -32,7 +32,10 @@ h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .section-title { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; color: #666; }
-input[type=text], input[type=number], input[type=tel], input[type=email], textarea, select { width: 100%; height: 38px; box-sizing: border-box; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
+input[type=text], input[type=number], input[type=tel], input[type=email], input[type=password], textarea, select { width: 100%; height: 38px; box-sizing: border-box; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
+#login-overlay { display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+#login-overlay .card { width: 100%; max-width: 340px; }
+.app { display: none; }
 input[type=date], input[type=time] { width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; outline: none; }
 input:focus, textarea:focus, select:focus { border-color: #B5651D; }
 input[readonly] { background: #f5f5f5; color: #888; }
@@ -364,6 +367,25 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 </style>
 </head>
 <body>
+<div id="login-overlay">
+  <div class="card">
+    <h1 style="margin-bottom:4px;">Parket Specialist Gouda</h1>
+    <p style="font-size:13px;color:#888;margin-bottom:18px;">Log in om verder te gaan</p>
+    <form id="login-form" onsubmit="loginFormSubmit(event)">
+      <div class="field" style="margin-bottom:12px;">
+        <label>E-mailadres</label>
+        <input type="email" id="login-email" autocomplete="username" required />
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Wachtwoord</label>
+        <input type="password" id="login-wachtwoord" autocomplete="current-password" required />
+      </div>
+      <div id="login-fout" style="display:none;color:#E24B4A;font-size:13px;margin:4px 0 10px;"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-knop">Inloggen</button>
+    </form>
+    <p style="font-size:12px;color:#aaa;margin-top:14px;">Wachtwoord vergeten? Vraag om een reset via het Supabase-dashboard.</p>
+  </div>
+</div>
 <div class="app">
 <h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button></h1>
 <div class="subnav" id="subnav">
@@ -1264,16 +1286,116 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 const SB_URL = 'https://efvurckjceptthwhbfsz.supabase.co';
 const SB_KEY = 'sb_publishable_73TuZWzOQxRnsBeFLicIeg_tVANkcz0';
 
+// --- Inloggen (Supabase Auth) ---------------------------------------------
+let sbSession = null; // { access_token, refresh_token, expires_at }
+
+function laadSessieUitOpslag() {
+  try {
+    const raw = localStorage.getItem('pvSessie');
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !s.access_token || !s.refresh_token) return null;
+    return s;
+  } catch(e) { return null; }
+}
+function bewaarSessie(s) {
+  sbSession = s;
+  try { localStorage.setItem('pvSessie', JSON.stringify(s)); } catch(e) {}
+}
+function wisSessie() {
+  sbSession = null;
+  try { localStorage.removeItem('pvSessie'); } catch(e) {}
+}
+async function sbAuthFetch(grantType, body) {
+  const res = await fetch(SB_URL + '/auth/v1/token?grant_type=' + grantType, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error_description || data.msg || data.error || 'Inloggen mislukt');
+  return data;
+}
+async function inloggen(email, wachtwoord) {
+  const data = await sbAuthFetch('password', { email, password: wachtwoord });
+  bewaarSessie({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in * 1000) });
+}
+async function verversSessie() {
+  if (!sbSession || !sbSession.refresh_token) throw new Error('Geen sessie om te verversen');
+  const data = await sbAuthFetch('refresh_token', { refresh_token: sbSession.refresh_token });
+  bewaarSessie({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in * 1000) });
+}
+async function zorgVoorGeldigeSessie() {
+  if (!sbSession) throw new Error('Niet ingelogd');
+  if (sbSession.expires_at - Date.now() < 60000) await verversSessie();
+  return sbSession.access_token;
+}
+function toonLoginScherm() {
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.querySelector('.app').style.display = 'none';
+}
+function verbergLoginScherm() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.querySelector('.app').style.display = 'block';
+}
+async function startApp() {
+  verbergLoginScherm();
+  renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
+  laadKlanten();
+  laadAfspraken();
+  laadTaken();
+  laadTarieven();
+  wisselGebruiker(huidigeGebruikerId() || 'raoul');
+}
+async function loginFormSubmit(e) {
+  e.preventDefault();
+  const email = gv('login-email').trim();
+  const wachtwoord = gv('login-wachtwoord');
+  const knop = document.getElementById('login-knop');
+  const foutEl = document.getElementById('login-fout');
+  foutEl.style.display = 'none';
+  if (!email || !wachtwoord) return;
+  knop.disabled = true; knop.textContent = 'Bezig...';
+  try {
+    await inloggen(email, wachtwoord);
+    startApp();
+  } catch (err) {
+    foutEl.textContent = 'Inloggen mislukt. Controleer je e-mailadres en wachtwoord.';
+    foutEl.style.display = 'block';
+  } finally {
+    knop.disabled = false; knop.textContent = 'Inloggen';
+  }
+}
+(async function initAuth() {
+  sbSession = laadSessieUitOpslag();
+  if (sbSession) {
+    try {
+      await zorgVoorGeldigeSessie();
+      startApp();
+      return;
+    } catch (e) {
+      wisSessie();
+    }
+  }
+  toonLoginScherm();
+})();
+
 async function sbFetch(method, path, body) {
+  const token = await zorgVoorGeldigeSessie();
   const headers = {
     'apikey': SB_KEY,
-    'Authorization': 'Bearer ' + SB_KEY,
+    'Authorization': 'Bearer ' + token,
     'Content-Type': 'application/json'
   };
   if (method === 'POST') headers['Prefer'] = 'return=representation';
   const options = { method, headers };
   if (body) options.body = JSON.stringify(body);
-  const res = await fetch(SB_URL + '/rest/v1/' + path, options);
+  let res = await fetch(SB_URL + '/rest/v1/' + path, options);
+  if (res.status === 401) {
+    await verversSessie();
+    headers['Authorization'] = 'Bearer ' + sbSession.access_token;
+    res = await fetch(SB_URL + '/rest/v1/' + path, { ...options, headers });
+  }
   const text = await res.text();
   if (!res.ok) throw new Error(text);
   if (!text || text === 'null') return [];
@@ -1816,7 +1938,8 @@ async function instellingenOpslaan() {
 function uitloggenGebruiker() {
   try { localStorage.removeItem('pvGebruiker'); } catch(e) {}
   huidigeGebruikerData = null;
-  switchTab('start');
+  wisSessie();
+  toonLoginScherm();
   toast('Je bent uitgelogd op dit apparaat');
 }
 async function profielFotoWijzigen(e) {
@@ -1831,7 +1954,7 @@ async function profielFotoWijzigen(e) {
     const pad = 'profielfotos/' + huidigeGebruikerData.id + '.jpg';
     const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
       body: uploadBestand
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
@@ -2027,7 +2150,7 @@ async function uploadChecklistPdf(type, inputEl) {
   try {
     const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/pdf', 'x-upsert': 'true' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'application/pdf', 'x-upsert': 'true' },
       body: file
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
@@ -2050,7 +2173,7 @@ async function maakMoneybirdOfferte() {
   try {
     const res = await fetch(SB_URL + '/functions/v1/moneybird-offerte', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie() },
       body: JSON.stringify({ klantId: huidigId })
     });
     const data = await res.json().catch(() => ({}));
@@ -2531,7 +2654,7 @@ async function uploadFoto(inputEl) {
     toast('Foto uploaden...', 8000);
     const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
       body: uploadBestand
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
@@ -2627,7 +2750,7 @@ async function opslaanHandtekening() {
     const pad = 'handtekeningen/' + huidigId + '-' + Date.now() + '.png';
     const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
       method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'image/png', 'x-upsert': 'true' },
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'image/png', 'x-upsert': 'true' },
       body: blob
     });
     if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
@@ -3465,12 +3588,6 @@ async function wijzigInstelling(veld, waarde) {
   }
 }
 
-renderVloer(); renderPlinten(); renderAfdek(); renderProfielen();
-laadKlanten();
-laadAfspraken();
-laadTaken();
-laadTarieven();
-wisselGebruiker(huidigeGebruikerId() || 'raoul');
 </script>
 </body>
 </html>
