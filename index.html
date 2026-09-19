@@ -1621,7 +1621,7 @@ function renderLegdatumWaarschuwing(data) {
   lijst.innerHTML = items.map(({k, dagen}) => {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim()||'(geen naam)';
     const tekst = dagen === 0 ? 'vandaag' : dagen === 1 ? 'morgen' : dagen === -1 ? 'gisteren' : dagen > 1 ? 'over '+dagen+' dagen' : (-dagen)+' dagen geleden';
-    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;">Legdatum '+tekst+' — checklist nog niet compleet</div></div>';
+    return '<div class="data-rij" style="cursor:pointer;flex-direction:column;align-items:flex-start;gap:2px;" onclick="laadKlant(\''+k.id+'\')"><div class="naam" style="white-space:normal;overflow:visible;text-overflow:clip;width:100%;">'+escapeHtml(naam)+'</div><div class="maat" style="color:#E24B4A;text-align:left;min-width:0;width:100%;">Legdatum '+tekst+' — checklist nog niet compleet</div></div>';
   }).join('');
 }
 function fmtMutatieTijd(iso) {
