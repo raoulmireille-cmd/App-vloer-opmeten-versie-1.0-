@@ -458,7 +458,8 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 <!-- TAKEN -->
 <div class="panel" id="panel-taken">
   <div class="card">
-    <p class="section-title">Nieuwe taak</p>
+    <p class="section-title" id="taak-form-titel">Nieuwe taak</p>
+    <input type="hidden" id="taak-bewerk-id" value="" />
     <div class="field" style="margin-bottom:10px;">
       <input type="text" id="taak-nieuw" placeholder="bijv. Hardwax bijbestellen bij leverancier..." onkeydown="if(event.key==='Enter'){event.preventDefault();taakToevoegen();}" />
     </div>
@@ -471,8 +472,9 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       </div>
       <div class="field"><label>Datum (optioneel)</label><input type="date" id="taak-datum" /></div>
     </div>
-    <div style="display:flex;justify-content:flex-end;">
-      <button type="button" class="btn btn-primary" onclick="taakToevoegen()">+ Taak toevoegen</button>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button type="button" class="btn" id="taak-annuleer-btn" style="display:none;" onclick="taakBewerkenAnnuleren()">Annuleren</button>
+      <button type="button" class="btn btn-primary" id="taak-opslaan-btn" onclick="taakToevoegen()">+ Taak toevoegen</button>
     </div>
   </div>
   <div class="card">
@@ -1761,6 +1763,7 @@ function taakRijHtml(t) {
     + '<input type="checkbox" style="width:18px;height:18px;flex-shrink:0;" '+(t.klaar?'checked':'')+' onchange="taakToggle(\''+t.id+'\')" />'
     + '<span style="flex:1;min-width:140px;'+(t.klaar?'text-decoration:line-through;color:#aaa;':'')+'">'+escapeHtml(t.tekst)+'</span>'
     + klantBadge + datumBadge
+    + '<button type="button" class="btn" style="height:30px;padding:0 10px;font-size:13px;" onclick="taakBewerken(\''+t.id+'\')">Bewerk</button>'
     + '<button type="button" class="btn btn-danger" style="height:30px;padding:0 10px;font-size:13px;" onclick="taakVerwijderen(\''+t.id+'\')">Verwijder</button>'
     + '</div>';
 }
@@ -1775,25 +1778,68 @@ function renderTaken() {
   }
   renderVandaagOverzicht();
 }
+function taakBewerken(id) {
+  const t = takenData.find(x => String(x.id) === String(id));
+  if (!t) return;
+  sv('taak-bewerk-id', String(t.id));
+  sv('taak-nieuw', t.tekst || '');
+  sv('taak-klant', t.klant_id ? String(t.klant_id) : '');
+  sv('taak-klant-zoek', t.klant_id ? klantNaamVoor(t.klant_id) : '');
+  sv('taak-datum', t.datum || '');
+  sv('taak-form-titel', 'Taak bewerken');
+  document.getElementById('taak-opslaan-btn').textContent = 'Wijzigingen opslaan';
+  document.getElementById('taak-annuleer-btn').style.display = 'inline-flex';
+  const input = document.getElementById('taak-nieuw');
+  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  input.focus();
+}
+function taakBewerkenAnnuleren() {
+  sv('taak-bewerk-id', '');
+  sv('taak-nieuw', '');
+  sv('taak-klant', '');
+  sv('taak-klant-zoek', '');
+  sv('taak-datum', '');
+  sluitTaakKlantDropdown();
+  sv('taak-form-titel', 'Nieuwe taak');
+  document.getElementById('taak-opslaan-btn').textContent = '+ Taak toevoegen';
+  document.getElementById('taak-annuleer-btn').style.display = 'none';
+}
 async function taakToevoegen() {
   const input = document.getElementById('taak-nieuw');
   const tekst = (input.value || '').trim();
   if (!tekst) return;
   const klantSel = document.getElementById('taak-klant');
   const datumInput = document.getElementById('taak-datum');
-  const nieuw = { tekst, klaar: false, klant_id: (klantSel && klantSel.value) || null, datum: (datumInput && datumInput.value) || null, gemaakt_door: huidigeGebruikerId() };
-  try {
-    const resultaat = await sbFetch('POST', 'taken', nieuw);
-    if (resultaat && resultaat[0]) takenData.push(resultaat[0]);
-    input.value = '';
-    if (klantSel) klantSel.value = '';
-    sv('taak-klant-zoek', '');
-    if (datumInput) datumInput.value = '';
-    input.focus();
+  const bewerkId = gv('taak-bewerk-id');
+  const velden = { tekst, klant_id: (klantSel && klantSel.value) || null, datum: (datumInput && datumInput.value) || null };
+
+  if (bewerkId) {
+    const t = takenData.find(x => String(x.id) === String(bewerkId));
+    if (!t) { taakBewerkenAnnuleren(); return; }
+    const vorige = { ...t };
+    Object.assign(t, velden);
     renderTaken();
-  } catch(e) {
-    toast('Taak toevoegen mislukt: ' + e.message, 4000);
+    try {
+      await sbFetch('PATCH', 'taken?id=eq.'+bewerkId, velden);
+      toast('Taak bijgewerkt');
+      taakBewerkenAnnuleren();
+    } catch(e) {
+      Object.assign(t, vorige);
+      renderTaken();
+      toast('Wijzigen van taak mislukt: ' + e.message, 4000);
+    }
+  } else {
+    const nieuw = { tekst, klaar: false, ...velden, gemaakt_door: huidigeGebruikerId() };
+    try {
+      const resultaat = await sbFetch('POST', 'taken', nieuw);
+      if (resultaat && resultaat[0]) takenData.push(resultaat[0]);
+      taakBewerkenAnnuleren();
+      renderTaken();
+    } catch(e) {
+      toast('Taak toevoegen mislukt: ' + e.message, 4000);
+    }
   }
+  input.focus();
 }
 async function taakToggle(id) {
   const t = takenData.find(x => String(x.id) === String(id));
@@ -1809,6 +1855,7 @@ async function taakToggle(id) {
   }
 }
 async function taakVerwijderen(id) {
+  if (gv('taak-bewerk-id') === String(id)) taakBewerkenAnnuleren();
   const vorige = takenData;
   takenData = takenData.filter(x => String(x.id) !== String(id));
   renderTaken();
