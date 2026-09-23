@@ -287,6 +287,12 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 #vandaag-card{ max-width:520px; margin:0 auto 14px; }
 .vandaag-kop{ font-size:11px; font-weight:700; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.04em; margin:10px 0 4px; }
 .vandaag-kop:first-child{ margin-top:0; }
+.ov-kop{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.ov-kop .section-title{ margin-bottom:8px; }
+.ov-link{ border:none; background:none; color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; padding:0; font-family:inherit; white-space:nowrap; }
+.ov-link:hover{ text-decoration:underline; }
+.ov-rood{ border-color:#fde8e8; background:#fff8f8; }
+.ov-leeg{ font-size:13px; color:#888; padding:4px 0; }
 .taak-klant-badge{ font-size:12px; padding:3px 10px; }
 .taak-klant-dropdown{ display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1px solid #e5e5e5; border-radius:10px; max-height:220px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:50; }
 .taak-klant-optie{ padding:9px 12px; font-size:14px; cursor:pointer; }
@@ -365,6 +371,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 [data-theme="dark"] .vandaag-kop{ color:var(--accent-dark); }
 [data-theme="dark"] #profiel-avatar{ box-shadow:0 0 0 2px #2B333D; }
 [data-theme="dark"] #legdatum-waarschuwing-card,
+[data-theme="dark"] .ov-rood,
 [data-theme="dark"] #dashboard-card{ background:#241819 !important; border-color:#5C2E2E !important; }
 
 
@@ -437,11 +444,44 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="4.5" height="4.5" rx="1"/><path d="M4.9 6.2l0.9 0.9L7.6 5"/><path d="M11 6.2h9"/><rect x="4" y="10.7" width="4.5" height="4.5" rx="1"/><path d="M4.9 13l0.9 0.9L7.6 11.7"/><path d="M11 13h9"/><rect x="4" y="17.5" width="4.5" height="4.5" rx="1"/><path d="M11 19.7h9"/></svg>
         <span>Taken</span>
       </button>
+      <button type="button" class="start-tegel" onclick="switchTab('overzicht')">
+        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="5" rx="1.5"/><rect x="13.5" y="11" width="7.5" height="10" rx="1.5"/><rect x="3" y="15" width="7.5" height="6" rx="1.5"/></svg>
+        <span>Overzicht</span>
+      </button>
     </div>
     <button type="button" class="start-tegel start-tegel-groot" onclick="nieuweOpmeting()">
       <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M12 10v6M9 13h6"/></svg>
       <span>Nieuwe opmeting</span>
     </button>
+  </div>
+</div>
+
+<!-- OVERZICHT -->
+<div class="panel" id="panel-overzicht">
+  <div class="dash-grid">
+    <div class="card">
+      <p class="section-title" style="margin-bottom:2px;">Vandaag</p>
+      <div style="font-size:13px;color:#888;margin-bottom:6px;" id="ov-vandaag-datum"></div>
+      <div id="ov-vandaag"></div>
+    </div>
+    <div class="card">
+      <div class="ov-kop"><p class="section-title">Agenda — komende 7 dagen</p><button type="button" class="ov-link" onclick="switchTab('agenda')">Open agenda →</button></div>
+      <div id="ov-agenda"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ov-kop"><p class="section-title">Taken</p><button type="button" class="ov-link" onclick="switchTab('taken')">Alle taken →</button></div>
+    <div id="ov-taken"></div>
+  </div>
+  <div class="dash-grid">
+    <div class="card ov-rood">
+      <p class="section-title" style="color:#E24B4A;">Checklist niet compleet vóór legdatum</p>
+      <div id="ov-legdatum"></div>
+    </div>
+    <div class="card ov-rood">
+      <p class="section-title" style="color:#E24B4A;">Offerte nog te versturen</p>
+      <div id="ov-offerte"></div>
+    </div>
   </div>
 </div>
 
@@ -1926,6 +1966,85 @@ const _origLaadAfspraken = laadAfspraken;
 laadAfspraken = async function() {
   await _origLaadAfspraken();
   renderVandaagOverzicht();
+};
+
+// --- Overzicht: alles wat aandacht vraagt op één scherm (vandaag, agenda, checklist, offertes, taken) ---
+function ovKlantNaam(k) { return ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)'; }
+function ovTaakRij(t) {
+  const vandaag = vandaagStr();
+  const klantNaam = t.klant_id ? klantNaamVoor(t.klant_id) : '';
+  let datum = '';
+  if (t.datum) {
+    const teLaat = t.datum < vandaag;
+    datum = '<span style="font-size:11px;font-weight:600;color:'+(teLaat?'#D64545':'#B5651D')+';white-space:nowrap;">'+(teLaat?'Te laat · ':'')+fmtTaakDatum(t.datum)+'</span>';
+  }
+  return '<div class="data-rij" style="gap:10px;">'
+    + '<input type="checkbox" style="width:18px;height:18px;flex-shrink:0;" onchange="taakToggle(\''+t.id+'\')" />'
+    + '<span style="flex:1;">'+escapeHtml(t.tekst)+(klantNaam?' <span style="color:#888;font-size:12px;">— '+escapeHtml(klantNaam)+'</span>':'')+'</span>'
+    + datum + '</div>';
+}
+function renderOverzicht() {
+  const paneel = document.getElementById('panel-overzicht');
+  if (!paneel) return;
+  const vandaag = vandaagStr();
+  const kd = klantenData || [];
+  let events = [];
+  try { events = bouwAgendaEvents(); } catch(e) { events = []; }
+
+  // Vandaag
+  document.getElementById('ov-vandaag-datum').textContent = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  const evVandaag = events.filter(e => e.datum === vandaag);
+  const takenVandaag = (takenData||[]).filter(t => !t.klaar && t.datum && t.datum <= vandaag).sort((a,b) => a.datum < b.datum ? -1 : 1);
+  let h = '';
+  if (evVandaag.length) h += '<div class="vandaag-kop">Agenda vandaag</div>' + evVandaag.map(agendaEventHtml).join('');
+  if (takenVandaag.length) h += '<div class="vandaag-kop">Taken voor vandaag</div>' + takenVandaag.map(ovTaakRij).join('');
+  document.getElementById('ov-vandaag').innerHTML = h || '<div class="ov-leeg">Niets gepland voor vandaag.</div>';
+
+  // Agenda: morgen t/m 7 dagen vooruit, per dag gegroepeerd
+  const eind = new Date(); eind.setDate(eind.getDate() + 7);
+  const eindStr = vandaagStrVan(eind);
+  const komend = events.filter(e => e.datum > vandaag && e.datum <= eindStr);
+  let ag = '', huidigeDag = '';
+  komend.forEach(e => {
+    if (e.datum !== huidigeDag) {
+      huidigeDag = e.datum;
+      const d = agendaParse(e.datum);
+      ag += '<div class="vandaag-kop">'+escapeHtml(d ? d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }) : e.datum)+'</div>';
+    }
+    ag += agendaEventHtml(e);
+  });
+  document.getElementById('ov-agenda').innerHTML = ag || '<div class="ov-leeg">Geen afspraken de komende 7 dagen.</div>';
+
+  // Checklist niet compleet vóór legdatum (zelfde regels als bij Klanten: legdatum binnen 7 dagen of al voorbij)
+  const leg = kd
+    .filter(k => k.checklist_niet_doorgegaan !== 'ja' && k.checklist_legger_datum && !checklistCompleet(k))
+    .map(k => ({ k, dagen: dagenTotLegdatum(k.checklist_legger_datum) }))
+    .filter(x => x.dagen <= 7)
+    .sort((a, b) => a.dagen - b.dagen);
+  document.getElementById('ov-legdatum').innerHTML = leg.length ? leg.map(({k, dagen}) => {
+    const tekst = dagen === 0 ? 'vandaag' : dagen === 1 ? 'morgen' : dagen === -1 ? 'gisteren' : dagen > 1 ? 'over '+dagen+' dagen' : (-dagen)+' dagen geleden';
+    return '<div class="data-rij" style="cursor:pointer;flex-direction:column;align-items:flex-start;gap:2px;" onclick="laadKlant(\''+k.id+'\')"><div class="naam" style="white-space:normal;width:100%;">'+escapeHtml(ovKlantNaam(k))+'</div><div class="maat" style="color:#E24B4A;text-align:left;min-width:0;width:100%;">Legdatum '+tekst+' — checklist nog niet compleet</div></div>';
+  }).join('') : '<div class="ov-leeg">Alles op orde.</div>';
+
+  // Offerte nog te versturen
+  const off = kd.filter(k => k.checklist_niet_doorgegaan !== 'ja' && offerteNietVerstuurd(k));
+  document.getElementById('ov-offerte').innerHTML = off.length ? off.map(k =>
+    '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(ovKlantNaam(k))+'</div><div class="maat" style="color:#E24B4A;">Offerte nog niet verstuurd</div><button class="del-btn" title="Klant niet doorgegaan — uit deze lijst halen" onclick="event.stopPropagation();negeerKlant(\''+k.id+'\')">X</button></div>'
+  ).join('') : '<div class="ov-leeg">Geen openstaande offertes.</div>';
+
+  // Taken: alle openstaande taken, eerst die met een datum
+  const open = (takenData||[]).filter(t => !t.klaar).sort((a,b) => (a.datum||'9999-99-99') < (b.datum||'9999-99-99') ? -1 : 1);
+  document.getElementById('ov-taken').innerHTML = open.length ? open.map(ovTaakRij).join('') : '<div class="ov-leeg">Geen openstaande taken.</div>';
+}
+// Overzicht automatisch bijwerken zodra klanten, afspraken of taken opnieuw geladen/gewijzigd worden
+const _origRenderVandaagOverzicht = renderVandaagOverzicht;
+renderVandaagOverzicht = function() { _origRenderVandaagOverzicht(); renderOverzicht(); };
+const _origRenderDashboard = renderDashboard;
+renderDashboard = function(data) { _origRenderDashboard(data); renderOverzicht(); };
+const _switchTabVoorOverzicht = switchTab;
+switchTab = function(name) {
+  _switchTabVoorOverzicht(name);
+  if (name === 'overzicht') renderOverzicht();
 };
 
 // --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
