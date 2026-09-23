@@ -213,6 +213,10 @@ h1{
 .ververs-btn{ background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.2); color:#EAF1F0; }
 .ververs-btn:hover{ background:rgba(255,255,255,0.2); }
 .cloud-status.idle{ background:rgba(255,255,255,0.3); }
+.instellingen-btn{ margin-left:auto; display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; border:none; border-radius:50%; background:transparent; color:#EAF1F0; cursor:pointer; }
+.instellingen-btn svg{ width:22px; height:22px; }
+.instellingen-btn:hover{ background:rgba(255,255,255,0.12); }
+.instellingen-btn:active svg{ transform:rotate(45deg); transition:.15s; }
 
 .tabs{ background:#fff; border:none; border-radius:12px; padding:6px; gap:2px;
   box-shadow:0 2px 8px rgba(21,28,40,0.06); }
@@ -387,7 +391,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   </div>
 </div>
 <div class="app">
-<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button></h1>
+<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button><button class="instellingen-btn" onclick="switchTab('instellingen')" title="Gebruikersinstellingen" aria-label="Gebruikersinstellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button></h1>
 <div class="subnav" id="subnav">
   <button type="button" class="btn subnav-terug" onclick="switchTab('start')" title="Terug naar startscherm">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -432,20 +436,6 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <button type="button" class="start-tegel" onclick="switchTab('taken')">
         <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="4.5" height="4.5" rx="1"/><path d="M4.9 6.2l0.9 0.9L7.6 5"/><path d="M11 6.2h9"/><rect x="4" y="10.7" width="4.5" height="4.5" rx="1"/><path d="M4.9 13l0.9 0.9L7.6 11.7"/><path d="M11 13h9"/><rect x="4" y="17.5" width="4.5" height="4.5" rx="1"/><path d="M11 19.7h9"/></svg>
         <span>Taken</span>
-      </button>
-      <button type="button" class="start-tegel" onclick="switchTab('instellingen')">
-        <svg class="start-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="6" stroke-width="2.1"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(45 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(90 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(135 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(180 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(225 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(270 12 12)"/>
-          <rect x="10.7" y="2.4" width="2.6" height="3.3" rx="0.5" fill="currentColor" stroke="none" transform="rotate(315 12 12)"/>
-        </svg>
-        <span>Gebruikersinstellingen</span>
       </button>
     </div>
     <button type="button" class="start-tegel start-tegel-groot" onclick="nieuweOpmeting()">
