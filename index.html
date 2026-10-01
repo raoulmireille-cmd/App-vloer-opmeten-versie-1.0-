@@ -293,6 +293,20 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .ov-link:hover{ text-decoration:underline; }
 .ov-rood{ border-color:#fde8e8; background:#fff8f8; }
 .ov-leeg{ font-size:13px; color:#888; padding:4px 0; }
+.schade-tabel{ width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+.schade-tabel th{ text-align:left; font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:.03em; padding:4px 6px; border-bottom:1px solid #e5e5e5; }
+.schade-tabel td{ padding:6px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
+.schade-tabel td.num, .schade-tabel th.num{ text-align:right; white-space:nowrap; }
+@media (max-width: 520px){ .schade-tabel .prijs{ display:none; } }
+.schade-tabel tfoot td{ font-weight:700; border-bottom:none; border-top:2px solid #e5e5e5; }
+.pm-cijfers{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+.pm-cijfer{ background:var(--accent-tint); border-radius:10px; padding:10px 12px; }
+.pm-cijfer .l{ font-size:11px; font-weight:600; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.03em; }
+.pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
+[data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
+.schade-badge{ display:inline-block; font-size:11px; font-weight:600; color:#B5651D; background:#FBF1E7; border-radius:6px; padding:1px 7px; margin-left:6px; vertical-align:middle; }
+[data-theme="dark"] .schade-badge{ background:#3A2A1C; }
+[data-theme="dark"] .schade-tabel td{ border-color:#2B333D; }
 .taak-klant-badge{ font-size:12px; padding:3px 10px; }
 .taak-klant-dropdown{ display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:#fff; border:1px solid #e5e5e5; border-radius:10px; max-height:220px; overflow-y:auto; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:50; }
 .taak-klant-optie{ padding:9px 12px; font-size:14px; cursor:pointer; }
@@ -417,6 +431,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
     <button class="tab" onclick="switchTab('checklist')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.4 1.4L8 5"/><path d="M11 6.5h9"/><path d="M4 12.5l1.4 1.4L8 11"/><path d="M11 12.5h9"/><path d="M4 18.5l1.4 1.4L8 17"/><path d="M11 18.5h9"/></svg></span> Checklist</button>
     <button class="tab" onclick="switchTab('offerte')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M15 3v4h4"/><path d="M9 13h6M9 16.5h4"/></svg></span> Offerte</button>
     <button class="tab" onclick="switchTab('tarieven')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7.2a6.3 6.3 0 1 0 0 9.6"/><path d="M4 10.2h8.5M4 13.2h7.5"/></svg></span> Tarieven</button>
+    <button class="tab" id="tab-parketmeester" style="display:none;" onclick="switchTab('parketmeester')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg></span> Parketmeester</button>
   </div>
 </div>
 
@@ -472,6 +487,10 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div class="card">
     <div class="ov-kop"><p class="section-title">Taken</p><button type="button" class="ov-link" onclick="switchTab('taken')">Alle taken →</button></div>
     <div id="ov-taken"></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Openstaand bij Parketmeester</p>
+    <div id="ov-schades"></div>
   </div>
   <div class="dash-grid">
     <div class="card ov-rood">
@@ -685,7 +704,17 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <option>Aanheling</option>
         <option>Schade</option>
         <option>Schoonmaken en oliën</option>
+        <option>Parketmeester</option>
       </select>
+    </div>
+  </div>
+  <div class="card" id="schade-card" style="display:none;">
+    <p class="section-title">Parketmeester — CUF-bestand</p>
+    <div id="schade-upload-status" style="font-size:13px;color:#888;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-primary" onclick="document.getElementById('cuf-input-klant').click()">⇪ CUF-bestand uploaden</button>
+      <button type="button" class="btn" id="schade-naar-tab" style="display:none;" onclick="switchTab('parketmeester')">Bekijk samenvatting →</button>
+      <input type="file" id="cuf-input-klant" accept=".xml,.cuf,text/xml" style="display:none;" onchange="cufGekozen(this)" />
     </div>
   </div>
   <div class="card"><p class="section-title">Notities klant</p>
@@ -1261,6 +1290,30 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div id="agenda-inhoud"></div>
 </div>
 
+<!-- PARKETMEESTER -->
+<div class="panel" id="panel-parketmeester">
+  <div class="card">
+    <p class="section-title">Parketmeester</p>
+    <div class="grid2">
+      <div class="field"><label>Dossiernummer</label><input type="text" id="schade-dossier" placeholder="bijv. 260801" /></div>
+      <div class="field"><label>Status</label>
+        <select id="schade-status">
+          <option value="">— Selecteer —</option>
+          <option>Ontvangen</option>
+          <option>Afspraak gepland</option>
+          <option>Hersteld</option>
+          <option>Teruggemeld in portaal</option>
+          <option>Afgerond</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="pm-samenvatting"></div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+    <button type="button" class="btn" onclick="document.getElementById('cuf-input-klant').click()">⇪ Ander CUF-bestand uploaden</button>
+  </div>
+</div>
+
 <!-- TARIEVEN -->
 <div class="panel" id="panel-tarieven">
   <div class="card"><p class="section-title">Diensten</p>
@@ -1537,10 +1590,11 @@ const VELD_GROEPEN = {
   checklist_olie_besteld:'Olie/lak besteld', checklist_olie_leverancier:'Olie/lak besteld', checklist_olie_datum:'Olie/lak besteld',
   checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld', checklist_legger_dagen:'Vloerenlegger ingedeeld',
   checklist_bezorgschema:'Bezorgschema', checklist_bezorgschema_datum:'Bezorgschema',
-  checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte'
+  checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte',
+  schade_dossiernummer:'Schade', schade_status:'Schade', schade_cuf:'Schade'
 };
 const VELD_GROEPEN_VOLGORDE = [
-  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Notities',
+  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Schade','Notities',
   'Type vloer','Houtsoort','Sortering','Leverancier','Legwijze','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtmetingen','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
@@ -1655,7 +1709,7 @@ function updateBanners() {
   });
 }
 
-const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven'];
+const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','lijmBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -1664,6 +1718,7 @@ const CHECKLIST_DB_COLS = {
   bezorgschema: 'checklist_bezorgschema', offerteGemaakt: 'checklist_offerte'
 };
 function offerteNietVerstuurd(klant) {
+  if (klant.schade_dossiernummer || klant.opdracht === 'Parketmeester') return false; // schades lopen via het Parketmeester-portaal, geen eigen offerte
   return klant.checklist_offerte !== 'ja' && klant.checklist_offerte !== 'nvt';
 }
 function renderDashboard(data) {
@@ -1774,7 +1829,7 @@ function switchTab(name) {
 }
 // --- Vereenvoudigde navigatie: toont het beginscherm of de subnavigatie met "Terug naar start",
 //     afhankelijk van welk scherm actief is. Verandert niets aan switchTab() zelf, alleen aan wat je er omheen ziet. ---
-const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven'];
+const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
 const _origSwitchTab = switchTab;
 switchTab = function(name) {
   _origSwitchTab(name);
@@ -2094,6 +2149,165 @@ const _switchTabVoorOverzicht = switchTab;
 switchTab = function(name) {
   _switchTabVoorOverzicht(name);
   if (name === 'overzicht') renderOverzicht();
+};
+
+// --- Schades (Parketmeester): CUF-bestand uit het portaal (pop.mkb-logic.nl) inlezen ---
+// Het CUF-bestand bevat het projectnummer (= dossiernummer) en de herstelbegroting, géén klantgegevens.
+let schadeCuf = null;
+function cufGetal(v) { const n = parseFloat(String(v||'').replace(/\./g,'').replace(',', '.')); return isNaN(n) ? 0 : n; }
+function cufEuro(n) { return '€ ' + n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function cufAantal(n) { return n.toLocaleString('nl-NL', { maximumFractionDigits: 2 }); }
+function leesCuf(tekst) {
+  const doc = new DOMParser().parseFromString(tekst, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('Dit is geen geldig XML-bestand.');
+  const el = n => doc.getElementsByTagNameNS('*', n)[0] || doc.getElementsByTagName(n)[0];
+  const alle = n => { const a = doc.getElementsByTagNameNS('*', n); return Array.from(a.length ? a : doc.getElementsByTagName(n)); };
+  const proj = el('PROJECTGEGEVENS');
+  if (!proj) throw new Error('Geen CUF-bestand: projectgegevens ontbreken.');
+  const regels = alle('BEGROTINGSREGEL').map(r => {
+    const aantal = cufGetal(r.getAttribute('HOEVEELHEID'));
+    const prijs = cufGetal(r.getAttribute('MATERIAALPRIJS')) + cufGetal(r.getAttribute('LOONKOSTEN')) + cufGetal(r.getAttribute('MATERIEELPRIJS'));
+    return { omschrijving: r.getAttribute('OMSCHRIJVING') || '', aantal, eenheid: r.getAttribute('HOEVEELHEID_EENHEID') || '', prijs, totaal: Math.round(aantal * prijs * 100) / 100, btw: r.getAttribute('BTW') || '' };
+  });
+  const staart = el('STAARTGEGEVENS');
+  const som = staart ? cufGetal(staart.getAttribute('AANNEEMSOM')) : 0;
+  return {
+    dossiernummer: proj.getAttribute('PROJECTNUMMER') || '',
+    aanmaakdatum: proj.getAttribute('AANMAAKDATUM') || '',
+    ingelezen: new Date().toISOString(),
+    regels,
+    totaal: som || Math.round(regels.reduce((t, r) => t + r.totaal, 0) * 100) / 100
+  };
+}
+function isParketmeester() { return gv('naw-opdracht') === 'Parketmeester' || !!gv('schade-dossier') || !!schadeCuf; }
+function cufIsArbeid(r) { return /^(arbeid|uurtarief)/i.test(r.omschrijving.trim()); }
+function cufTabel(regels, titel) {
+  if (!regels.length) return '';
+  const sub = Math.round(regels.reduce((t, r) => t + r.totaal, 0) * 100) / 100;
+  return '<div class="card"><p class="section-title">'+titel+'</p><div style="overflow-x:auto;"><table class="schade-tabel"><thead><tr><th>Omschrijving</th><th class="num">Aantal</th><th class="num prijs">Prijs</th><th class="num">Totaal</th></tr></thead><tbody>'
+    + regels.map(r => '<tr><td>'+escapeHtml(r.omschrijving)+'</td><td class="num">'+cufAantal(r.aantal)+(r.eenheid?' '+escapeHtml(r.eenheid):'')+'</td><td class="num prijs">'+cufEuro(r.prijs)+'</td><td class="num">'+cufEuro(r.totaal)+'</td></tr>').join('')
+    + '</tbody><tfoot><tr><td colspan="2">Subtotaal</td><td class="prijs"></td><td class="num">'+cufEuro(sub)+'</td></tr></tfoot></table></div></div>';
+}
+function renderSchadeKaart() {
+  const pm = isParketmeester();
+  const kaart = document.getElementById('schade-card');
+  const tab = document.getElementById('tab-parketmeester');
+  if (kaart) kaart.style.display = pm ? 'block' : 'none';
+  if (tab) tab.style.display = pm ? '' : 'none';
+  const heeft = !!(schadeCuf && schadeCuf.regels && schadeCuf.regels.length);
+  const st = document.getElementById('schade-upload-status');
+  if (st) st.innerHTML = heeft
+    ? '<span style="color:#1D9E75;font-weight:600;">✓ Ingelezen:</span> dossier '+escapeHtml(schadeCuf.dossiernummer||'?')+' · '+schadeCuf.regels.length+' regels · '+cufEuro(schadeCuf.totaal)+' excl. btw'
+    : 'Exporteer de schade in het Parketmeester-portaal als CUF en upload het bestand hier.';
+  const naarTab = document.getElementById('schade-naar-tab');
+  if (naarTab) naarTab.style.display = heeft ? '' : 'none';
+  const el = document.getElementById('pm-samenvatting');
+  if (!el) return;
+  if (!heeft) {
+    el.innerHTML = '<div class="card"><div class="ov-leeg">Nog geen CUF-bestand ingelezen. Upload het bestand bij Klantgegevens → Type opdracht, of met de knop hieronder.</div></div>';
+    return;
+  }
+  const arbeid = schadeCuf.regels.filter(cufIsArbeid);
+  const overig = schadeCuf.regels.filter(r => !cufIsArbeid(r));
+  const som = rs => Math.round(rs.reduce((t, r) => t + r.totaal, 0) * 100) / 100;
+  const btw = Math.round(schadeCuf.regels.reduce((t, r) => t + r.totaal * (cufGetal(r.btw) / 100), 0) * 100) / 100;
+  const uren = arbeid.filter(r => /^uur/i.test(r.eenheid)).reduce((t, r) => t + r.aantal, 0);
+  const datum = schadeCuf.aanmaakdatum ? new Date(schadeCuf.aanmaakdatum+'T00:00:00').toLocaleDateString('nl-NL') : '';
+  const ingelezen = schadeCuf.ingelezen ? new Date(schadeCuf.ingelezen).toLocaleDateString('nl-NL') : '';
+  const cijfer = (l, w) => '<div class="pm-cijfer"><div class="l">'+l+'</div><div class="w">'+w+'</div></div>';
+  el.innerHTML = '<div class="card"><p class="section-title">Samenvatting begroting</p>'
+    + '<div style="font-size:12px;color:#888;margin-bottom:10px;">Dossier '+escapeHtml(schadeCuf.dossiernummer||'?')+(datum?' · begroting van '+datum:'')+(ingelezen?' · ingelezen op '+ingelezen:'')+' · '+schadeCuf.regels.length+' regels</div>'
+    + '<div class="pm-cijfers">'
+    + cijfer('Arbeid', cufEuro(som(arbeid)))
+    + cijfer('Materiaal & overig', cufEuro(som(overig)))
+    + cijfer('Totaal excl. btw', cufEuro(schadeCuf.totaal))
+    + cijfer('Totaal incl. btw', cufEuro(Math.round((schadeCuf.totaal + btw) * 100) / 100))
+    + (uren ? cijfer('Extra uren', cufAantal(uren)+' uur') : '')
+    + '</div></div>'
+    + cufTabel(arbeid, 'Arbeid')
+    + cufTabel(overig, 'Materiaal en overige kosten');
+}
+function zetSchadeGegevens(cuf) {
+  schadeCuf = cuf;
+  sv('naw-opdracht', 'Parketmeester');
+  if (cuf.dossiernummer) sv('schade-dossier', cuf.dossiernummer);
+  if (!gv('schade-status')) sv('schade-status', 'Ontvangen');
+  renderSchadeKaart();
+}
+async function cufGekozen(input) {
+  const bestand = input.files && input.files[0];
+  input.value = '';
+  if (!bestand) return;
+  let cuf;
+  try { cuf = leesCuf(await bestand.text()); }
+  catch(e) { toast('CUF inlezen mislukt: '+e.message, 4000); return; }
+  const ander = cuf.dossiernummer ? (klantenData||[]).find(k => String(k.schade_dossiernummer||'') === cuf.dossiernummer && String(k.id) !== String(huidigId)) : null;
+  if (ander) {
+    const naam = ((ander.voornaam||'')+' '+(ander.achternaam||'')).trim() || '(geen naam)';
+    const ok = await bevestig('Dossier '+cuf.dossiernummer+' staat al bij klant '+naam+'. Toch bij deze klant inlezen?');
+    if (!ok) return;
+  }
+  zetSchadeGegevens(cuf);
+  planAutosave();
+  toast(heeftOpnameInhoud() ? 'CUF ingelezen ('+cuf.regels.length+' regels)' : 'CUF ingelezen — vul nog naam in om op te slaan', 4000);
+}
+// Opslaan, laden en leegmaken uitbreiden met de schadevelden
+const _bouwOpslaanDataZonderSchade = bouwOpslaanData;
+bouwOpslaanData = function() {
+  const d = _bouwOpslaanDataZonderSchade();
+  d.schade_dossiernummer = gv('schade-dossier');
+  d.schade_status = gv('schade-status');
+  d.schade_cuf = schadeCuf ? JSON.stringify(schadeCuf) : '';
+  return d;
+};
+const _resetFormulierZonderSchade = resetFormulier;
+resetFormulier = function() {
+  _resetFormulierZonderSchade();
+  schadeCuf = null; sv('schade-dossier', ''); sv('schade-status', '');
+  renderSchadeKaart();
+};
+const _laadKlantZonderSchade = laadKlant;
+laadKlant = async function(id) {
+  await _laadKlantZonderSchade(id);
+  const k = vorigeKlantStand;
+  if (!k || String(k.id) !== String(id)) return;
+  sv('schade-dossier', k.schade_dossiernummer || '');
+  sv('schade-status', k.schade_status || '');
+  try { schadeCuf = k.schade_cuf ? JSON.parse(k.schade_cuf) : null; } catch(e) { schadeCuf = null; }
+  renderSchadeKaart();
+};
+document.addEventListener('change', e => { if (e.target && e.target.id === 'naw-opdracht') renderSchadeKaart(); });
+// Overzicht: openstaande schades
+const _renderOverzichtZonderSchades = renderOverzicht;
+renderOverzicht = function() {
+  _renderOverzichtZonderSchades();
+  const el = document.getElementById('ov-schades');
+  if (!el) return;
+  const open = (klantenData||[]).filter(k => k.schade_dossiernummer && k.schade_status !== 'Afgerond' && k.checklist_niet_doorgegaan !== 'ja');
+  el.innerHTML = open.length ? open.map(k => {
+    const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).trim() || '(geen naam)';
+    return '<div class="data-rij" style="cursor:pointer;" onclick="laadKlant(\''+k.id+'\')"><div class="naam">'+escapeHtml(naam)+' <span style="color:#888;font-weight:400;font-size:12px;">#'+escapeHtml(k.schade_dossiernummer)+'</span></div><div class="maat" style="color:#B5651D;">'+escapeHtml(k.schade_status || 'Ontvangen')+'</div></div>';
+  }).join('') : '<div class="ov-leeg">Geen openstaande Parketmeester-opdrachten.</div>';
+};
+// Vangnet: werkt ook zolang de schadekolommen nog niet in Supabase bestaan
+const SCHADE_KOLOMMEN = ['schade_dossiernummer','schade_status','schade_cuf'];
+let schadeKolommenOntbreken = false;
+const _sbFetchZonderSchadeVangnet = sbFetch;
+sbFetch = async function(method, path, body) {
+  if (schadeKolommenOntbreken) {
+    SCHADE_KOLOMMEN.forEach(c => { path = path.replace(','+c, ''); });
+    if (body && typeof body === 'object' && !Array.isArray(body)) { body = { ...body }; SCHADE_KOLOMMEN.forEach(c => delete body[c]); }
+  }
+  try {
+    return await _sbFetchZonderSchadeVangnet(method, path, body);
+  } catch(e) {
+    if (!schadeKolommenOntbreken && SCHADE_KOLOMMEN.some(c => String(e.message).includes(c))) {
+      schadeKolommenOntbreken = true;
+      toast('Let op: de schadekolommen ontbreken nog in Supabase — schadegegevens worden nog niet bewaard.', 6000);
+      return sbFetch(method, path, body);
+    }
+    throw e;
+  }
 };
 
 // --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
@@ -3413,7 +3627,7 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(',')+(AGENDA_NAAM_VELDEN.length ? ','+AGENDA_NAAM_VELDEN.join(',') : ''));
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(',')+(AGENDA_NAAM_VELDEN.length ? ','+AGENDA_NAAM_VELDEN.join(',') : '')+',opdracht,schade_dossiernummer,schade_status');
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
@@ -3431,7 +3645,7 @@ function filterKlanten() {
   const gefilterd = !q ? klantenData : klantenData.filter(k => {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).toLowerCase();
     const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ').toLowerCase();
-    return naam.includes(q) || adres.includes(q);
+    return naam.includes(q) || adres.includes(q) || String(k.schade_dossiernummer||'').toLowerCase().includes(q);
   });
   renderKlantenLijst(sorteerKlanten(gefilterd), q);
 }
@@ -3488,7 +3702,7 @@ function renderKlantenLijst(data, q) {
     const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ');
     const datum = k.created_at ? new Date(k.created_at).toLocaleDateString('nl-NL') : '';
     const routeBtn = adres ? '<button class="btn" style="height:30px;padding:0 10px;font-size:14px;" title="Route in Google Maps" onclick="event.stopPropagation();openRouteVoorKlant(\''+k.id+'\')">📍</button>' : '';
-    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+'</div><div class="klant-adres">'+(adres||'(geen adres)')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span>'+routeBtn+'<button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
+    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+(k.schade_dossiernummer ? '<span class="schade-badge">Parketmeester '+escapeHtml(k.schade_dossiernummer)+(k.schade_status ? ' · '+escapeHtml(k.schade_status) : '')+'</span>' : '')+'</div><div class="klant-adres">'+(adres||'(geen adres)')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span>'+routeBtn+'<button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
   }).join('');
 }
 
