@@ -608,8 +608,18 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
     <div style="font-size:14px;color:#888;" id="klanten-count"></div>
     <button class="btn btn-primary" onclick="nieuweOpmeting()">+ Nieuwe opmeting</button>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <div class="field" style="flex:1;margin-bottom:0;"><input type="text" id="klanten-zoek" placeholder="Zoek op naam, adres of plaats..." oninput="filterKlanten()" /></div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <div class="field" style="flex:1 1 240px;margin-bottom:0;"><input type="text" id="klanten-zoek" placeholder="Zoek op naam, adres of plaats..." oninput="filterKlanten()" /></div>
+    <div class="field" style="margin-bottom:0;flex:1 1 150px;"><select id="klanten-type" onchange="filterKlanten()" title="Filter op type opdracht">
+      <option value="">Alle types</option>
+      <option>Nieuwe vloer</option>
+      <option>Renovatie</option>
+      <option>Aanheling</option>
+      <option>Schade</option>
+      <option>Schoonmaken en oliën</option>
+      <option>Parketmeester</option>
+      <option value="__geen">Geen type ingevuld</option>
+    </select></div>
     <button class="btn sort-btn active" id="sort-btn-naam" onclick="setSortering('naam')">Naam<span class="sort-arrow" id="sort-arrow-naam">↑</span></button>
     <button class="btn sort-btn" id="sort-btn-datum" onclick="setSortering('datum')">Datum<span class="sort-arrow" id="sort-arrow-datum"></span></button>
   </div>
@@ -3642,10 +3652,12 @@ async function laadKlanten() {
 
 function filterKlanten() {
   const q = gv('klanten-zoek').toLowerCase();
-  const gefilterd = !q ? klantenData : klantenData.filter(k => {
+  const type = gv('klanten-type');
+  const opType = !type ? klantenData : klantenData.filter(k => type === '__geen' ? !k.opdracht : k.opdracht === type);
+  const gefilterd = !q ? opType : opType.filter(k => {
     const naam = ((k.voornaam||'')+' '+(k.achternaam||'')).toLowerCase();
     const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ').toLowerCase();
-    return naam.includes(q) || adres.includes(q) || String(k.schade_dossiernummer||'').toLowerCase().includes(q);
+    return naam.includes(q) || adres.includes(q) || String(k.schade_dossiernummer||'').toLowerCase().includes(q) || String(k.opdracht||'').toLowerCase().includes(q);
   });
   renderKlantenLijst(sorteerKlanten(gefilterd), q);
 }
@@ -3692,9 +3704,9 @@ function renderKlantenLijst(data, q) {
   const lijst = document.getElementById('klanten-lijst');
   const count = document.getElementById('klanten-count');
   const totaal = klantenData.length;
-  count.textContent = q ? (data.length + ' van ' + totaal + ' klanten') : (totaal + ' klant' + (totaal !== 1 ? 'en' : '') + ' opgeslagen');
+  count.textContent = (q || gv('klanten-type')) ? (data.length + ' van ' + totaal + ' klanten') : (totaal + ' klant' + (totaal !== 1 ? 'en' : '') + ' opgeslagen');
   if (!data.length) {
-    lijst.innerHTML = '<div class="leeg">' + (q ? 'Geen klanten gevonden voor "'+escapeHtml(q)+'".' : 'Nog geen klanten. Klik op "Nieuwe opmeting" om te beginnen.') + '</div>';
+    lijst.innerHTML = '<div class="leeg">' + ((q || gv('klanten-type')) ? 'Geen klanten gevonden'+(q ? ' voor "'+escapeHtml(q)+'"' : '')+(gv('klanten-type') ? ' bij dit type opdracht' : '')+'.' : 'Nog geen klanten. Klik op "Nieuwe opmeting" om te beginnen.') + '</div>';
     return;
   }
   lijst.innerHTML = data.map(k => {
@@ -3702,7 +3714,7 @@ function renderKlantenLijst(data, q) {
     const adres = [k.straat, k.huisnummer, k.postcode, k.plaats].filter(Boolean).join(' ');
     const datum = k.created_at ? new Date(k.created_at).toLocaleDateString('nl-NL') : '';
     const routeBtn = adres ? '<button class="btn" style="height:30px;padding:0 10px;font-size:14px;" title="Route in Google Maps" onclick="event.stopPropagation();openRouteVoorKlant(\''+k.id+'\')">📍</button>' : '';
-    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+(k.schade_dossiernummer ? '<span class="schade-badge">Parketmeester '+escapeHtml(k.schade_dossiernummer)+(k.schade_status ? ' · '+escapeHtml(k.schade_status) : '')+'</span>' : '')+'</div><div class="klant-adres">'+(adres||'(geen adres)')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span>'+routeBtn+'<button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
+    return '<div class="klant-kaart" onclick="laadKlant(\''+k.id+'\')"><div style="flex:1;min-width:0;"><div class="klant-naam">'+naam+(k.schade_dossiernummer ? '<span class="schade-badge">Parketmeester '+escapeHtml(k.schade_dossiernummer)+(k.schade_status ? ' · '+escapeHtml(k.schade_status) : '')+'</span>' : '')+'</div><div class="klant-adres">'+(adres||'(geen adres)')+(k.opdracht && !k.schade_dossiernummer ? ' · <span style="color:var(--accent-dark);font-weight:600;">'+escapeHtml(k.opdracht)+'</span>' : '')+'</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="klant-datum">'+datum+'</span>'+routeBtn+'<button class="btn btn-danger" style="height:30px;padding:0 10px;font-size:12px;" onclick="event.stopPropagation();verwijderKlant(\''+k.id+'\')">Verwijder</button></div></div>';
   }).join('');
 }
 
