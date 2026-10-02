@@ -423,6 +423,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
     <button class="tab" onclick="switchTab('typevloer')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="15" width="18" height="4" rx="1"/></svg></span> Type vloer</button>
     <button class="tab" onclick="switchTab('controle')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20"/><path d="M7.5 10l1.8 1.8L13 8"/></svg></span> Controle</button>
     <button class="tab" onclick="switchTab('vloer')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="1"/><path d="M7 9v2M11 9v3M15 9v2M19 9v3"/></svg></span> Vloer</button>
+    <button class="tab" id="tab-extra" style="display:none;" onclick="switchTab('extra')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="1"/><path d="M7 9v2M11 9v3M15 9v2"/><path d="M19 3v4M17 5h4"/></svg></span> Extra materiaal</button>
     <button class="tab" onclick="switchTab('plint')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="11" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/></svg></span> Plinten</button>
     <button class="tab" onclick="switchTab('afdek')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="10" height="18" rx="1"/><circle cx="13.3" cy="12" r="0.9" fill="currentColor" stroke="none"/></svg></span> Afdeklatten</button>
     <button class="tab" onclick="switchTab('profielen')"><span class="tab-ico"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2 2.8-2.8Z"/></svg></span> Profielen</button>
@@ -717,6 +718,13 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <option>Parketmeester</option>
       </select>
     </div>
+    <div class="field" id="hout-nodig-veld" style="display:none;margin-top:8px;"><label>Hout nodig?</label>
+      <select id="naw-hout-nodig" onchange="updateExtraMateriaalZichtbaar()">
+        <option value="">— Selecteer —</option>
+        <option value="ja">Ja</option>
+        <option value="nee">Nee</option>
+      </select>
+    </div>
   </div>
   <div class="card" id="schade-card" style="display:none;">
     <p class="section-title">Parketmeester — CUF-bestand</p>
@@ -940,6 +948,70 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('plint')">Naar plinten →</button></div>
 </div>
 
+<!-- EXTRA MATERIAAL (hout voor renovatie / aanheling / schade) -->
+<div class="panel" id="panel-extra">
+  <div class="card" style="margin-bottom:12px;">
+    <div class="field" style="margin-bottom:0;"><label>Omschrijving materiaal</label><input type="text" id="em-omschrijving" placeholder="bijv. Eiken 15/4x180 rustiek, geolied naturel" /></div>
+  </div>
+  <div class="rij-form">
+    <div class="form-row-5">
+      <div class="field"><label>Verdieping</label>
+        <select id="em-verdieping" onchange="checkVerdiepingOv('em')">
+          <option value="">— Geen —</option>
+          <option>Begane grond</option>
+          <option>1e verdieping</option>
+          <option>2e verdieping</option>
+          <option>Zolder</option>
+          <option>Kelder</option>
+          <option>Overige</option>
+        </select>
+      </div>
+      <div class="field"><label>Ruimte / kamer</label><input type="text" id="em-naam" placeholder="bijv. Woonkamer" /></div>
+      <div class="field"><label>Lengte (m)</label><input type="number" id="em-lengte" placeholder="0.00" step="0.01" min="0" oninput="upEmP()" /></div>
+      <div class="field"><label>Breedte (m)</label><input type="number" id="em-breedte" placeholder="0.00" step="0.01" min="0" oninput="upEmP()" /></div>
+      <div class="field"><label>Oppervlakte</label><input type="text" id="em-preview" placeholder="- m2" readonly /></div>
+      <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-primary" onclick="voegExtraVloerToe()">+ Voeg toe</button></div>
+    </div>
+    <div class="ovveld" id="em-verdieping-overig-veld"><input type="text" id="em-verdieping-overig" placeholder="Omschrijf verdieping..." style="margin-top:6px;" /></div>
+    <div class="snelknoppen">
+      <span style="font-size:11px;color:#aaa;align-self:center;">Snelkeuze:</span>
+      <button class="snelknop" onclick="vulK('em-naam','Woonkamer')">Woonkamer</button>
+      <button class="snelknop" onclick="vulK('em-naam','Slaapkamer')">Slaapkamer</button>
+      <button class="snelknop" onclick="vulK('em-naam','Hal')">Hal</button>
+      <button class="snelknop" onclick="vulK('em-naam','Keuken')">Keuken</button>
+      <button class="snelknop" onclick="vulK('em-naam','Overloop')">Overloop</button>
+      <button class="snelknop" onclick="vulK('em-naam','Studeerkamer')">Studeerkamer</button>
+    </div>
+  </div>
+  <div id="em-container"></div>
+
+  <div class="rij-form" style="border-color:#fde8e8;background:#fff8f8;">
+    <p style="font-size:11px;font-weight:600;color:#E24B4A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Aftrek (bijv. kookeiland, trap, pilaar)</p>
+    <div class="form-row-4">
+      <div class="field"><label>Omschrijving</label><input type="text" id="ema-naam" placeholder="bijv. Kookeiland" /></div>
+      <div class="field"><label>Lengte (m)</label><input type="number" id="ema-lengte" placeholder="0.00" step="0.01" min="0" oninput="upEmAP()" /></div>
+      <div class="field"><label>Breedte (m)</label><input type="number" id="ema-breedte" placeholder="0.00" step="0.01" min="0" oninput="upEmAP()" /></div>
+      <div class="field"><label>Oppervlakte</label><input type="text" id="ema-preview" placeholder="- m2" readonly /></div>
+      <div class="field"><label style="visibility:hidden;">-</label><button class="btn btn-danger" onclick="voegExtraAftrekToe()">- Voeg toe</button></div>
+    </div>
+  </div>
+  <div id="em-aftrek-container"></div>
+
+  <div class="totaal-card">
+    <div>
+      <div class="totaal-label">Totale oppervlakte extra materiaal</div>
+      <div class="totaal-waarde" id="em-totaal">0,00 m2</div>
+      <div style="font-size:13px;color:#E24B4A;margin-top:2px;">Aftrek: <span id="em-aftrek">0,00 m2</span></div>
+      <div style="font-size:13px;color:#B5651D;margin-top:2px;font-weight:600;">Netto: <span id="em-netto">0,00 m2</span></div>
+    </div>
+    <div style="text-align:right;">
+      <div class="afval-row"><label>Afval %</label><input type="number" id="em-afval" value="10" min="0" max="50" style="width:60px;" oninput="renderExtraMateriaal()" /></div>
+      <div style="font-size:13px;color:#888;margin-top:4px;">Incl. afval: <span id="em-totaal-afval" style="font-weight:600;">0,00 m2</span></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('plint')">Naar plinten →</button></div>
+</div>
+
 <!-- OPMETING PLINTEN -->
 <div class="panel" id="panel-plint">
   <div id="banner-plint" style="display:none;" class="banner"></div>
@@ -1084,7 +1156,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       </div>
       <div class="field"><label>Omschrijving (optioneel)</label><input type="text" id="foto-omschrijving" placeholder="bijv. Scheur bij het raam" /></div>
     </div>
-    <input type="file" accept="image/*" id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
+    <input type="file" accept="image/*" multiple id="foto-input" onchange="uploadFoto(this)" style="width:100%;font-size:14px;" />
     <p style="font-size:12px;color:#888;margin-top:8px;">Kies of maak een foto — deze wordt direct opgeslagen bij deze klant. Sla de klant eerst één keer op (bijvoorbeeld door naam en adres in te vullen) voordat je hier foto's toevoegt. Ruimtes komen uit de tab "Vloer" — voeg daar eerst de ruimtes toe.</p>
   </div>
   <div id="foto-lijst"></div>
@@ -1099,6 +1171,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div class="card"><p class="section-title">Type vloer</p><div id="sam-vloer-type"></div></div>
   <div class="card"><p class="section-title">Vloercontrole</p><div id="sam-controle"></div></div>
   <div class="card"><p class="section-title">Opmeting vloer</p><div id="sam-vloer-rijen"></div><div id="sam-vloer-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
+  <div class="card" id="sam-extra-card" style="display:none;"><p class="section-title">Extra materiaal</p><div id="sam-extra-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-extra-rijen"></div><div id="sam-extra-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
   <div class="card"><p class="section-title">Opmeting plinten</p><div id="sam-plint-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-plint-rijen"></div><div id="sam-plint-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
   <div class="card"><p class="section-title">Afdeklatten</p><div id="sam-afdek-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-afdek-rijen"></div><div id="sam-afdek-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
   <div class="card"><p class="section-title">Profielen</p><div id="sam-profiel-spec" style="font-size:13px;color:#666;margin-bottom:8px;"></div><div id="sam-profiel-rijen"></div><div id="sam-profiel-totaal" style="margin-top:10px;font-size:15px;font-weight:600;border-top:1px solid #e5e5e5;padding-top:10px;"></div></div>
@@ -1601,10 +1674,11 @@ const VELD_GROEPEN = {
   checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld', checklist_legger_dagen:'Vloerenlegger ingedeeld',
   checklist_bezorgschema:'Bezorgschema', checklist_bezorgschema_datum:'Bezorgschema',
   checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte',
+  hout_nodig:'Type opdracht', extra_materiaal:'Extra materiaal',
   schade_dossiernummer:'Schade', schade_status:'Schade', schade_cuf:'Schade'
 };
 const VELD_GROEPEN_VOLGORDE = [
-  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Schade','Notities',
+  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Schade','Extra materiaal','Notities',
   'Type vloer','Houtsoort','Sortering','Leverancier','Legwijze','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtmetingen','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
@@ -1719,7 +1793,7 @@ function updateBanners() {
   });
 }
 
-const TABS = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
+const TABS = ['naw','typevloer','controle','vloer','extra','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
 const CHECKLIST_KEYS = ['vloerBesteld','plintenBesteld','ondervloerBesteld','lijmBesteld','afdeklattenBesteld','olieBesteld','leggerIngedeeld','bezorgschema','offerteGemaakt'];
 const CHECKLIST_DB_COLS = {
   vloerBesteld: 'checklist_vloer_besteld', plintenBesteld: 'checklist_plinten_besteld', ondervloerBesteld: 'checklist_ondervloer_besteld',
@@ -1839,7 +1913,7 @@ function switchTab(name) {
 }
 // --- Vereenvoudigde navigatie: toont het beginscherm of de subnavigatie met "Terug naar start",
 //     afhankelijk van welk scherm actief is. Verandert niets aan switchTab() zelf, alleen aan wat je er omheen ziet. ---
-const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
+const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','extra','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
 const _origSwitchTab = switchTab;
 switchTab = function(name) {
   _origSwitchTab(name);
@@ -2314,6 +2388,141 @@ sbFetch = async function(method, path, body) {
     if (!schadeKolommenOntbreken && SCHADE_KOLOMMEN.some(c => String(e.message).includes(c))) {
       schadeKolommenOntbreken = true;
       toast('Let op: de schadekolommen ontbreken nog in Supabase — schadegegevens worden nog niet bewaard.', 6000);
+      return sbFetch(method, path, body);
+    }
+    throw e;
+  }
+};
+
+// --- Extra materiaal: hout voor renovatie / aanheling / schade. Zelfde opbouw als het tabblad Vloer. ---
+const HOUT_VRAAG_TYPES = ['Renovatie','Aanheling','Schade'];
+let extraVloeren = [], extraAftrekken = [];
+function extraMateriaalActief() { return HOUT_VRAAG_TYPES.indexOf(gv('naw-opdracht')) >= 0 && gv('naw-hout-nodig') === 'ja'; }
+function updateExtraMateriaalZichtbaar() {
+  const vraag = HOUT_VRAAG_TYPES.indexOf(gv('naw-opdracht')) >= 0;
+  const veld = document.getElementById('hout-nodig-veld');
+  if (veld) veld.style.display = vraag ? 'block' : 'none';
+  const tab = document.getElementById('tab-extra');
+  if (tab) tab.style.display = extraMateriaalActief() ? '' : 'none';
+}
+function upEmP() {
+  const l = parseFloat(document.getElementById('em-lengte').value), b = parseFloat(document.getElementById('em-breedte').value);
+  sv('em-preview', (!isNaN(l)&&!isNaN(b)&&l>0&&b>0) ? fmt(l*b)+' m2' : '');
+}
+function upEmAP() {
+  const l = parseFloat(document.getElementById('ema-lengte').value), b = parseFloat(document.getElementById('ema-breedte').value);
+  sv('ema-preview', (!isNaN(l)&&!isNaN(b)&&l>0&&b>0) ? fmt(l*b)+' m2' : '');
+}
+function voegExtraVloerToe() {
+  const naam = gv('em-naam')||'Ruimte '+(extraVloeren.length+1);
+  const verdieping = gv('em-verdieping') === 'Overige' ? (gv('em-verdieping-overig')||'Overige') : gv('em-verdieping');
+  const l = parseFloat(document.getElementById('em-lengte').value), b = parseFloat(document.getElementById('em-breedte').value);
+  if (isNaN(l)||isNaN(b)||l<=0||b<=0) return;
+  extraVloeren.push({ id: Date.now(), naam, verdieping, lengte: l, breedte: b, opp: l*b });
+  sv('em-lengte',''); sv('em-breedte',''); sv('em-preview','');
+  renderExtraMateriaal(); document.getElementById('em-lengte').focus();
+}
+function voegExtraAftrekToe() {
+  const naam = gv('ema-naam')||'Aftrek';
+  const l = parseFloat(document.getElementById('ema-lengte').value), b = parseFloat(document.getElementById('ema-breedte').value);
+  if (isNaN(l)||isNaN(b)||l<=0||b<=0) return;
+  extraAftrekken.push({ id: Date.now(), naam, lengte: l, breedte: b, opp: l*b });
+  sv('ema-naam',''); sv('ema-lengte',''); sv('ema-breedte',''); sv('ema-preview','');
+  renderExtraMateriaal();
+}
+function verwijderExtraVloer(id) { extraVloeren = extraVloeren.filter(k => k.id!==id); renderExtraMateriaal(); planAutosave(); }
+function verwijderExtraAftrek(id) { extraAftrekken = extraAftrekken.filter(k => k.id!==id); renderExtraMateriaal(); planAutosave(); }
+function extraTotalen() {
+  const totaal = extraVloeren.reduce((s,k) => s+k.opp, 0);
+  const aftrek = extraAftrekken.reduce((s,k) => s+k.opp, 0);
+  const netto = Math.max(0, totaal - aftrek);
+  const afval = Math.max(0, parseFloat(document.getElementById('em-afval').value)||0);
+  return { totaal, aftrek, netto, afval, inclAfval: netto*(1+afval/100) };
+}
+function renderExtraMateriaal() {
+  const c = document.getElementById('em-container');
+  if (!c) return;
+  const t = extraTotalen();
+  document.getElementById('em-totaal').textContent = fmt(t.totaal)+' m2';
+  document.getElementById('em-aftrek').textContent = fmt(t.aftrek)+' m2';
+  document.getElementById('em-netto').textContent = fmt(t.netto)+' m2';
+  document.getElementById('em-totaal-afval').textContent = fmt(t.inclAfval)+' m2';
+  c.innerHTML = extraVloeren.length ? vloerVerdiepingGroepenHtml(extraVloeren, true).split('verwijderVloer(').join('verwijderExtraVloer(') : '<div class="leeg">Nog geen ruimtes toegevoegd.</div>';
+  document.getElementById('em-aftrek-container').innerHTML = !extraAftrekken.length ? '' :
+    extraAftrekken.map(k => '<div class="data-rij" style="border-color:#fde8e8;"><div class="naam" style="color:#E24B4A;">- '+escapeHtml(k.naam)+'</div><div class="maat">'+fmt(k.lengte)+' m</div><div class="maat">'+fmt(k.breedte)+' m</div><div class="opp" style="color:#E24B4A;">-'+fmt(k.opp)+' m2</div><button class="del-btn" onclick="verwijderExtraAftrek('+k.id+')">X</button></div>').join('');
+}
+function extraMateriaalJson() {
+  if (!extraVloeren.length && !extraAftrekken.length && !gv('em-omschrijving')) return '';
+  const t = extraTotalen();
+  return JSON.stringify({
+    omschrijving: gv('em-omschrijving'),
+    ruimtes: extraVloeren.map(k => ({ naam:k.naam, verdieping:k.verdieping||'', lengte:k.lengte, breedte:k.breedte, opp:k.opp })),
+    aftrek: extraAftrekken.map(k => ({ naam:k.naam, lengte:k.lengte, breedte:k.breedte, opp:k.opp })),
+    afval: t.afval, netto: Math.round(t.netto*100)/100, incl_afval: Math.round(t.inclAfval*100)/100
+  });
+}
+function laadExtraMateriaal(json) {
+  let d = null;
+  try { d = json ? JSON.parse(json) : null; } catch(e) { d = null; }
+  let n = Date.now();
+  extraVloeren = (d && d.ruimtes || []).map(k => ({ ...k, id: n++ }));
+  extraAftrekken = (d && d.aftrek || []).map(k => ({ ...k, id: n++ }));
+  sv('em-omschrijving', d ? d.omschrijving : '');
+  sv('em-afval', d && d.afval != null ? String(d.afval) : '10');
+  renderExtraMateriaal();
+}
+// Opslaan / laden / leegmaken
+const _bouwOpslaanDataZonderExtra = bouwOpslaanData;
+bouwOpslaanData = function() {
+  const d = _bouwOpslaanDataZonderExtra();
+  d.hout_nodig = gv('naw-hout-nodig');
+  d.extra_materiaal = extraMateriaalJson();
+  return d;
+};
+const _resetFormulierZonderExtra = resetFormulier;
+resetFormulier = function() {
+  _resetFormulierZonderExtra();
+  sv('naw-hout-nodig', '');
+  laadExtraMateriaal('');
+  sv('em-naam',''); sv('em-verdieping',''); sv('em-lengte',''); sv('em-breedte',''); sv('em-preview','');
+  updateExtraMateriaalZichtbaar();
+};
+const _laadKlantZonderExtra = laadKlant;
+laadKlant = async function(id) {
+  await _laadKlantZonderExtra(id);
+  const k = vorigeKlantStand;
+  if (!k || String(k.id) !== String(id)) return;
+  sv('naw-hout-nodig', k.hout_nodig || '');
+  laadExtraMateriaal(k.extra_materiaal || '');
+  updateExtraMateriaalZichtbaar();
+};
+document.addEventListener('change', e => { if (e.target && e.target.id === 'naw-opdracht') updateExtraMateriaalZichtbaar(); });
+// Samenvatting
+const _renderSamenvattingZonderExtra = renderSamenvatting;
+renderSamenvatting = function() {
+  _renderSamenvattingZonderExtra();
+  const kaart = document.getElementById('sam-extra-card');
+  if (!kaart) return;
+  const tonen = extraMateriaalActief() && (extraVloeren.length || gv('em-omschrijving'));
+  kaart.style.display = tonen ? 'block' : 'none';
+  if (!tonen) return;
+  const t = extraTotalen();
+  document.getElementById('sam-extra-spec').textContent = gv('em-omschrijving');
+  document.getElementById('sam-extra-rijen').innerHTML = extraVloeren.length ? vloerVerdiepingGroepenHtml(extraVloeren, false) : '<span style="color:#bbb;font-size:14px;">Geen ruimtes ingevoerd</span>';
+  document.getElementById('sam-extra-totaal').innerHTML = 'Bruto: '+fmt(t.totaal)+' m2' + (extraAftrekken.length ? ' &nbsp;|&nbsp; Aftrek: <span style="color:#E24B4A">-'+fmt(t.aftrek)+' m2</span> &nbsp;|&nbsp; Netto: '+fmt(t.netto)+' m2' : '') + ' &nbsp;|&nbsp; Incl. '+t.afval+'% afval: <span style="color:#B5651D">'+fmt(t.inclAfval)+' m2</span>';
+};
+// Vangnet: werkt ook zolang de kolommen nog niet in Supabase bestaan
+const EXTRA_KOLOMMEN = ['hout_nodig','extra_materiaal'];
+let extraKolommenOntbreken = false;
+const _sbFetchZonderExtraVangnet = sbFetch;
+sbFetch = async function(method, path, body) {
+  if (extraKolommenOntbreken && body && typeof body === 'object' && !Array.isArray(body)) { body = { ...body }; EXTRA_KOLOMMEN.forEach(c => delete body[c]); }
+  try {
+    return await _sbFetchZonderExtraVangnet(method, path, body);
+  } catch(e) {
+    if (!extraKolommenOntbreken && EXTRA_KOLOMMEN.some(c => String(e.message).includes(c))) {
+      extraKolommenOntbreken = true;
+      toast('Let op: kolommen voor "extra materiaal" ontbreken nog in Supabase — dit wordt nog niet bewaard.', 6000);
       return sbFetch(method, path, body);
     }
     throw e;
@@ -3095,38 +3304,49 @@ function verkleinFoto(file, maxAfmeting, kwaliteit) {
   });
 }
 async function uploadFoto(inputEl) {
-  const file = inputEl.files[0];
-  if (!file) return;
+  const bestanden = Array.from(inputEl.files || []);
+  if (!bestanden.length) return;
   if (!huidigId) { toast('Sla de klant eerst op voordat je een foto toevoegt', 3000); inputEl.value = ''; return; }
-  if (!file.type.startsWith('image/')) { toast('Alleen afbeeldingen zijn toegestaan', 3000); inputEl.value = ''; return; }
+  const afbeeldingen = bestanden.filter(f => f.type.startsWith('image/'));
+  if (!afbeeldingen.length) { toast('Alleen afbeeldingen zijn toegestaan', 3000); inputEl.value = ''; return; }
   const omschrijving = gv('foto-omschrijving');
   const ruimte = gv('foto-ruimte');
-  const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_').replace(/\.\w+$/, '') + '.jpg';
-  const pad = 'fotos/' + huidigId + '/' + Date.now() + '-' + veiligeNaam;
-  toast('Foto verwerken...', 8000);
+  const n = afbeeldingen.length;
+  let gelukt = 0, mislukt = 0, laatsteFout = '';
+  inputEl.disabled = true;
   try {
-    let uploadBestand = file;
-    try {
-      uploadBestand = await verkleinFoto(file, 1600, 0.8);
-    } catch (verkleinFout) {
-      uploadBestand = file; // als verkleinen om wat voor reden dan ook mislukt, upload gewoon het origineel
+    for (let i = 0; i < n; i++) {
+      const file = afbeeldingen[i];
+      const voortgang = n > 1 ? ' ('+(i+1)+' van '+n+')' : '';
+      try {
+        const veiligeNaam = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_').replace(/\.\w+$/, '') + '.jpg';
+        const pad = 'fotos/' + huidigId + '/' + Date.now() + '-' + i + '-' + veiligeNaam;
+        toast('Foto verwerken'+voortgang+'...', 8000);
+        let uploadBestand = file;
+        try { uploadBestand = await verkleinFoto(file, 1600, 0.8); }
+        catch (verkleinFout) { uploadBestand = file; } // als verkleinen mislukt, upload gewoon het origineel
+        toast('Foto uploaden'+voortgang+'...', 8000);
+        const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
+          method: 'POST',
+          headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+          body: uploadBestand
+        });
+        if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
+        const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
+        fotos.push({ id: Date.now() + i, naam: omschrijving||'', ruimte: ruimte||'', url, pad });
+        gelukt++;
+        renderFotos();
+      } catch(e) {
+        mislukt++; laatsteFout = e.message;
+      }
     }
-    toast('Foto uploaden...', 8000);
-    const res = await fetch(SB_URL + '/storage/v1/object/' + PDF_BUCKET + '/' + pad, {
-      method: 'POST',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + await zorgVoorGeldigeSessie(), 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
-      body: uploadBestand
-    });
-    if (!res.ok) throw new Error((await res.text()) || ('HTTP '+res.status));
-    const url = SB_URL + '/storage/v1/object/public/' + PDF_BUCKET + '/' + pad;
-    fotos.push({ id: Date.now(), naam: omschrijving||'', ruimte: ruimte||'', url, pad });
-    sv('foto-omschrijving', '');
-    renderFotos();
-    toast('Foto toegevoegd!');
-    await autoOpslaan();
-  } catch(e) {
-    toast('Uploaden mislukt: ' + e.message, 4000);
+    if (gelukt) { sv('foto-omschrijving', ''); await autoOpslaan(); }
+    if (!mislukt) toast(gelukt === 1 ? 'Foto toegevoegd!' : gelukt+' foto\'s toegevoegd!');
+    else if (gelukt) toast(gelukt+' foto\'s toegevoegd, '+mislukt+' mislukt ('+laatsteFout+')', 5000);
+    else toast('Uploaden mislukt: '+laatsteFout, 4000);
+    if (bestanden.length > n) toast((bestanden.length - n)+' bestand(en) overgeslagen: geen afbeelding', 4000);
   } finally {
+    inputEl.disabled = false;
     inputEl.value = '';
   }
 }
