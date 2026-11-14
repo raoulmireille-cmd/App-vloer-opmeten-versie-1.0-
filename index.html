@@ -304,6 +304,20 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .l{ font-size:11px; font-weight:600; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.03em; }
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
+.mail-item{ border:1px solid #e8e8e8; border-radius:10px; padding:10px 12px; margin-bottom:8px; background:#fff; }
+.mail-item .mail-kop{ display:flex; align-items:baseline; gap:8px; cursor:pointer; }
+.mail-item .mail-onderwerp{ font-weight:600; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mail-item .mail-meta{ font-size:12px; color:#888; white-space:nowrap; }
+.mail-item .mail-richting{ font-size:11px; font-weight:700; border-radius:6px; padding:1px 6px; white-space:nowrap; }
+.mail-item .mail-richting.in{ background:#E8F3EF; color:#1D7A5C; }
+.mail-item .mail-richting.uit{ background:#EAF0FB; color:#3B67C4; }
+.mail-item .mail-voorbeeld{ font-size:13px; color:#666; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.mail-item .mail-tekst{ font-size:13px; color:#333; margin-top:8px; white-space:pre-wrap; word-break:break-word; border-top:1px solid #f0f0f0; padding-top:8px; }
+.mail-item .mail-acties{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+[data-theme="dark"] .mail-item{ background:#1B2129; border-color:#2B333D; }
+[data-theme="dark"] .mail-item .mail-tekst{ color:#D5DCE3; border-color:#2B333D; }
+[data-theme="dark"] .mail-item .mail-voorbeeld{ color:#9AA5B1; }
+[data-theme="dark"] #mail-hint{ background:#3A2A1C; color:#F2C79B; }
 .schade-badge{ display:inline-block; font-size:11px; font-weight:600; color:#B5651D; background:#FBF1E7; border-radius:6px; padding:1px 7px; margin-left:6px; vertical-align:middle; }
 [data-theme="dark"] .schade-badge{ background:#3A2A1C; }
 [data-theme="dark"] .schade-tabel td{ border-color:#2B333D; }
@@ -737,6 +751,25 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   </div>
   <div class="card"><p class="section-title">Notities klant</p>
     <div class="field"><textarea id="naw-notities" placeholder="bijv. hond aanwezig, bellen voor 18:00..."></textarea></div>
+  </div>
+  <div class="card" id="mail-card">
+    <div class="ov-kop"><p class="section-title">E-mails / correspondentie</p><span id="mail-aantal" style="font-size:12px;color:#888;"></span></div>
+    <div class="field" style="margin-bottom:8px;">
+      <textarea id="mail-plak" rows="5" placeholder="Plak hier de tekst van de e-mail…" oninput="mailPlakGewijzigd()"></textarea>
+    </div>
+    <div id="mail-hint" style="display:none;font-size:13px;margin:-2px 0 8px;padding:8px 10px;border-radius:8px;background:#FBF1E7;color:#8A4B14;"></div>
+    <div class="grid2">
+      <div class="field"><label>Onderwerp</label><input type="text" id="mail-onderwerp" placeholder="bijv. Vraag over levering" /></div>
+      <div class="field"><label>Datum en tijd</label><input type="datetime-local" id="mail-datum" style="min-width:0;width:100%;" /></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="toggle-btns" style="margin:0;">
+        <button type="button" class="tbtn opt active" id="mail-richting-in" onclick="zetMailRichting('in')">↙ Ontvangen</button>
+        <button type="button" class="tbtn opt" id="mail-richting-uit" onclick="zetMailRichting('uit')">↗ Verstuurd</button>
+      </div>
+      <button type="button" class="btn btn-primary" style="margin-left:auto;" onclick="voegMailToe()">+ E-mail toevoegen</button>
+    </div>
+    <div id="mail-lijst" style="margin-top:14px;"></div>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('typevloer')">Naar type vloer →</button></div>
 </div>
@@ -1674,11 +1707,11 @@ const VELD_GROEPEN = {
   checklist_legger_ingedeeld:'Vloerenlegger ingedeeld', checklist_legger_naam:'Vloerenlegger ingedeeld', checklist_legger_datum:'Vloerenlegger ingedeeld', checklist_legger_dagen:'Vloerenlegger ingedeeld',
   checklist_bezorgschema:'Bezorgschema', checklist_bezorgschema_datum:'Bezorgschema',
   checklist_offerte:'Offerte', checklist_offerte_pdf:'Offerte',
-  hout_nodig:'Type opdracht', extra_materiaal:'Extra materiaal',
+  hout_nodig:'Type opdracht', extra_materiaal:'Extra materiaal', emails:'E-mails',
   schade_dossiernummer:'Schade', schade_status:'Schade', schade_cuf:'Schade'
 };
 const VELD_GROEPEN_VOLGORDE = [
-  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Schade','Extra materiaal','Notities',
+  'Bezoekdatum','Naam bezoeker','Naam','Telefoonnummer','E-mailadres','Adres','Type woning','Type opdracht','Schade','Extra materiaal','Notities','E-mails',
   'Type vloer','Houtsoort','Sortering','Leverancier','Legwijze','Patroon','Afmeting','Bijzonderheden vloer','Bewerkingen','Afwerking',
   'Constructievloer','Vloerverwarming','Ondervloer','Luchtvochtigheid','Vochtmetingen','Krastest','Vlakte van de vloer',
   'Schoon opgeleverd','Scheuren','Opstartprotocol','Opmerkingen controle','Foto\'s',
@@ -2528,6 +2561,177 @@ sbFetch = async function(method, path, body) {
     throw e;
   }
 };
+
+// --- E-mails / correspondentie per klant: e-mailtekst plakken en bewaren als tijdlijn ---
+let klantMails = [];
+let mailRichting = 'in';
+const EIGEN_MAIL_DOMEIN = 'parketspecialistgouda.nl';
+const NL_MAANDEN = { jan:1, feb:2, mrt:3, maa:3, apr:4, mei:5, jun:6, jul:7, aug:8, sep:9, okt:10, nov:11, dec:12 };
+function mailNuLokaal() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+function mailTwee(n) { return String(n).padStart(2,'0'); }
+function mailLeesDatum(t) {
+  if (!t) return '';
+  let m = t.match(/(\d{1,2})\s+(jan|feb|mrt|maa|apr|mei|jun|jul|aug|sep|okt|nov|dec)[a-z.]*\s+(\d{4})(?:[^\d\n]{1,8}(\d{1,2})[:.](\d{2}))?/i);
+  if (m) return m[3]+'-'+mailTwee(NL_MAANDEN[m[2].toLowerCase().slice(0,3)])+'-'+mailTwee(m[1])+'T'+mailTwee(m[4]||9)+':'+(m[5]||'00');
+  m = t.match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:[^\d\n]{1,8}(\d{1,2})[:.](\d{2}))?/);
+  if (m) return m[3]+'-'+mailTwee(m[2])+'-'+mailTwee(m[1])+'T'+mailTwee(m[4]||9)+':'+(m[5]||'00');
+  const d = new Date(t);
+  if (!isNaN(d)) { d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+  return '';
+}
+function mailKoppen(tekst) {
+  // Leest kopregels zoals "Van:", "Onderwerp:", "Datum:" (ook Engels) uit geplakte tekst
+  const k = {};
+  const zoek = (namen) => { const r = new RegExp('^\\s*(?:'+namen+')\\s*:\\s*(.+)$', 'im'); const m = tekst.match(r); return m ? m[1].trim() : ''; };
+  k.van = zoek('Van|From|Afzender');
+  k.aan = zoek('Aan|To');
+  k.onderwerp = zoek('Onderwerp|Subject');
+  k.datum = mailLeesDatum(zoek('Datum|Date|Verzonden|Sent|Verstuurd'));
+  k.adressen = Array.from(new Set((tekst.match(/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/gi) || []).map(a => a.toLowerCase())));
+  const vanAdres = (k.van.match(/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i) || [''])[0].toLowerCase();
+  k.vanAdres = vanAdres;
+  return k;
+}
+function zetMailRichting(r) {
+  mailRichting = r;
+  document.getElementById('mail-richting-in').classList.toggle('active', r === 'in');
+  document.getElementById('mail-richting-uit').classList.toggle('active', r === 'uit');
+}
+function mailPlakGewijzigd() {
+  const tekst = gv('mail-plak');
+  const hint = document.getElementById('mail-hint');
+  if (!tekst.trim()) { hint.style.display = 'none'; return; }
+  const k = mailKoppen(tekst);
+  if (k.onderwerp && !gv('mail-onderwerp')) sv('mail-onderwerp', k.onderwerp);
+  if (k.datum) sv('mail-datum', k.datum);
+  if (k.vanAdres) zetMailRichting(k.vanAdres.endsWith('@'+EIGEN_MAIL_DOMEIN) ? 'uit' : 'in');
+  // Hoort deze mail bij een andere klant?
+  const vreemd = k.adressen.filter(a => !a.endsWith('@'+EIGEN_MAIL_DOMEIN));
+  const eigenAdres = (gv('naw-email')||'').toLowerCase().trim();
+  const ander = (klantenData||[]).find(kl => kl.email && String(kl.id) !== String(huidigId) && vreemd.includes(String(kl.email).toLowerCase().trim()));
+  let html = '';
+  if (ander && !vreemd.includes(eigenAdres)) {
+    const naam = ((ander.voornaam||'')+' '+(ander.achternaam||'')).trim() || '(geen naam)';
+    html = '⚠️ Het e-mailadres in deze mail hoort bij <b>'+escapeHtml(naam)+'</b>. <a href="#" onclick="event.preventDefault();openMailBijKlant(\''+ander.id+'\')">Bij die klant toevoegen →</a>';
+  } else if (!eigenAdres && vreemd.length) {
+    html = 'Deze klant heeft nog geen e-mailadres. <a href="#" onclick="event.preventDefault();sv(\'naw-email\',\''+escapeHtml(vreemd[0])+'\');planAutosave();mailPlakGewijzigd();">'+escapeHtml(vreemd[0])+' overnemen</a>';
+  }
+  hint.innerHTML = html;
+  hint.style.display = html ? 'block' : 'none';
+}
+async function openMailBijKlant(id) {
+  // Neemt de geplakte mail mee naar de juiste klant
+  const bewaar = { tekst: gv('mail-plak'), onderwerp: gv('mail-onderwerp'), datum: gv('mail-datum'), richting: mailRichting };
+  await flushPendingAutosave();
+  await laadKlant(id);
+  switchTab('naw');
+  sv('mail-plak', bewaar.tekst); sv('mail-onderwerp', bewaar.onderwerp); sv('mail-datum', bewaar.datum); zetMailRichting(bewaar.richting);
+  mailPlakGewijzigd();
+  document.getElementById('mail-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast('Klant geopend — controleer en klik op "+ E-mail toevoegen"', 4000);
+}
+function voegMailToe() {
+  const tekst = gv('mail-plak').trim();
+  if (!tekst) { toast('Plak eerst de tekst van de e-mail', 2500); return; }
+  const k = mailKoppen(tekst);
+  klantMails.push({
+    id: Date.now(),
+    datum: gv('mail-datum') || mailNuLokaal(),
+    richting: mailRichting,
+    van: k.van || '',
+    onderwerp: gv('mail-onderwerp') || k.onderwerp || '',
+    tekst,
+    toegevoegd: new Date().toISOString()
+  });
+  sv('mail-plak', ''); sv('mail-onderwerp', ''); sv('mail-datum', mailNuLokaal()); zetMailRichting('in');
+  document.getElementById('mail-hint').style.display = 'none';
+  renderMails();
+  if (heeftOpnameInhoud()) { planAutosave(); toast('E-mail toegevoegd'); }
+  else toast('E-mail toegevoegd — vul nog naam of adres in om op te slaan', 4000);
+}
+async function verwijderMail(id) {
+  const ok = await bevestig('Deze e-mail verwijderen bij deze klant?');
+  if (!ok) return;
+  klantMails = klantMails.filter(m => m.id !== id);
+  renderMails(); planAutosave();
+}
+function wisselMail(id) {
+  const el = document.getElementById('mail-'+id);
+  if (el) el.classList.toggle('open');
+  const t = el && el.querySelector('.mail-tekst'), v = el && el.querySelector('.mail-voorbeeld');
+  if (t) t.style.display = el.classList.contains('open') ? 'block' : 'none';
+  if (v) v.style.display = el.classList.contains('open') ? 'none' : '';
+}
+async function kopieerMail(id) {
+  const m = klantMails.find(x => x.id === id);
+  if (!m) return;
+  try { await navigator.clipboard.writeText(m.tekst); toast('Tekst gekopieerd'); } catch(e) { toast('Kopiëren lukt niet in deze browser', 3000); }
+}
+function renderMails() {
+  const lijst = document.getElementById('mail-lijst');
+  if (!lijst) return;
+  const aantal = document.getElementById('mail-aantal');
+  if (aantal) aantal.textContent = klantMails.length ? klantMails.length + (klantMails.length === 1 ? ' e-mail' : ' e-mails') : '';
+  if (!klantMails.length) { lijst.innerHTML = '<div class="ov-leeg">Nog geen e-mails bij deze klant.</div>'; return; }
+  const gesorteerd = klantMails.slice().sort((a,b) => (b.datum||'') < (a.datum||'') ? -1 : 1);
+  lijst.innerHTML = gesorteerd.map(m => {
+    const d = m.datum ? new Date(m.datum) : null;
+    const datumTekst = d && !isNaN(d) ? d.toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric' }) + ' ' + mailTwee(d.getHours())+':'+mailTwee(d.getMinutes()) : '';
+    const voorbeeld = m.tekst.replace(/^\s*(Van|From|Aan|To|Onderwerp|Subject|Datum|Date|Verzonden|Sent|Cc|Bcc)\s*:.*$/gim, '').replace(/\s+/g, ' ').trim().slice(0, 220);
+    return '<div class="mail-item" id="mail-'+m.id+'">'
+      + '<div class="mail-kop" onclick="wisselMail('+m.id+')"><span class="mail-richting '+(m.richting === 'uit' ? 'uit">↗ Verstuurd' : 'in">↙ Ontvangen')+'</span>'
+      + '<span class="mail-onderwerp">'+escapeHtml(m.onderwerp || '(geen onderwerp)')+'</span><span class="mail-meta">'+escapeHtml(datumTekst)+'</span></div>'
+      + (m.van ? '<div class="mail-meta" style="margin-top:2px;">Van: '+escapeHtml(m.van)+'</div>' : '')
+      + '<div class="mail-voorbeeld">'+escapeHtml(voorbeeld)+'</div>'
+      + '<div class="mail-tekst" style="display:none;">'+escapeHtml(m.tekst)
+      + '<div class="mail-acties"><button type="button" class="btn" onclick="kopieerMail('+m.id+')">Kopiëren</button><button type="button" class="del-btn" title="Verwijderen" onclick="verwijderMail('+m.id+')">X</button></div></div>'
+      + '</div>';
+  }).join('');
+}
+// Opslaan / laden / leegmaken
+const _bouwOpslaanDataZonderMails = bouwOpslaanData;
+bouwOpslaanData = function() {
+  const d = _bouwOpslaanDataZonderMails();
+  d.emails = klantMails.length ? JSON.stringify(klantMails) : '';
+  return d;
+};
+const _resetFormulierZonderMails = resetFormulier;
+resetFormulier = function() {
+  _resetFormulierZonderMails();
+  klantMails = [];
+  sv('mail-plak', ''); sv('mail-onderwerp', ''); sv('mail-datum', mailNuLokaal()); zetMailRichting('in');
+  const h = document.getElementById('mail-hint'); if (h) h.style.display = 'none';
+  renderMails();
+};
+const _laadKlantZonderMails = laadKlant;
+laadKlant = async function(id) {
+  await _laadKlantZonderMails(id);
+  const k = vorigeKlantStand;
+  if (!k || String(k.id) !== String(id)) return;
+  try { klantMails = k.emails ? JSON.parse(k.emails) : []; } catch(e) { klantMails = []; }
+  if (!Array.isArray(klantMails)) klantMails = [];
+  sv('mail-plak', ''); sv('mail-onderwerp', ''); sv('mail-datum', mailNuLokaal()); zetMailRichting('in');
+  const h = document.getElementById('mail-hint'); if (h) h.style.display = 'none';
+  renderMails();
+};
+// Vangnet: werkt ook zolang de kolom 'emails' nog niet in Supabase bestaat
+let mailKolomOntbreekt = false;
+const _sbFetchZonderMailVangnet = sbFetch;
+sbFetch = async function(method, path, body) {
+  if (mailKolomOntbreekt && body && typeof body === 'object' && !Array.isArray(body)) { body = { ...body }; delete body.emails; }
+  try {
+    return await _sbFetchZonderMailVangnet(method, path, body);
+  } catch(e) {
+    if (!mailKolomOntbreekt && /'emails'|"emails"|\.emails\b|column emails/.test(String(e.message))) {
+      mailKolomOntbreekt = true;
+      toast('Let op: kolom "emails" ontbreekt nog in Supabase — e-mails worden nog niet bewaard.', 6000);
+      return sbFetch(method, path, body);
+    }
+    throw e;
+  }
+};
+document.addEventListener('DOMContentLoaded', () => { sv('mail-datum', mailNuLokaal()); renderMails(); });
+if (document.readyState !== 'loading') { try { sv('mail-datum', mailNuLokaal()); renderMails(); } catch(e) {} }
 
 // --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
 let huidigeGebruikerData = null;
