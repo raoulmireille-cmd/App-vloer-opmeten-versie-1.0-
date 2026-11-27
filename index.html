@@ -304,6 +304,12 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .l{ font-size:11px; font-weight:600; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.03em; }
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
+.mail-snel{ display:flex; align-items:center; gap:10px; cursor:pointer; padding:12px 14px; }
+.mail-snel:hover{ border-color:var(--accent); }
+.mail-snel-ico{ font-size:18px; color:var(--accent); flex-shrink:0; }
+.mail-snel-tekst{ flex:1; min-width:0; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mail-snel-tekst .sub{ color:#888; }
+.mail-snel-knop{ color:var(--accent); font-weight:600; font-size:13px; white-space:nowrap; flex-shrink:0; }
 .mail-item{ border:1px solid #e8e8e8; border-radius:10px; padding:10px 12px; margin-bottom:8px; background:#fff; }
 .mail-item .mail-kop{ display:flex; align-items:baseline; gap:8px; cursor:pointer; }
 .mail-item .mail-onderwerp{ font-weight:600; font-size:14px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -752,16 +758,10 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div class="card"><p class="section-title">Notities klant</p>
     <div class="field"><textarea id="naw-notities" placeholder="bijv. hond aanwezig, bellen voor 18:00..."></textarea></div>
   </div>
-  <div class="card" id="mail-card">
-    <div class="ov-kop">
-      <p class="section-title">E-mails / correspondentie</p>
-      <span style="display:flex;align-items:center;gap:8px;">
-        <span id="mail-aantal" style="font-size:12px;color:#888;"></span>
-        <button type="button" class="ov-link" onclick="laadKlantMails(huidigId, true)" title="Opnieuw ophalen">↻ Vernieuwen</button>
-      </span>
-    </div>
-    <div style="font-size:12px;color:#888;margin:-2px 0 10px;">Mails van en aan het e-mailadres van deze klant worden automatisch uit de mailbox opgehaald (ongeveer elke 15 minuten).</div>
-    <div id="mail-lijst"></div>
+  <div class="card mail-snel" id="mail-card" onclick="openMailPagina()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openMailPagina()">
+    <span class="mail-snel-ico">✉</span>
+    <span id="mail-samenvatting" class="mail-snel-tekst">E-mails / correspondentie</span>
+    <span class="mail-snel-knop">Bekijk →</span>
   </div>
   <div style="display:flex;justify-content:flex-end;margin-top:1rem;"><button class="btn" onclick="switchTab('typevloer')">Naar type vloer →</button></div>
 </div>
@@ -1398,6 +1398,23 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div id="agenda-inhoud"></div>
 </div>
 
+<!-- E-MAILS / CORRESPONDENTIE (bereikbaar via de regel in Klantgegevens) -->
+<div class="panel" id="panel-emails">
+  <div style="margin-bottom:12px;"><button type="button" class="btn" onclick="switchTab('naw')">← Terug naar klantgegevens</button></div>
+  <div class="card">
+    <div class="ov-kop">
+      <p class="section-title">E-mails / correspondentie</p>
+      <span style="display:flex;align-items:center;gap:8px;white-space:nowrap;">
+        <span id="mail-aantal" style="font-size:12px;color:#888;"></span>
+        <button type="button" class="ov-link" onclick="laadKlantMails(huidigId, true)" title="Opnieuw ophalen">↻ Vernieuwen</button>
+      </span>
+    </div>
+    <div id="mail-klantnaam" style="font-size:16px;font-weight:600;margin:-2px 0 4px;"></div>
+    <div style="font-size:12px;color:#888;margin:-2px 0 10px;">Mails van en aan het e-mailadres van deze klant worden automatisch uit de mailbox opgehaald (ongeveer elke 15 minuten).</div>
+    <div id="mail-lijst"></div>
+  </div>
+</div>
+
 <!-- PARKETMEESTER -->
 <div class="panel" id="panel-parketmeester">
   <div class="card">
@@ -1938,7 +1955,7 @@ function switchTab(name) {
 }
 // --- Vereenvoudigde navigatie: toont het beginscherm of de subnavigatie met "Terug naar start",
 //     afhankelijk van welk scherm actief is. Verandert niets aan switchTab() zelf, alleen aan wat je er omheen ziet. ---
-const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','extra','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester'];
+const OPNAME_PANELEN = ['naw','typevloer','controle','vloer','extra','plint','afdek','profielen','fotos','samenvatting','checklist','offerte','tarieven','parketmeester','emails'];
 const _origSwitchTab = switchTab;
 switchTab = function(name) {
   _origSwitchTab(name);
@@ -2603,7 +2620,25 @@ async function kopieerMail(id) {
   if (!m) return;
   try { await navigator.clipboard.writeText(m.tekst || ''); toast('Tekst gekopieerd'); } catch(e) { toast('Kopiëren lukt niet in deze browser', 3000); }
 }
+function renderMailSamenvatting() {
+  const el = document.getElementById('mail-samenvatting');
+  if (!el) return;
+  if (!huidigId) { el.innerHTML = '<b>E-mails</b> <span class="sub">· na opslaan van de klant</span>'; return; }
+  if (!klantMails.length) { el.innerHTML = '<b>Geen e-mails</b> <span class="sub">· ' + (gv('naw-email') ? 'nog niets gevonden voor dit adres' : 'vul eerst het e-mailadres in') + '</span>'; return; }
+  const m = klantMails[0];
+  const d = m.datum ? new Date(m.datum) : null;
+  const datum = d && !isNaN(d) ? d.toLocaleDateString('nl-NL', { day:'numeric', month:'short' }) : '';
+  el.innerHTML = '<b>' + klantMails.length + (klantMails.length === 1 ? ' e-mail' : ' e-mails') + '</b> <span class="sub">· laatste: ' + escapeHtml(datum) + (m.onderwerp ? ', "' + escapeHtml(m.onderwerp) + '"' : '') + '</span>';
+}
+function openMailPagina() {
+  const naam = ((gv('naw-voornaam')||'') + ' ' + (gv('naw-achternaam')||'')).trim();
+  const kn = document.getElementById('mail-klantnaam');
+  if (kn) kn.textContent = naam;
+  switchTab('emails');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 function renderMails() {
+  renderMailSamenvatting();
   const lijst = document.getElementById('mail-lijst');
   if (!lijst) return;
   const aantal = document.getElementById('mail-aantal');
@@ -2635,6 +2670,11 @@ resetFormulier = function() {
   mailLaadTeller++;
   klantMails = [];
   renderMails();
+};
+const _switchTabZonderMailPagina = switchTab;
+switchTab = function(name) {
+  _switchTabZonderMailPagina(name);
+  if (name === 'emails') { const t = document.querySelectorAll('.tab')[TABS.indexOf('naw')]; if (t) t.classList.add('active'); }
 };
 const _laadKlantZonderMails = laadKlant;
 laadKlant = async function(id) {
