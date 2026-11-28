@@ -335,6 +335,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .l{ font-size:11px; font-weight:600; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.03em; }
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
+.afspraak-heledag-aan .afspraak-tijdveld{ display:none; }
 .wie-bol{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 .cp-rij{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
 .cp-rij:last-child{ border-bottom:none; }
@@ -1592,9 +1593,14 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   <div class="confirm-box" style="max-width:380px;">
     <p class="confirm-titel" id="afspraak-titel-kop">Afspraak toevoegen</p>
     <div class="field" style="margin-bottom:10px;"><label>Titel</label><input type="text" id="afspraak-titel" placeholder="bijv. Terugbellen over offerte" /></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;margin:0 0 8px;cursor:pointer;"><input type="checkbox" id="afspraak-heledag" onchange="afspraakHeleDagGewijzigd()" style="width:18px;height:18px;" /> Hele dag</label>
+    <div class="grid2" style="margin-bottom:6px;">
+      <div class="field"><label>Begin</label><input type="date" id="afspraak-datum" onchange="afspraakBeginGewijzigd()" /></div>
+      <div class="field afspraak-tijdveld"><label>Begintijd (optioneel)</label><input type="time" id="afspraak-tijd" onchange="afspraakBeginGewijzigd()" /></div>
+    </div>
     <div class="grid2" style="margin-bottom:10px;">
-      <div class="field"><label>Datum</label><input type="date" id="afspraak-datum" /></div>
-      <div class="field"><label>Tijd (optioneel)</label><input type="time" id="afspraak-tijd" /></div>
+      <div class="field"><label>Eind</label><input type="date" id="afspraak-einddatum" /></div>
+      <div class="field afspraak-tijdveld"><label>Eindtijd (optioneel)</label><input type="time" id="afspraak-eindtijd" /></div>
     </div>
     <div class="field" style="margin-bottom:10px;"><label>Wie gaat? (optioneel)</label>
       <div class="toggle-btns" id="afspraak-wie" style="margin:0;">
@@ -2925,6 +2931,44 @@ if (document.readyState !== 'loading') { try { renderContactpersonen(); } catch(
 else document.addEventListener('DOMContentLoaded', () => renderContactpersonen());
 
 // Vangnet: afspraken opslaan werkt ook zolang de kolom 'email' in afspraken nog niet bestaat
+// --- Afspraken over meerdere dagen / hele dag ---
+let afspraakVorigeBegin = '';
+function afspraakDagen(begin, eind) {
+  const b = agendaParse(begin); if (!b) return [begin];
+  const e = agendaParse(eind || begin) || b;
+  const dagen = [];
+  for (let d = new Date(b); d <= e && dagen.length < 366; d.setDate(d.getDate() + 1)) dagen.push(agendaISO(d));
+  return dagen.length ? dagen : [begin];
+}
+function agendaKorteDag(iso) {
+  const d = agendaParse(iso); if (!d) return iso;
+  return AGENDA_DAG_VOL[d.getDay()].slice(0,2) + ' ' + d.getDate() + ' ' + d.toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '');
+}
+function zetAfspraakHeleDag(aan) {
+  document.getElementById('afspraak-heledag').checked = !!aan;
+  document.getElementById('afspraak-overlay').classList.toggle('afspraak-heledag-aan', !!aan);
+}
+function afspraakHeleDagGewijzigd() { zetAfspraakHeleDag(document.getElementById('afspraak-heledag').checked); }
+function afspraakBeginGewijzigd() {
+  // Einddatum schuift mee met de begindatum (zoals in Outlook)
+  const begin = gv('afspraak-datum'), eind = gv('afspraak-einddatum');
+  if (begin) {
+    if (!eind || eind === afspraakVorigeBegin || eind < begin) {
+      const bo = agendaParse(afspraakVorigeBegin), eo = agendaParse(eind);
+      if (bo && eo && eind !== afspraakVorigeBegin && eo >= bo) {
+        const duur = Math.round((eo - bo) / 86400000);
+        const n = agendaParse(begin); n.setDate(n.getDate() + duur); sv('afspraak-einddatum', agendaISO(n));
+      } else sv('afspraak-einddatum', begin);
+    }
+    afspraakVorigeBegin = begin;
+  }
+  // Eindtijd standaard een uur na de begintijd
+  const t = agendaMinuten(gv('afspraak-tijd'));
+  if (t !== null && !gv('afspraak-eindtijd')) {
+    const e = Math.min(t + 60, 23*60 + 59);
+    sv('afspraak-eindtijd', String(Math.floor(e/60)).padStart(2,'0') + ':' + String(e%60).padStart(2,'0'));
+  }
+}
 // Keuze wie de afspraak doet (bepaalt ook de kleur in de agenda)
 let afspraakWie = '';
 function zetAfspraakWie(naam) {
@@ -2932,7 +2976,7 @@ function zetAfspraakWie(naam) {
   document.querySelectorAll('#afspraak-wie .tbtn').forEach(b => b.classList.toggle('active', (b.dataset.wie || '') === afspraakWie));
 }
 // Vangnet: afspraken opslaan werkt ook zolang de kolommen 'email' / 'bezoeker' in afspraken nog niet bestaan
-const AFSPRAAK_NIEUWE_KOLOMMEN = ['email', 'bezoeker'];
+const AFSPRAAK_NIEUWE_KOLOMMEN = ['email', 'bezoeker', 'einddatum', 'eindtijd', 'hele_dag'];
 const afspraakKolomOntbreekt = {};
 const _sbFetchZonderAfspraakMailVangnet = sbFetch;
 sbFetch = async function(method, path, body) {
@@ -2956,7 +3000,7 @@ sbFetch = async function(method, path, body) {
 };
 
 // --- Versienummer van de app. Bij elke nieuwe versie hier ophogen. ---
-const APP_VERSIE = '135';
+const APP_VERSIE = '136';
 const APP_VERSIE_DATUM = '28 november 2026';
 function toonAppVersie() {
   document.querySelectorAll('.app-versie').forEach(el => { el.textContent = APP_VERSIE; });
@@ -3373,7 +3417,18 @@ function bouwAgendaEvents() {
   afsprakenData.forEach(a => {
     const klant = a.klant_id ? klantenData.find(k => String(k.id) === String(a.klant_id)) : null;
     const klantNaam = klant ? (((klant.voornaam||'')+' '+(klant.achternaam||'')).trim() || '(geen naam)') : '';
-    events.push({ bron: 'afspraak', id: a.id, datum: a.datum, tijd: a.tijd||'', label: a.titel, type: 'afspraak', klantId: a.klant_id||null, klantNaam, adres: a.adres||'', telefoon: a.telefoon||'', email: a.email||'', bezoeker: a.bezoeker||'' });
+    const basis = { bron: 'afspraak', id: a.id, label: a.titel, type: 'afspraak', klantId: a.klant_id||null, klantNaam, adres: a.adres||'', telefoon: a.telefoon||'', email: a.email||'', bezoeker: a.bezoeker||'' };
+    const begintijd = a.hele_dag ? '' : (a.tijd ? String(a.tijd).slice(0,5) : '');
+    const eindtijd = a.hele_dag ? '' : (a.eindtijd ? String(a.eindtijd).slice(0,5) : '');
+    const dagen = afspraakDagen(a.datum, a.einddatum);
+    if (dagen.length <= 1) {
+      events.push({ ...basis, datum: a.datum, tijd: begintijd, eindtijd });
+    } else {
+      // Meerdere dagen: op elke dag in de regel 'hele dag', met de tijden in de tekst
+      const van = agendaKorteDag(a.datum) + (begintijd ? ' ' + begintijd : '');
+      const tot = agendaKorteDag(dagen[dagen.length-1]) + (eindtijd ? ' ' + eindtijd : '');
+      dagen.forEach((dag, i) => events.push({ ...basis, datum: dag, tijd: '', eindtijd: '', label: a.titel + ' (dag ' + (i+1) + '/' + dagen.length + ')', periode: van + ' – ' + tot }));
+    }
   });
   events.sort((a,b) => {
     if (a.datum !== b.datum) return a.datum < b.datum ? -1 : 1;
@@ -3385,7 +3440,7 @@ function bouwAgendaEvents() {
 function agendaEventsOpDag(events, iso) { return events.filter(e => e.datum === iso); }
 function agendaEventHtml(e) {
   if (e.bron === 'afspraak') {
-    const onderschrift = [e.tijd, e.klantNaam, e.bezoeker].filter(Boolean).join(' · ');
+    const onderschrift = [e.periode || (e.tijd ? e.tijd + (e.eindtijd ? '–' + e.eindtijd : '') : ''), e.klantNaam, e.bezoeker].filter(Boolean).join(' · ');
     const extraRegels = [];
     if (e.adres) extraRegels.push('📍 '+escapeHtml(e.adres));
     if (e.telefoon) extraRegels.push('📞 <a href="tel:'+escapeHtml(String(e.telefoon).replace(/[^0-9+]/g,''))+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.telefoon)+'</a>');
@@ -3489,7 +3544,8 @@ function weekChipHtml(e) {
   const kleur = agendaKleur(e);
   const klik = e.bron === 'afspraak' ? ("openAfspraakForm("+e.id+")") : ("laadKlant('"+e.klantId+"')");
   const tekst = [e.label, e.klantNaam].filter(Boolean).join(' · ');
-  return '<div class="weekrooster-chip" style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(tekst)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
+  const titel = [tekst, e.periode].filter(Boolean).join(' — ');
+  return '<div class="weekrooster-chip" style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(titel)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
 }
 function renderAgendaWeekRooster(events) {
   const start = agendaWeekStart(agendaDatum);
@@ -3717,6 +3773,10 @@ function nieuweAfspraak() {
   sv('afspraak-titel', '');
   sv('afspraak-datum', agendaView === 'maand' ? (agendaGeselecteerdDag || agendaISO(new Date())) : agendaISO(agendaDatum));
   sv('afspraak-tijd', '');
+  sv('afspraak-einddatum', gv('afspraak-datum'));
+  sv('afspraak-eindtijd', '');
+  zetAfspraakHeleDag(false);
+  afspraakVorigeBegin = gv('afspraak-datum');
   sv('afspraak-adres', '');
   sv('afspraak-telefoon', '');
   sv('afspraak-email', '');
@@ -3734,7 +3794,11 @@ function openAfspraakForm(id) {
   document.getElementById('afspraak-titel-kop').textContent = 'Afspraak bewerken';
   sv('afspraak-titel', a.titel);
   sv('afspraak-datum', a.datum);
-  sv('afspraak-tijd', a.tijd);
+  sv('afspraak-tijd', a.tijd ? String(a.tijd).slice(0,5) : '');
+  sv('afspraak-einddatum', a.einddatum || a.datum);
+  sv('afspraak-eindtijd', a.eindtijd ? String(a.eindtijd).slice(0,5) : '');
+  zetAfspraakHeleDag(!!a.hele_dag);
+  afspraakVorigeBegin = a.datum;
   sv('afspraak-adres', a.adres);
   sv('afspraak-telefoon', a.telefoon);
   sv('afspraak-email', a.email);
@@ -3770,9 +3834,18 @@ async function opslaanAfspraak() {
   if (!titel) { toast('Vul een titel in', 3000); return; }
   if (!datum) { toast('Vul een datum in', 3000); return; }
   const klantWaarde = gv('afspraak-klant');
+  const heleDag = document.getElementById('afspraak-heledag').checked;
+  const einddatum = gv('afspraak-einddatum') || datum;
+  const tijdBegin = heleDag ? '' : gv('afspraak-tijd');
+  const tijdEind = heleDag ? '' : gv('afspraak-eindtijd');
+  if (einddatum < datum) { toast('De einddatum ligt vóór de begindatum', 3000); return; }
+  if (einddatum === datum && tijdBegin && tijdEind && tijdEind <= tijdBegin) { toast('De eindtijd ligt vóór (of op) de begintijd', 3000); return; }
   const data = {
     titel, datum,
-    tijd: gv('afspraak-tijd') || null,
+    tijd: tijdBegin || null,
+    einddatum: einddatum !== datum ? einddatum : null,
+    eindtijd: tijdEind || null,
+    hele_dag: heleDag,
     klant_id: klantWaarde || null,
     adres: gv('afspraak-adres') || null,
     telefoon: gv('afspraak-telefoon') || null,
