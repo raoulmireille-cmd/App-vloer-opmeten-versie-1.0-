@@ -336,6 +336,30 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
 .afspraak-heledag-aan .afspraak-tijdveld{ display:none; }
+.agenda-zoek{ position:relative; margin:0 0 12px; }
+.agenda-zoek input{ width:100%; height:38px; padding:0 36px 0 34px; border:1px solid #e0e0e0; border-radius:10px; font-size:14px; background:#fafafa; box-sizing:border-box; -webkit-appearance:none; }
+.agenda-zoek input:focus{ outline:none; border-color:var(--accent); background:#fff; }
+.agenda-zoek input::-webkit-search-cancel-button{ display:none; }
+.agenda-zoek-ico{ position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:13px; opacity:.6; pointer-events:none; }
+.agenda-zoek-wis{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:28px; height:28px; border:none; background:none; cursor:pointer; color:#888; font-size:14px; border-radius:50%; }
+.agenda-zoek-wis:hover{ background:#eee; }
+.zoek-rij{ display:flex; gap:12px; align-items:flex-start; padding:10px 4px; border-bottom:1px solid #f0f0f0; cursor:pointer; border-radius:8px; }
+.zoek-rij:hover{ background:#f7f7f7; }
+.zoek-rij:last-child{ border-bottom:none; }
+.zoek-datum{ width:64px; flex-shrink:0; text-align:center; line-height:1.15; }
+.zoek-datum .dg{ font-size:11px; color:#888; text-transform:uppercase; }
+.zoek-datum .nr{ font-size:20px; font-weight:700; }
+.zoek-datum .mn{ font-size:11px; color:#888; }
+.zoek-info{ flex:1; min-width:0; }
+.zoek-titel{ font-weight:600; font-size:14px; display:flex; align-items:center; gap:6px; }
+.zoek-sub{ font-size:13px; color:#666; margin-top:2px; }
+.zoek-sub mark, .zoek-titel mark{ background:#FBE3C8; color:inherit; border-radius:3px; padding:0 1px; }
+.zoek-kop{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#888; margin:4px 0 4px; }
+[data-theme="dark"] .agenda-zoek input{ background:#1B2129; border-color:#2B333D; color:#E8EDF2; }
+[data-theme="dark"] .zoek-rij{ border-color:#2B333D; }
+[data-theme="dark"] .zoek-rij:hover{ background:#1B2129; }
+[data-theme="dark"] .zoek-sub{ color:#9AA5B1; }
+[data-theme="dark"] .zoek-sub mark, [data-theme="dark"] .zoek-titel mark{ background:#5A3A1A; }
 .net-opgeslagen{ animation: netOpgeslagen 2.4s ease-out 1; position: relative; z-index: 3; }
 @keyframes netOpgeslagen { 0%,35% { box-shadow: 0 0 0 3px #B5651D, 0 4px 14px rgba(181,101,29,.35); } 100% { box-shadow: 0 0 0 0 rgba(181,101,29,0); } }
 .wie-bol{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
@@ -1462,6 +1486,11 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <button class="tbtn opt" id="ag-view-dag" onclick="zetAgendaView('dag')">Dag</button>
       <button class="tbtn opt" id="ag-view-week" onclick="zetAgendaView('week')">Week</button>
       <button class="tbtn opt active" id="ag-view-maand" onclick="zetAgendaView('maand')">Maand</button>
+    </div>
+    <div class="agenda-zoek">
+      <span class="agenda-zoek-ico">🔍</span>
+      <input type="search" id="agenda-zoek" placeholder="Zoek in de agenda (naam, plaats, legger, titel…)" oninput="agendaZoekGewijzigd()" onkeydown="if(event.key==='Escape')wisAgendaZoek()" autocomplete="off" />
+      <button type="button" id="agenda-zoek-wis" class="agenda-zoek-wis" onclick="wisAgendaZoek()" title="Zoeken wissen" style="display:none;">✕</button>
     </div>
     <div id="ag-week-stijl" style="display:none;margin:-4px 0 12px;font-size:12px;color:#888;align-items:center;gap:8px;">
       <span>Weekweergave:</span>
@@ -2933,6 +2962,99 @@ if (document.readyState !== 'loading') { try { renderContactpersonen(); } catch(
 else document.addEventListener('DOMContentLoaded', () => renderContactpersonen());
 
 // Vangnet: afspraken opslaan werkt ook zolang de kolom 'email' in afspraken nog niet bestaat
+// --- Zoeken in de agenda ---
+function agendaLabelBasis(label) { return String(label||'').replace(/ \(dag \d+\/\d+\)$/, ''); }
+function agendaEvSleutel(e) {
+  return e.bron === 'afspraak' ? 'a' + e.id : 'k' + e.klantId + '|' + (e.type||'') + '|' + agendaLabelBasis(e.label);
+}
+function agendaZoekterm() { const el = document.getElementById('agenda-zoek'); return el ? el.value.trim().toLowerCase() : ''; }
+let agendaZoekTimer = null;
+function agendaZoekGewijzigd() {
+  document.getElementById('agenda-zoek-wis').style.display = agendaZoekterm() ? 'block' : 'none';
+  clearTimeout(agendaZoekTimer);
+  agendaZoekTimer = setTimeout(renderAgenda, 150);
+}
+function wisAgendaZoek() {
+  sv('agenda-zoek', '');
+  document.getElementById('agenda-zoek-wis').style.display = 'none';
+  renderAgenda();
+}
+function agendaZoekMarkeer(tekst, woorden) {
+  let html = escapeHtml(tekst);
+  woorden.forEach(w => {
+    if (w.length < 2) return;
+    const re = new RegExp('(' + escapeHtml(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    html = html.replace(re, '<mark>$1</mark>');
+  });
+  return html;
+}
+function renderAgendaZoekresultaten(events) {
+  const term = agendaZoekterm();
+  const woorden = term.split(/\s+/).filter(Boolean);
+  document.getElementById('agenda-periode-titel').textContent = 'Zoekresultaten';
+  // Groepeer meerdaagse items tot één resultaat
+  const groepen = new Map();
+  events.forEach(e => {
+    const sleutel = agendaEvSleutel(e);
+    if (!groepen.has(sleutel)) groepen.set(sleutel, { e, dagen: [] });
+    groepen.get(sleutel).dagen.push(e.datum);
+  });
+  const vandaag = agendaISO(new Date());
+  const komend = [], eerder = [];
+  groepen.forEach(g => {
+    const e = g.e;
+    const klant = e.klantId ? (klantenData||[]).find(k => String(k.id) === String(e.klantId)) : null;
+    const klantAdres = klant ? [klant.straat, klant.huisnummer, klant.postcode, klant.plaats].filter(Boolean).join(' ') : '';
+    const afspraak = e.bron === 'afspraak' ? (afsprakenData||[]).find(a => String(a.id) === String(e.id)) : null;
+    const doorzoek = [agendaLabelBasis(e.label), e.klantNaam, e.leggerNaam, e.bezoeker, e.adres, e.telefoon, e.email, klantAdres,
+      klant && klant.telefoon, klant && klant.email, afspraak && afspraak.notitie, e.periode].filter(Boolean).join(' ').toLowerCase();
+    if (!woorden.every(w => doorzoek.includes(w))) return;
+    g.dagen.sort();
+    const toekomst = g.dagen.filter(d => d >= vandaag);
+    const item = { e, dagen: g.dagen, datum: toekomst.length ? toekomst[0] : g.dagen[g.dagen.length-1], adres: e.adres || klantAdres };
+    (toekomst.length ? komend : eerder).push(item);
+  });
+  komend.sort((a,b) => a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : String(a.e.tijd||'') < String(b.e.tijd||'') ? -1 : 1);
+  eerder.sort((a,b) => a.datum > b.datum ? -1 : 1);
+
+  const rij = r => {
+    const d = agendaParse(r.datum);
+    const meer = r.dagen.length > 1 && !r.e.periode ? ' · ' + r.dagen.length + ' dagen (t/m ' + agendaKorteDag(r.dagen[r.dagen.length-1]) + ')' : '';
+    const tijd = r.e.periode || (r.e.tijd ? r.e.tijd + (r.e.eindtijd ? '–' + r.e.eindtijd : '') : '');
+    const sub = [tijd, r.e.klantNaam, r.e.leggerNaam ? 'Legger: ' + r.e.leggerNaam : '', r.e.bezoeker, r.adres].filter(Boolean).join(' · ') + meer;
+    return '<div class="zoek-rij" data-sleutel="' + escapeHtml(agendaEvSleutel(r.e)) + '" data-datum="' + r.datum + '" onclick="springNaarZoekresultaat(this.dataset.sleutel, this.dataset.datum)">'
+      + '<div class="zoek-datum"><div class="dg">' + AGENDA_DAG_VOL[d.getDay()].slice(0,2) + '</div><div class="nr">' + d.getDate() + '</div><div class="mn">' + d.toLocaleDateString('nl-NL', { month: 'short', year: d.getFullYear() !== new Date().getFullYear() ? '2-digit' : undefined }).replace('.', '') + '</div></div>'
+      + '<div class="zoek-info"><div class="zoek-titel"><span class="agenda-dot" style="background:' + agendaKleur(r.e) + ';margin:0;"></span>' + agendaZoekMarkeer(agendaLabelBasis(r.e.label), woorden) + '</div>'
+      + (sub ? '<div class="zoek-sub">' + agendaZoekMarkeer(sub, woorden) + '</div>' : '') + '</div></div>';
+  };
+  let html = '<div class="card">';
+  if (!komend.length && !eerder.length) {
+    html += '<div class="leeg">Niets gevonden voor "' + escapeHtml(term) + '".</div>';
+  } else {
+    html += '<div class="zoek-kop">Komend (' + komend.length + ')</div>' + (komend.length ? komend.map(rij).join('') : '<div class="ov-leeg">Geen komende afspraken.</div>');
+    if (eerder.length) {
+      html += '<details style="margin-top:12px;"><summary class="zoek-kop" style="cursor:pointer;">Eerder (' + eerder.length + ')</summary>' + eerder.map(rij).join('') + '</details>';
+    }
+  }
+  html += '</div>';
+  document.getElementById('agenda-inhoud').innerHTML = html;
+}
+function springNaarZoekresultaat(sleutel, datum) {
+  sv('agenda-zoek', '');
+  document.getElementById('agenda-zoek-wis').style.display = 'none';
+  const d = agendaParse(datum);
+  if (d) { agendaDatum = d; if (agendaView === 'maand') agendaGeselecteerdDag = datum; }
+  renderAgenda();
+  setTimeout(() => {
+    const elementen = Array.from(document.querySelectorAll('#agenda-inhoud [data-ev]')).filter(el => el.getAttribute('data-ev') === sleutel);
+    if (!elementen.length) return;
+    elementen.forEach(el => { el.classList.remove('net-opgeslagen'); void el.offsetWidth; el.classList.add('net-opgeslagen'); });
+    elementen[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const scroller = elementen[0].closest('.weekrooster-scroll');
+    if (scroller) { const r = elementen[0].getBoundingClientRect(), sr = scroller.getBoundingClientRect(); if (r.left < sr.left || r.right > sr.right) scroller.scrollLeft += r.left - sr.left - 50; }
+  }, 60);
+}
+
 // Na opslaan: naar de (begin)datum van de afspraak gaan en de afspraak kort laten oplichten
 function springNaarAfspraak(id, datum) {
   const d = agendaParse(datum);
@@ -3023,7 +3145,7 @@ sbFetch = async function(method, path, body) {
 };
 
 // --- Versienummer van de app. Bij elke nieuwe versie hier ophogen. ---
-const APP_VERSIE = '137';
+const APP_VERSIE = '138';
 const APP_VERSIE_DATUM = '28 november 2026';
 function toonAppVersie() {
   document.querySelectorAll('.app-versie').forEach(el => { el.textContent = APP_VERSIE; });
@@ -3468,7 +3590,7 @@ function agendaEventHtml(e) {
     if (e.adres) extraRegels.push('📍 '+escapeHtml(e.adres));
     if (e.telefoon) extraRegels.push('📞 <a href="tel:'+escapeHtml(String(e.telefoon).replace(/[^0-9+]/g,''))+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.telefoon)+'</a>');
     if (e.email) extraRegels.push('✉ <a href="mailto:'+escapeHtml(e.email)+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.email)+'</a>');
-    return '<div class="agenda-event" data-afspraak="'+e.id+'" onclick="openAfspraakForm('+e.id+')">'
+    return '<div class="agenda-event" data-afspraak="'+e.id+'" data-ev="'+escapeHtml(agendaEvSleutel(e))+'" onclick="openAfspraakForm('+e.id+')">'
       + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
       + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div>'
       + (onderschrift ? '<div class="klant">'+escapeHtml(onderschrift)+'</div>' : '')
@@ -3477,7 +3599,7 @@ function agendaEventHtml(e) {
   }
   const tijdTekst = e.tijd ? (e.tijd + (e.eindtijd ? '–'+e.eindtijd : '')) : '';
   const onderschrift = [tijdTekst, e.klantNaam, e.leggerNaam ? 'Legger: '+e.leggerNaam : ''].filter(Boolean).join(' · ');
-  return '<div class="agenda-event" onclick="laadKlant(\''+e.klantId+'\')">'
+  return '<div class="agenda-event" data-ev="'+escapeHtml(agendaEvSleutel(e))+'" onclick="laadKlant(\''+e.klantId+'\')">'
     + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
     + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div><div class="klant">'+escapeHtml(onderschrift)+'</div></div>'
     + '</div>';
@@ -3568,7 +3690,7 @@ function weekChipHtml(e) {
   const klik = e.bron === 'afspraak' ? ("openAfspraakForm("+e.id+")") : ("laadKlant('"+e.klantId+"')");
   const tekst = [e.label, e.klantNaam].filter(Boolean).join(' · ');
   const titel = [tekst, e.periode].filter(Boolean).join(' — ');
-  return '<div class="weekrooster-chip"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(titel)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
+  return '<div class="weekrooster-chip"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' data-ev="'+escapeHtml(agendaEvSleutel(e))+'" style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(titel)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
 }
 function renderAgendaWeekRooster(events) {
   const start = agendaWeekStart(agendaDatum);
@@ -3682,7 +3804,7 @@ function agendaBlokHtml(e, roosterStart) {
   const top = (e._begin - roosterStart)*AGENDA_PX_PER_MIN;
   const hoogte = Math.max((e._eind - e._begin)*AGENDA_PX_PER_MIN - 2, 20);
   const onderschrift = [e.label, e.klantNaam, e.leggerNaam ? 'Legger: '+e.leggerNaam : ''].filter(Boolean).join(' · ');
-  return '<div class="dagrooster-event"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
+  return '<div class="dagrooster-event"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' data-ev="'+escapeHtml(agendaEvSleutel(e))+'" style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
     + '<div class="diklabel">'+escapeHtml(tijdTekst)+'</div>'
     + '<div class="subtitel">'+escapeHtml(onderschrift)+'</div>'
     + '</div>';
@@ -3737,6 +3859,7 @@ function renderAgendaDag(events) {
 
 function renderAgenda() {
   const events = bouwAgendaEvents();
+  if (agendaZoekterm().length >= 2) { renderAgendaZoekresultaten(events); return; }
   if (agendaView === 'dag') renderAgendaDag(events);
   else if (agendaView === 'week') renderAgendaWeek(events);
   else renderAgendaMaand(events);
