@@ -7,10 +7,19 @@
 <meta name="robots" content="noindex, nofollow" />
 <title>Parket Specialist Gouda</title>
 <script>(function(){try{if(localStorage.getItem('pvThema')==='donker')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<script>(function(){var b='auto';try{b=localStorage.getItem('pvSchermbreedte')||'auto';}catch(e){}document.documentElement.setAttribute('data-breedte',b);document.documentElement.setAttribute('data-paneel','start');})();</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EDE6DA; color: #1a1a1a; }
 .app { max-width: 860px; margin: 0 auto; padding: 16px; }
+/* Schermbreedte: auto = agenda/klanten/overzicht breed op grote schermen; breed = alles breed; smal = telefoonbreedte */
+@media (min-width: 601px) { html[data-breedte="breed"] .app { max-width: 1600px; padding-left: 24px; padding-right: 24px; } }
+html[data-breedte="smal"] .app { max-width: 480px; }
+@media (min-width: 1100px) {
+  html[data-breedte="auto"][data-paneel="agenda"] .app,
+  html[data-breedte="auto"][data-paneel="adressen"] .app,
+  html[data-breedte="auto"][data-paneel="overzicht"] .app { max-width: 1600px; padding-left: 24px; padding-right: 24px; }
+}
 h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
 .app-versie-label { font-size: 11px; font-weight: 500; opacity: .55; margin-left: 6px; letter-spacing: .02em; vertical-align: middle; }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #ccc; }
@@ -636,9 +645,17 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <div class="field"><label>Taal</label>
         <select id="inst-taal"><option value="nl">Nederlands</option><option value="en">English</option></select>
       </div>
-      <div class="field"><label>Weergave</label>
+      <div class="field"><label>Thema</label>
         <select id="inst-thema" onchange="setThema(this.value)"><option value="licht">Licht</option><option value="donker">Donker</option></select>
       </div>
+    </div>
+    <div class="field" style="margin-top:6px;margin-bottom:0;"><label>Schermbreedte (alleen op dit apparaat)</label>
+      <div class="toggle-btns" id="pv-schermbreedte" style="margin:0;">
+        <button type="button" class="tbtn opt" data-b="auto" onclick="zetSchermbreedte('auto')">Automatisch</button>
+        <button type="button" class="tbtn opt" data-b="breed" onclick="zetSchermbreedte('breed')">🖥 Computer (breed)</button>
+        <button type="button" class="tbtn opt" data-b="smal" onclick="zetSchermbreedte('smal')">📱 Telefoon (smal)</button>
+      </div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">Automatisch: op een groot scherm worden de agenda, de klantenlijst en het overzicht beeldvullend; formulieren blijven goed leesbaar.</div>
     </div>
     <label class="cb-item" id="cb-inst-mail" style="margin-top:4px;"><input type="checkbox" checked onchange="toggleCb(this,'cb-inst-mail')" /><span>E-mail bij nieuwe afspraak</span></label>
     <label class="cb-item" id="cb-inst-herinner" style="margin-top:8px;"><input type="checkbox" checked onchange="toggleCb(this,'cb-inst-herinner')" /><span>Herinnering vóór legdatum</span></label>
@@ -2939,7 +2956,7 @@ sbFetch = async function(method, path, body) {
 };
 
 // --- Versienummer van de app. Bij elke nieuwe versie hier ophogen. ---
-const APP_VERSIE = '134';
+const APP_VERSIE = '135';
 const APP_VERSIE_DATUM = '28 november 2026';
 function toonAppVersie() {
   document.querySelectorAll('.app-versie').forEach(el => { el.textContent = APP_VERSIE; });
@@ -2962,6 +2979,24 @@ if (document.readyState !== 'loading') toonAppVersie(); else document.addEventLi
 setTimeout(controleerNieuweVersie, 5000);
 setInterval(controleerNieuweVersie, 30 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') controleerNieuweVersie(); });
+
+// --- Schermbreedte (per apparaat): auto / breed / smal ---
+function zetSchermbreedte(b) {
+  try { localStorage.setItem('pvSchermbreedte', b); } catch(e) {}
+  document.documentElement.setAttribute('data-breedte', b);
+  toonSchermbreedteKeuze();
+  if (typeof renderAgenda === 'function' && document.getElementById('panel-agenda').classList.contains('active')) renderAgenda();
+}
+function toonSchermbreedteKeuze() {
+  const huidig = document.documentElement.getAttribute('data-breedte') || 'auto';
+  document.querySelectorAll('#pv-schermbreedte .tbtn').forEach(k => k.classList.toggle('active', k.dataset.b === huidig));
+}
+const _switchTabZonderBreedte = switchTab;
+switchTab = function(name) {
+  document.documentElement.setAttribute('data-paneel', name);
+  _switchTabZonderBreedte(name);
+};
+if (document.readyState !== 'loading') toonSchermbreedteKeuze(); else document.addEventListener('DOMContentLoaded', toonSchermbreedteKeuze);
 
 // --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
 let huidigeGebruikerData = null;
