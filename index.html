@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Opmeten"><meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Parket Specialist Gouda</title>
@@ -11,6 +12,7 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EDE6DA; color: #1a1a1a; }
 .app { max-width: 860px; margin: 0 auto; padding: 16px; }
 h1 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+.app-versie-label { font-size: 11px; font-weight: 500; opacity: .55; margin-left: 6px; letter-spacing: .02em; vertical-align: middle; }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid #ccc; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { padding: 8px 11px; font-size: 12px; font-weight: 500; color: #555; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; font-family: inherit; }
@@ -81,6 +83,26 @@ textarea { resize: vertical; min-height: 60px; }
 .agenda-event .klant { font-size: 12px; color: #888; }
 .agenda-weekdag .kop { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 .agenda-weekdag .kop.vandaag { color: #B5651D; }
+.weekrooster-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+.weekrooster { min-width: 720px; }
+.weekrooster-kop, .weekrooster-heledag { display: flex; }
+.weekrooster-kop .hoek, .weekrooster-heledag .hoek { width: 44px; flex-shrink: 0; font-size: 10px; color: #999; text-align: right; padding-right: 6px; box-sizing: border-box; }
+.weekrooster-kop .dag { flex: 1; min-width: 0; text-align: center; font-size: 12px; font-weight: 600; padding: 6px 2px; border-bottom: 1px solid #eee; color: #555; }
+.weekrooster-kop .dag .nr { display: block; font-size: 16px; color: #1a1a1a; }
+.weekrooster-kop .dag.vandaag { color: #B5651D; }
+.weekrooster-kop .dag.vandaag .nr { color: #fff; background: #B5651D; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; margin: 2px auto 0; }
+.weekrooster-heledag .hoek { padding-top: 5px; }
+.weekrooster-heledag .dag { flex: 1; min-width: 0; padding: 3px 2px; border-left: 1px solid #f0f0f0; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 2px; }
+.weekrooster-chip { font-size: 11px; line-height: 1.25; border-radius: 5px; padding: 3px 5px; border-left: 3px solid; cursor: pointer; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.weekrooster-body { display: flex; position: relative; margin-top: 12px; }
+.weekrooster-kolom { position: relative; flex: 1; min-width: 0; border-left: 1px solid #eee; }
+.weekrooster-kolom.vandaag { background: rgba(181,101,29,0.04); }
+.weekrooster-kolom .dagrooster-events { left: 2px; right: 2px; }
+.weekrooster .dagrooster-event { padding: 3px 5px; }
+.weekrooster .dagrooster-event .diklabel, .weekrooster .dagrooster-event .subtitel { font-size: 10.5px; }
+[data-theme="dark"] .weekrooster-kop .dag { color: #9AA5B1; border-color: #2B333D; }
+[data-theme="dark"] .weekrooster-kop .dag .nr { color: #E8EDF2; }
+[data-theme="dark"] .weekrooster-kolom, [data-theme="dark"] .weekrooster-heledag .dag { border-color: #2B333D; }
 .dagrooster-alleendag { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .dagrooster-wrap { position: relative; display: flex; }
 .dagrooster-uren { position: relative; width: 44px; flex-shrink: 0; }
@@ -304,6 +326,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .l{ font-size:11px; font-weight:600; color:var(--accent-dark); text-transform:uppercase; letter-spacing:.03em; }
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
+.wie-bol{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 .cp-rij{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
 .cp-rij:last-child{ border-bottom:none; }
 .cp-info{ flex:1; min-width:0; }
@@ -425,10 +448,14 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 </style>
 </head>
 <body>
+<div id="nieuwe-versie-balk" style="display:none;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;background:#1a1a1a;color:#fff;border-radius:12px;padding:10px 12px 10px 16px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);align-items:center;justify-content:space-between;gap:12px;width:calc(100vw - 32px);max-width:460px;box-sizing:border-box;">
+  <span id="nieuwe-versie-tekst">Er is een nieuwe versie beschikbaar.</span>
+  <button type="button" class="btn btn-primary" style="height:32px;padding:0 12px;" onclick="location.reload()">Verversen</button>
+</div>
 <div id="login-overlay">
   <div class="card">
     <h1 style="margin-bottom:4px;">Parket Specialist Gouda</h1>
-    <p style="font-size:13px;color:#888;margin-bottom:18px;">Log in om verder te gaan</p>
+    <p style="font-size:13px;color:#888;margin-bottom:18px;">Log in om verder te gaan · <span style="white-space:nowrap;">versie <span class="app-versie"></span></span></p>
     <form id="login-form" onsubmit="loginFormSubmit(event)">
       <div class="field" style="margin-bottom:12px;">
         <label>E-mailadres</label>
@@ -445,7 +472,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
   </div>
 </div>
 <div class="app">
-<h1>Parket Specialist Gouda<span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button><button class="instellingen-btn" onclick="switchTab('instellingen')" title="Gebruikersinstellingen" aria-label="Gebruikersinstellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button></h1>
+<h1>Parket Specialist Gouda<span class="app-versie-label" title="Versie van de app">v<span class="app-versie"></span></span><span class="cloud-status idle" id="cloud-status" title="Nog niet opgeslagen">•</span><button class="ververs-btn" onclick="location.reload()" title="Pagina verversen">⟳</button><button class="instellingen-btn" onclick="switchTab('instellingen')" title="Gebruikersinstellingen" aria-label="Gebruikersinstellingen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button></h1>
 <div class="subnav" id="subnav">
   <button type="button" class="btn subnav-terug" onclick="switchTab('start')" title="Terug naar startscherm">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -502,6 +529,7 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
         <span>Overzicht</span>
       </button>
     </div>
+    <div style="text-align:center;font-size:12px;color:#999;margin-top:18px;">Versie <span class="app-versie"></span> · <span id="app-versie-datum"></span></div>
   </div>
 </div>
 
@@ -1415,6 +1443,13 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <button class="tbtn opt" id="ag-view-week" onclick="zetAgendaView('week')">Week</button>
       <button class="tbtn opt active" id="ag-view-maand" onclick="zetAgendaView('maand')">Maand</button>
     </div>
+    <div id="ag-week-stijl" style="display:none;margin:-4px 0 12px;font-size:12px;color:#888;align-items:center;gap:8px;">
+      <span>Weekweergave:</span>
+      <span class="toggle-btns" style="margin:0;">
+        <button class="tbtn opt" id="ag-week-lijst" onclick="zetWeekStijl('lijst')">☰ Onder elkaar</button>
+        <button class="tbtn opt" id="ag-week-rooster" onclick="zetWeekStijl('rooster')">▦ Naast elkaar</button>
+      </span>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <button class="btn" style="padding:0 12px;height:32px;" onclick="agendaVorige()">‹</button>
       <div style="text-align:center;flex:1;">
@@ -1544,6 +1579,13 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <div class="field"><label>Datum</label><input type="date" id="afspraak-datum" /></div>
       <div class="field"><label>Tijd (optioneel)</label><input type="time" id="afspraak-tijd" /></div>
     </div>
+    <div class="field" style="margin-bottom:10px;"><label>Wie gaat? (optioneel)</label>
+      <div class="toggle-btns" id="afspraak-wie" style="margin:0;">
+        <button type="button" class="tbtn opt active" data-wie="" onclick="zetAfspraakWie('')"><span class="wie-bol" style="background:#7CB342;"></span>Algemeen</button>
+        <button type="button" class="tbtn opt" data-wie="Raoul" onclick="zetAfspraakWie('Raoul')"><span class="wie-bol" style="background:#5B8DEF;"></span>Raoul</button>
+        <button type="button" class="tbtn opt" data-wie="Mireille" onclick="zetAfspraakWie('Mireille')"><span class="wie-bol" style="background:#E24B4A;"></span>Mireille</button>
+      </div>
+    </div>
     <div class="field" style="margin-bottom:10px;position:relative;">
       <label>Klant (optioneel)</label>
       <input type="text" id="afspraak-klant-zoek" placeholder="Zoek op naam, adres of plaats..." autocomplete="off" oninput="filterAfspraakKlant()" onfocus="filterAfspraakKlant()" onblur="setTimeout(sluitAfspraakKlantDropdown,150)" />
@@ -1551,7 +1593,10 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
       <div id="afspraak-klant-dropdown" class="taak-klant-dropdown"></div>
     </div>
     <div class="field" style="margin-bottom:10px;"><label>Adres (optioneel)</label><input type="text" id="afspraak-adres" placeholder="bijv. Kerkstraat 12, Gouda" /></div>
-    <div class="field" style="margin-bottom:10px;"><label>Telefoonnummer (optioneel)</label><input type="tel" id="afspraak-telefoon" placeholder="06-12345678" /></div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="field"><label>Telefoonnummer (optioneel)</label><input type="tel" id="afspraak-telefoon" placeholder="06-12345678" /></div>
+      <div class="field"><label>E-mailadres (optioneel)</label><input type="email" id="afspraak-email" placeholder="naam@voorbeeld.nl" /></div>
+    </div>
     <div class="field" style="margin-bottom:14px;"><label>Notitie (optioneel)</label><textarea id="afspraak-notitie" placeholder="Extra toelichting..."></textarea></div>
     <div class="confirm-btns">
       <button class="btn btn-danger" id="afspraak-verwijderen" style="display:none;margin-right:auto;" onclick="verwijderAfspraak()">Verwijderen</button>
@@ -2862,6 +2907,62 @@ sbFetch = async function(method, path, body) {
 if (document.readyState !== 'loading') { try { renderContactpersonen(); } catch(e) {} }
 else document.addEventListener('DOMContentLoaded', () => renderContactpersonen());
 
+// Vangnet: afspraken opslaan werkt ook zolang de kolom 'email' in afspraken nog niet bestaat
+// Keuze wie de afspraak doet (bepaalt ook de kleur in de agenda)
+let afspraakWie = '';
+function zetAfspraakWie(naam) {
+  afspraakWie = naam || '';
+  document.querySelectorAll('#afspraak-wie .tbtn').forEach(b => b.classList.toggle('active', (b.dataset.wie || '') === afspraakWie));
+}
+// Vangnet: afspraken opslaan werkt ook zolang de kolommen 'email' / 'bezoeker' in afspraken nog niet bestaan
+const AFSPRAAK_NIEUWE_KOLOMMEN = ['email', 'bezoeker'];
+const afspraakKolomOntbreekt = {};
+const _sbFetchZonderAfspraakMailVangnet = sbFetch;
+sbFetch = async function(method, path, body) {
+  const isAfspraak = String(path).startsWith('afspraken');
+  if (isAfspraak && body && typeof body === 'object' && !Array.isArray(body)) {
+    body = { ...body };
+    AFSPRAAK_NIEUWE_KOLOMMEN.forEach(c => { if (afspraakKolomOntbreekt[c]) delete body[c]; });
+  }
+  try {
+    return await _sbFetchZonderAfspraakMailVangnet(method, path, body);
+  } catch(e) {
+    const msg = String(e.message);
+    const kolom = isAfspraak && body ? AFSPRAAK_NIEUWE_KOLOMMEN.find(c => !afspraakKolomOntbreekt[c] && c in body && msg.includes("'" + c + "'")) : null;
+    if (kolom) {
+      afspraakKolomOntbreekt[kolom] = true;
+      toast('Let op: kolom "' + kolom + '" ontbreekt nog in de tabel afspraken — dit wordt nog niet bewaard.', 6000);
+      return sbFetch(method, path, body);
+    }
+    throw e;
+  }
+};
+
+// --- Versienummer van de app. Bij elke nieuwe versie hier ophogen. ---
+const APP_VERSIE = '134';
+const APP_VERSIE_DATUM = '28 november 2026';
+function toonAppVersie() {
+  document.querySelectorAll('.app-versie').forEach(el => { el.textContent = APP_VERSIE; });
+  const d = document.getElementById('app-versie-datum'); if (d) d.textContent = APP_VERSIE_DATUM;
+}
+// Kijkt of er op de server (GitHub) al een nieuwere versie staat dan de versie die nu open is.
+async function controleerNieuweVersie() {
+  if (!/^https?:/.test(location.protocol)) return;
+  try {
+    const res = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const m = (await res.text()).match(/const APP_VERSIE = '(\d+)'/);
+    if (m && Number(m[1]) > Number(APP_VERSIE)) {
+      document.getElementById('nieuwe-versie-tekst').textContent = 'Versie ' + m[1] + ' is beschikbaar (je werkt nu in ' + APP_VERSIE + ').';
+      document.getElementById('nieuwe-versie-balk').style.display = 'flex';
+    }
+  } catch(e) { /* geen verbinding: later opnieuw */ }
+}
+if (document.readyState !== 'loading') toonAppVersie(); else document.addEventListener('DOMContentLoaded', toonAppVersie);
+setTimeout(controleerNieuweVersie, 5000);
+setInterval(controleerNieuweVersie, 30 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') controleerNieuweVersie(); });
+
 // --- Gebruikersinstellingen: profiel + voorkeuren per persoon, opgeslagen in Supabase (tabel 'gebruikers') ---
 let huidigeGebruikerData = null;
 function huidigeGebruikerId() {
@@ -3184,7 +3285,7 @@ async function maakMoneybirdOfferte() {
 const AGENDA_KLEUREN = { bezoek: '#5B8DEF', besteld: '#E2A64B', legger: '#1D9E75', bezorging: '#9B59B6', afspraak: '#7CB342' };
 const AGENDA_BEZOEKER_KLEUREN = { Raoul: '#5B8DEF', Mireille: '#E24B4A' };
 function agendaKleur(e) {
-  if (e.type === 'bezoek' && e.bezoeker && AGENDA_BEZOEKER_KLEUREN[e.bezoeker]) return AGENDA_BEZOEKER_KLEUREN[e.bezoeker];
+  if ((e.type === 'bezoek' || e.type === 'afspraak') && e.bezoeker && AGENDA_BEZOEKER_KLEUREN[e.bezoeker]) return AGENDA_BEZOEKER_KLEUREN[e.bezoeker];
   return AGENDA_KLEUREN[e.type];
 }
 const AGENDA_BRONNEN = [
@@ -3237,7 +3338,7 @@ function bouwAgendaEvents() {
   afsprakenData.forEach(a => {
     const klant = a.klant_id ? klantenData.find(k => String(k.id) === String(a.klant_id)) : null;
     const klantNaam = klant ? (((klant.voornaam||'')+' '+(klant.achternaam||'')).trim() || '(geen naam)') : '';
-    events.push({ bron: 'afspraak', id: a.id, datum: a.datum, tijd: a.tijd||'', label: a.titel, type: 'afspraak', klantId: a.klant_id||null, klantNaam, adres: a.adres||'', telefoon: a.telefoon||'' });
+    events.push({ bron: 'afspraak', id: a.id, datum: a.datum, tijd: a.tijd||'', label: a.titel, type: 'afspraak', klantId: a.klant_id||null, klantNaam, adres: a.adres||'', telefoon: a.telefoon||'', email: a.email||'', bezoeker: a.bezoeker||'' });
   });
   events.sort((a,b) => {
     if (a.datum !== b.datum) return a.datum < b.datum ? -1 : 1;
@@ -3249,10 +3350,11 @@ function bouwAgendaEvents() {
 function agendaEventsOpDag(events, iso) { return events.filter(e => e.datum === iso); }
 function agendaEventHtml(e) {
   if (e.bron === 'afspraak') {
-    const onderschrift = [e.tijd, e.klantNaam].filter(Boolean).join(' · ');
+    const onderschrift = [e.tijd, e.klantNaam, e.bezoeker].filter(Boolean).join(' · ');
     const extraRegels = [];
     if (e.adres) extraRegels.push('📍 '+escapeHtml(e.adres));
-    if (e.telefoon) extraRegels.push('📞 '+escapeHtml(e.telefoon));
+    if (e.telefoon) extraRegels.push('📞 <a href="tel:'+escapeHtml(String(e.telefoon).replace(/[^0-9+]/g,''))+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.telefoon)+'</a>');
+    if (e.email) extraRegels.push('✉ <a href="mailto:'+escapeHtml(e.email)+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.email)+'</a>');
     return '<div class="agenda-event" onclick="openAfspraakForm('+e.id+')">'
       + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
       + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div>'
@@ -3285,8 +3387,8 @@ function agendaPeriodeTitel() {
 function zetAgendaView(v) {
   agendaView = v;
   agendaGeselecteerdDag = null;
-  document.querySelectorAll('#panel-agenda .toggle-btns .tbtn').forEach(b => b.classList.remove('active'));
-  document.getElementById('ag-view-'+v).classList.add('active');
+  ['dag','week','maand'].forEach(x => document.getElementById('ag-view-'+x).classList.toggle('active', x === v));
+  document.getElementById('ag-week-stijl').style.display = v === 'week' ? 'flex' : 'none';
   renderAgenda();
 }
 function agendaStap(richting) {
@@ -3341,8 +3443,71 @@ function renderAgendaMaand(events) {
   document.getElementById('agenda-inhoud').innerHTML = html;
 }
 
+// Weekweergave: 'lijst' = dagen onder elkaar, 'rooster' = dagen naast elkaar met tijden (zoals Outlook)
+let agendaWeekStijl = (() => { try { return localStorage.getItem('pvWeekStijl') || 'rooster'; } catch(e) { return 'rooster'; } })();
+function zetWeekStijl(stijl) {
+  agendaWeekStijl = stijl;
+  try { localStorage.setItem('pvWeekStijl', stijl); } catch(e) {}
+  renderAgenda();
+}
+function weekChipHtml(e) {
+  const kleur = agendaKleur(e);
+  const klik = e.bron === 'afspraak' ? ("openAfspraakForm("+e.id+")") : ("laadKlant('"+e.klantId+"')");
+  const tekst = [e.label, e.klantNaam].filter(Boolean).join(' · ');
+  return '<div class="weekrooster-chip" style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(tekst)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
+}
+function renderAgendaWeekRooster(events) {
+  const start = agendaWeekStart(agendaDatum);
+  const vandaag = agendaISO(new Date());
+  const dagen = [];
+  for (let i=0;i<7;i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate()+i);
+    const iso = agendaISO(d);
+    const metTijd = [], zonderTijd = [];
+    agendaEventsOpDag(events, iso).forEach(e => {
+      const begin = agendaMinuten(e.tijd);
+      if (begin === null) { zonderTijd.push(e); return; }
+      let eind = agendaMinuten(e.eindtijd);
+      if (eind === null) eind = begin + 60;
+      if (eind <= begin) eind = begin + 30;
+      metTijd.push(Object.assign({}, e, { _begin: begin, _eind: eind }));
+    });
+    agendaPakOverlap(metTijd);
+    dagen.push({ d, iso, metTijd, zonderTijd });
+  }
+  const alleTijden = dagen.flatMap(x => x.metTijd);
+  const vroegste = Math.min(7*60, ...alleTijden.map(e => Math.floor(e._begin/60)*60));
+  const laatste = Math.max(19*60, ...alleTijden.map(e => Math.ceil(e._eind/60)*60));
+  const uren = []; for (let t = vroegste; t <= laatste; t += 60) uren.push(t);
+  const hoogte = (laatste - vroegste) * AGENDA_PX_PER_MIN;
+  const heeftHeleDag = dagen.some(x => x.zonderTijd.length);
+
+  let html = '<div class="card"><div class="weekrooster-scroll"><div class="weekrooster">';
+  html += '<div class="weekrooster-kop"><div class="hoek"></div>' + dagen.map(x =>
+    '<div class="dag'+(x.iso === vandaag ? ' vandaag' : '')+'">'+agendaDagNaam(x.d).slice(0,2)+'<span class="nr">'+x.d.getDate()+'</span></div>').join('') + '</div>';
+  if (heeftHeleDag) {
+    html += '<div class="weekrooster-heledag"><div class="hoek">hele dag</div>' + dagen.map(x =>
+      '<div class="dag">'+x.zonderTijd.map(weekChipHtml).join('')+'</div>').join('') + '</div>';
+  }
+  html += '<div class="weekrooster-body"><div class="dagrooster-uren" style="height:'+hoogte+'px;">'
+    + uren.map(t => '<div class="uur-label" style="top:'+((t-vroegste)*AGENDA_PX_PER_MIN)+'px;">'+String(Math.floor(t/60)).padStart(2,'0')+':00</div>').join('')
+    + '</div>';
+  const nu = new Date(); const nuMin = nu.getHours()*60 + nu.getMinutes();
+  dagen.forEach(x => {
+    html += '<div class="weekrooster-kolom'+(x.iso === vandaag ? ' vandaag' : '')+'" style="height:'+hoogte+'px;">'
+      + uren.map(t => '<div class="dagrooster-lijn" style="top:'+((t-vroegste)*AGENDA_PX_PER_MIN)+'px;"></div>').join('');
+    if (x.iso === vandaag && nuMin >= vroegste && nuMin <= laatste) html += '<div class="dagrooster-nu" style="top:'+((nuMin-vroegste)*AGENDA_PX_PER_MIN)+'px;"></div>';
+    html += '<div class="dagrooster-events">' + x.metTijd.map(e => agendaBlokHtml(e, vroegste)).join('') + '</div></div>';
+  });
+  html += '</div></div></div></div>';
+  document.getElementById('agenda-inhoud').innerHTML = html;
+}
 function renderAgendaWeek(events) {
   document.getElementById('agenda-periode-titel').textContent = agendaPeriodeTitel();
+  const knopL = document.getElementById('ag-week-lijst'), knopR = document.getElementById('ag-week-rooster');
+  if (knopL) knopL.classList.toggle('active', agendaWeekStijl === 'lijst');
+  if (knopR) knopR.classList.toggle('active', agendaWeekStijl === 'rooster');
+  if (agendaWeekStijl === 'rooster') { renderAgendaWeekRooster(events); return; }
   const start = agendaWeekStart(agendaDatum);
   const vandaag = agendaISO(new Date());
   let html = '';
@@ -3519,6 +3684,8 @@ function nieuweAfspraak() {
   sv('afspraak-tijd', '');
   sv('afspraak-adres', '');
   sv('afspraak-telefoon', '');
+  sv('afspraak-email', '');
+  zetAfspraakWie('');
   sv('afspraak-notitie', '');
   vulAfspraakKlantSelect(null);
   document.getElementById('afspraak-verwijderen').style.display = 'none';
@@ -3535,6 +3702,8 @@ function openAfspraakForm(id) {
   sv('afspraak-tijd', a.tijd);
   sv('afspraak-adres', a.adres);
   sv('afspraak-telefoon', a.telefoon);
+  sv('afspraak-email', a.email);
+  zetAfspraakWie(a.bezoeker || '');
   sv('afspraak-notitie', a.notitie);
   vulAfspraakKlantSelect(a.klant_id);
   document.getElementById('afspraak-verwijderen').style.display = 'inline-flex';
@@ -3551,6 +3720,8 @@ function afspraakKlantGewijzigd() {
     if (adres) sv('afspraak-adres', adres);
   }
   if (!gv('afspraak-telefoon') && k.telefoon) sv('afspraak-telefoon', k.telefoon);
+  if (!gv('afspraak-email') && k.email) sv('afspraak-email', k.email);
+  if (!afspraakWie && k.bezoeker && AGENDA_BEZOEKER_KLEUREN[k.bezoeker]) zetAfspraakWie(k.bezoeker);
 }
 
 function sluitAfspraakForm() {
@@ -3570,8 +3741,11 @@ async function opslaanAfspraak() {
     klant_id: klantWaarde || null,
     adres: gv('afspraak-adres') || null,
     telefoon: gv('afspraak-telefoon') || null,
+    email: gv('afspraak-email').trim().toLowerCase() || null,
+    bezoeker: afspraakWie || null,
     notitie: gv('afspraak-notitie') || null,
   };
+  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { toast('Dit e-mailadres lijkt niet te kloppen', 3000); return; }
   try {
     if (afspraakBewerkId) {
       await sbFetch('PATCH', 'afspraken?id=eq.'+afspraakBewerkId, data);
@@ -4190,7 +4364,7 @@ async function laadKlanten() {
   const lijst = document.getElementById('klanten-lijst');
   lijst.innerHTML = '<div class="loading">Bezig met laden...</div>';
   try {
-    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(',')+(AGENDA_NAAM_VELDEN.length ? ','+AGENDA_NAAM_VELDEN.join(',') : '')+',opdracht,schade_dossiernummer,schade_status,contactpersonen');
+    const data = await sbFetch('GET', 'klanten?order=achternaam.asc,voornaam.asc&select=id,voornaam,achternaam,telefoon,email,straat,huisnummer,postcode,plaats,created_at,updated_at,laatste_wijziging,checklist_niet_doorgegaan,tijd_bezoek,eindtijd_bezoek,bezoeker,'+Object.values(CHECKLIST_DB_COLS).join(',')+','+AGENDA_DATUM_VELDEN.join(',')+(AGENDA_NAAM_VELDEN.length ? ','+AGENDA_NAAM_VELDEN.join(',') : '')+',opdracht,schade_dossiernummer,schade_status,contactpersonen');
     klantenData = data;
     filterKlanten();
     renderDashboard(data);
