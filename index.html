@@ -336,6 +336,8 @@ input:focus, textarea:focus, select:focus{ border-color:var(--accent); box-shado
 .pm-cijfer .w{ font-size:18px; font-weight:700; margin-top:2px; }
 [data-theme="dark"] .pm-cijfer{ background:#1B2A28; }
 .afspraak-heledag-aan .afspraak-tijdveld{ display:none; }
+.net-opgeslagen{ animation: netOpgeslagen 2.4s ease-out 1; position: relative; z-index: 3; }
+@keyframes netOpgeslagen { 0%,35% { box-shadow: 0 0 0 3px #B5651D, 0 4px 14px rgba(181,101,29,.35); } 100% { box-shadow: 0 0 0 0 rgba(181,101,29,0); } }
 .wie-bol{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 .cp-rij{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
 .cp-rij:last-child{ border-bottom:none; }
@@ -2931,6 +2933,27 @@ if (document.readyState !== 'loading') { try { renderContactpersonen(); } catch(
 else document.addEventListener('DOMContentLoaded', () => renderContactpersonen());
 
 // Vangnet: afspraken opslaan werkt ook zolang de kolom 'email' in afspraken nog niet bestaat
+// Na opslaan: naar de (begin)datum van de afspraak gaan en de afspraak kort laten oplichten
+function springNaarAfspraak(id, datum) {
+  const d = agendaParse(datum);
+  if (d) {
+    agendaDatum = d;
+    if (agendaView === 'maand') agendaGeselecteerdDag = datum;
+  }
+  renderAgenda();
+  if (!id) return;
+  setTimeout(() => {
+    const elementen = Array.from(document.querySelectorAll('#agenda-inhoud [data-afspraak="'+id+'"]'));
+    if (!elementen.length) return;
+    elementen.forEach(el => { el.classList.remove('net-opgeslagen'); void el.offsetWidth; el.classList.add('net-opgeslagen'); });
+    const eerste = elementen[0];
+    const r = eerste.getBoundingClientRect();
+    if (r.top < 80 || r.bottom > window.innerHeight - 20) eerste.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const scroller = eerste.closest('.weekrooster-scroll');
+    if (scroller) { const sr = scroller.getBoundingClientRect(); if (r.left < sr.left || r.right > sr.right) scroller.scrollLeft += r.left - sr.left - 50; }
+  }, 50);
+}
+
 // --- Afspraken over meerdere dagen / hele dag ---
 let afspraakVorigeBegin = '';
 function afspraakDagen(begin, eind) {
@@ -3000,7 +3023,7 @@ sbFetch = async function(method, path, body) {
 };
 
 // --- Versienummer van de app. Bij elke nieuwe versie hier ophogen. ---
-const APP_VERSIE = '136';
+const APP_VERSIE = '137';
 const APP_VERSIE_DATUM = '28 november 2026';
 function toonAppVersie() {
   document.querySelectorAll('.app-versie').forEach(el => { el.textContent = APP_VERSIE; });
@@ -3445,7 +3468,7 @@ function agendaEventHtml(e) {
     if (e.adres) extraRegels.push('📍 '+escapeHtml(e.adres));
     if (e.telefoon) extraRegels.push('📞 <a href="tel:'+escapeHtml(String(e.telefoon).replace(/[^0-9+]/g,''))+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.telefoon)+'</a>');
     if (e.email) extraRegels.push('✉ <a href="mailto:'+escapeHtml(e.email)+'" onclick="event.stopPropagation()" style="color:inherit;">'+escapeHtml(e.email)+'</a>');
-    return '<div class="agenda-event" onclick="openAfspraakForm('+e.id+')">'
+    return '<div class="agenda-event" data-afspraak="'+e.id+'" onclick="openAfspraakForm('+e.id+')">'
       + '<span class="bolletje" style="background:'+agendaKleur(e)+';"></span>'
       + '<div class="info"><div class="titel">'+escapeHtml(e.label)+'</div>'
       + (onderschrift ? '<div class="klant">'+escapeHtml(onderschrift)+'</div>' : '')
@@ -3545,7 +3568,7 @@ function weekChipHtml(e) {
   const klik = e.bron === 'afspraak' ? ("openAfspraakForm("+e.id+")") : ("laadKlant('"+e.klantId+"')");
   const tekst = [e.label, e.klantNaam].filter(Boolean).join(' · ');
   const titel = [tekst, e.periode].filter(Boolean).join(' — ');
-  return '<div class="weekrooster-chip" style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(titel)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
+  return '<div class="weekrooster-chip"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' style="background:'+agendaLichtereKleur(kleur, 0.8)+';border-left-color:'+kleur+';" title="'+escapeHtml(titel)+'" onclick="'+klik+'">'+escapeHtml(tekst)+'</div>';
 }
 function renderAgendaWeekRooster(events) {
   const start = agendaWeekStart(agendaDatum);
@@ -3659,7 +3682,7 @@ function agendaBlokHtml(e, roosterStart) {
   const top = (e._begin - roosterStart)*AGENDA_PX_PER_MIN;
   const hoogte = Math.max((e._eind - e._begin)*AGENDA_PX_PER_MIN - 2, 20);
   const onderschrift = [e.label, e.klantNaam, e.leggerNaam ? 'Legger: '+e.leggerNaam : ''].filter(Boolean).join(' · ');
-  return '<div class="dagrooster-event" style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
+  return '<div class="dagrooster-event"'+(e.bron === 'afspraak' ? ' data-afspraak="'+e.id+'"' : '')+' style="top:'+top+'px;height:'+hoogte+'px;left:calc('+links+'% + 1px);width:calc('+breedte+'% - 3px);background:'+achtergrond+';border-left-color:'+kleur+';" onclick="'+klik+'">'
     + '<div class="diklabel">'+escapeHtml(tijdTekst)+'</div>'
     + '<div class="subtitel">'+escapeHtml(onderschrift)+'</div>'
     + '</div>';
@@ -3861,10 +3884,10 @@ async function opslaanAfspraak() {
       if (idx >= 0) afsprakenData[idx] = { ...afsprakenData[idx], ...data };
     } else {
       const result = await sbFetch('POST', 'afspraken', data);
-      if (result[0]) afsprakenData.push(result[0]);
+      if (result[0]) { afsprakenData.push(result[0]); var nieuwId = result[0].id; }
     }
     sluitAfspraakForm();
-    renderAgenda();
+    springNaarAfspraak(afspraakBewerkId || nieuwId, data.datum);
     toast('Afspraak opgeslagen!');
   } catch(e) {
     toast('Fout: '+e.message, 4000);
